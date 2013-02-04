@@ -1,0 +1,11 @@
+* 	In order to use & develop the source Python 2.7.3 is required:
+	http://www.python.org/download/releases/2.7.3
+
+* 	Additionally, in order to use the GUI, PySide (Qt) is required:
+	http://qt-project.org/wiki/PySideDownloads
+
+* 	And Finally, in order to create an executable version of SubiT, PyInstaller 
+	is needed:
+	http://www.pyinstaller.org
+
+**	Building the ContextMenu handler for windows, requires Visual Studio 2010.
