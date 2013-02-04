@@ -1,5 +1,7 @@
+# Oursite: http://subit-app.sf.net
+
 First of all, feel free to contact us with any problem at:
-http://www.subit-app.sourceforge.net/contact.html
+http://www.subit-app.sf.net/contact.html
 ##Usage:
 
 ###For Windows users:
