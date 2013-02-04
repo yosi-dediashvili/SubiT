@@ -8,7 +8,7 @@
 First of all, feel free to contact us with any problem at:
 http://www.subit-app.sourceforge.net/contact.html
 
-For Windows users:
+#For Windows users:
 
 	It's recommended that you will use the win32 setup file of SubiT in order to perform the installation.
 	However, if you refuse to do so, follow this steps:
@@ -28,21 +28,21 @@ For Windows users:
 	SubiT and go to Settings->Context Menu, and uncheck the "Associate extensions" check box, click apply, and
 	recheck the checkbox, and finally, click Apply.
 
-For Linux users:
+#For Linux users:
 
 	1. SubiT source code is compiled using python 2.7.3
 	2. The tar.gz comes with everything needed for SubiT to run (except for python)
 	3. Currently, a right click association is not supported under linux
 	4. Simply extract the files from the tar.gz file, and execute SubiT
 
-For OSX users:
+#For OSX users:
 
 	From minor check that we made, SubiT is capable of running under OSX after the PySide module is installed
 	on the System. We currently not supporting OSX. Contact us if you're interested on running SubiT under 
 	apple's OS.
 
 
-Using SubiT in Command Line mode (CLI):
+#Using SubiT in Command Line mode (CLI):
 
 	After several requests for cli mode in SubiT, we added this feature in version 2.0.0. To activate it, 
 	you need to manually edit the config.ini file of SubiT (located under SubiTs folder, in the Settings 
@@ -56,7 +56,7 @@ Using SubiT in Command Line mode (CLI):
 	Launch SubiT as usual.
 
 ===========================================================================
-Changelog:
+##Changelog:
 ===========================================================================
 * Version 2.1.0 -
 Use argparse to parse the arugments
