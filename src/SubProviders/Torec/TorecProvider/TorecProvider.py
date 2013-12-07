@@ -16,7 +16,7 @@ from SubStages.VersionSubStage import VersionSubStage
 
 class TOREC_PAGES:
     TICKET   = r'/ajax/sub/guest_time.asp'  #Ticket for sub request
-    DOWNLOAD = r'/ajax/sub/download.asp'    #Request of specific sub file
+    DOWNLOAD = r'/ajax/sub/downloadun.asp'    #Request of specific sub file
     SEARCH   = r'/ssearch.asp'              #Search for movies
     SUBTITLE = r'/sub.asp'                  #Retrieve movie's subtitles
     DOMAIN   = r'www.torec.net'             #Domain...
@@ -33,11 +33,11 @@ class TOREC_REGEX:
     #Parser for the TOREC_PAGES.SEARCH results
     SEARCH_RESULTS_PARSER = str(
                                 
-                                '(?<=<a\shref\=\"sub\.asp\?sub\_id\=)(?P<MovieCode>\d{1,6}?)(?:\"\>)(?P<MovieName>.*?)(?:\<\/a\>.*?' + 
-                                '</span\>\</td\>\<td\>\<bdo dir\=\"ltr\"\>\<span style\=\"font-weight:normal;font-' +
+                                '(?<=<a href\=\"/sub\.asp\?sub\_id\=)(?P<MovieCode>\d{1,6}?)(?:\"\>)(?P<MovieName>.*?)(?:\<\/a\>.*?' + 
+                                '\</span\>\</td\>\<td\>\<bdo dir\=\"ltr\"\>\<span style\=\"font-weight:normal;font-' +
                                 'family:Tahoma;text-decoration:none;color:black;font-size:12px;\"\>&nbsp;)(?P<VerSum>.*?)(?:' +
                                 '\<\/span\>\<\/bdo\>\<\/tr\>\<\/table\>\<div\ style\=\"text\-align\:center\;margin' + 
-                                '\:0\ auto\;margin\-top\:20px\;\"\>\<a\ href\=\"sub\.asp\?sub\_id\=(?P=MovieCode)\")') 
+                                '\:0\ auto\;margin\-top\:20px\;\"\>\<a href\=\"/sub\.asp\?sub\_id\=(?P=MovieCode)\")') 
     
 class TorecProvider(ISubProvider):
     PROVIDER_NAME = 'Hebrew - www.torec.net'
@@ -114,7 +114,7 @@ class TorecProvider(ISubProvider):
     def getSubtitleUrl(cls, version_sub_stage):
         sub_id      = version_sub_stage.movie_code
         sub_code    = version_sub_stage.version_code
-        sleep_time  = 8
+        sleep_time  = 12
         sub_url     = ''    
 
         hamster = Hamster(sub_id)
@@ -137,4 +137,4 @@ class TorecProvider(ISubProvider):
 
         hamster.stop()
 
-        return (TOREC_PAGES.DOMAIN, sub_url, TOREC_PAGES.DOMAIN)
+        return (TOREC_PAGES.DOMAIN, sub_url, TOREC_PAGES.DOMAIN, None)

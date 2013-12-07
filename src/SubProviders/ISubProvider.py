@@ -46,7 +46,7 @@ class ISubProvider(object):
                     be made in here.
             input:  version_sub_stage - instace of VersionSubStage returned by 
                     findVersionSubStageList.
-            return: tuple<str(domain), str(url)>
+            return: tuple<str(domain), str(url), str(referrer), str(cookies)>
         """
         raise NotImplementedError('ISubProvider.getSubtitleUrl')
 

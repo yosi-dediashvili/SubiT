@@ -222,6 +222,7 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
         WriteDebug('Sending request for: %s' % (domain + url))
         httpcon.request( type, url, str(data), headers )     
         got_response = httpcon.getresponse()
+        print got_response.getheaders()
         response = got_response.read()
         # In order to avoid decoding problems, we just convert the bytes to 
         # str. The problem is that when we do that, the str preserve the 
@@ -250,7 +251,7 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
 
     return response
 
-def DownloadSubAsBytesIO(domain, url, referer = None):
+def DownloadSubAsBytesIO(domain, url, referer = None, cookies = None):
     """ Download a url, and return as file-like object (Bytes). Use the referer
         parameter if the site require such parameter in the header in order to
         download the file
@@ -278,6 +279,9 @@ def DownloadSubAsBytesIO(domain, url, referer = None):
     request_headers = {'User-Agent' : UserAgents.getAgent(),
                        # Set the referer to be the domain if None passed
                        'Referer' : referer or domain}
+    if cookies:
+        request_headers.update({"Cookie" : cookies})
+
     file_request = Request(full_url, headers = request_headers)
     try:
         url_opened = urlopen(file_request)
@@ -287,7 +291,7 @@ def DownloadSubAsBytesIO(domain, url, referer = None):
         return None
     return file_content
 
-def GetFile(domain, url, path, file_name, referer = None):
+def GetFile(domain, url, path, file_name, referer = None, cookies = None):
     """ 
         Downloand the file from the given url, and saves it at the given 
         location. The url is relative to the domain arg. path specify the 
@@ -316,7 +320,7 @@ def GetFile(domain, url, path, file_name, referer = None):
     writeLog(INFO_LOGS.STARTING_SUBTITLE_DOWNLOAD_PROCEDURE)
     writeLog(INFO_LOGS.DESTINATION_DIRECTORY_FOR_SUBTITLE % subtitle_directory)
     
-    downloaded_file = DownloadSubAsBytesIO(domain, url, referer)
+    downloaded_file = DownloadSubAsBytesIO(domain, url, referer, cookies)
     file_is_zip     = False
     if downloaded_file:
         file_is_zip = zipfile.is_zipfile(downloaded_file)

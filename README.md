@@ -54,6 +54,15 @@ http://www.subit-app.sf.net/contact.html
 ===========================================================================
 ##Changelog:
 ===========================================================================
+* Version 2.1.2 -
+Fixed Torec's and Subtitle's providers.
+
+* Version 2.1.1 -
+Fixed major bug occured when the user input is needed in order to determine the right subtitle version
+Fixed major bug when trying to download a subtitle file from a free-query
+Fixed ContextMenuHandler registration under 64bit versions of windows
+Fixed www.Torec.net's provider in to bypass the new blocking system
+
 * Version 2.1.0 -
 Use argparse to parse the arugments
 Save the last window size (when the program closes) for the next program startup

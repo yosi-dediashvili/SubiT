@@ -4,7 +4,6 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{CA7E4620-E7E0-4188-9A18-3C8C75BB06E3}</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
     <StartupFile>src\SubiTProxy.py</StartupFile>
     <SearchPath>
     </SearchPath>
@@ -13,7 +12,7 @@
     <OutputPath>.</OutputPath>
     <Name>SubiT</Name>
     <RootNamespace>SubiT</RootNamespace>
-    <InterpreterId>2af0f10d-7135-4994-9156-5d01c9c11b7e</InterpreterId>
+    <InterpreterId>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <CommandLineArguments>-m BY-CONFIG </CommandLineArguments>
@@ -183,6 +182,9 @@
     <Content Include="build\setup\win32\_helpers\subit-template-setup-debug.iss" />
     <Content Include="build\setup\win32\_helpers\subit-template-setup-release.iss" />
     <Content Include="src\Settings\Config.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>

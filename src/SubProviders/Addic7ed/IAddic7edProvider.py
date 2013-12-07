@@ -96,4 +96,4 @@ class IAddic7edProvider(ISubProvider):
         # In order to download the subtitle we need to set the movie page to be
         # the referer. The site has a download limit of 20 subtitles per day. 
         # Currently, we're not trying to bypass this limit.
-        return (ADDIC7ED_PAGES.DOMAIN, version_sub_stage.version_code, referer)
+        return (ADDIC7ED_PAGES.DOMAIN, version_sub_stage.version_code, referer, None)

@@ -233,7 +233,7 @@ class IOpenSubtitlesProvider(ISubProvider):
                                      lambda f: f[ZipDownloadLink], True)
             domain  = OPENSUBTITLES_PAGES.DOMAIN
         
-        return (domain, url, domain)
+        return (domain, url, domain, None)
         
 #===============================================================================
 # Class Helpers -> Session Handling
