@@ -54,9 +54,6 @@ http://www.subit-app.sf.net/contact.html
 ===========================================================================
 ##Changelog:
 ===========================================================================
-* Version 2.1.2 -
-Fixed Torec's and Subtitle's providers.
-
 * Version 2.1.1 -
 Fixed major bug occured when the user input is needed in order to determine the right subtitle version
 Fixed major bug when trying to download a subtitle file from a free-query
