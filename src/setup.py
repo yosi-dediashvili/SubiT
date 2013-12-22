@@ -4,12 +4,17 @@ import shutil
 import os
 import sys
 
+src_dir_path    = r'D:\Programming\SubiT\src'
+handlers_path   = r'D:\Programming\SubiT\src\SubHandlers'
 build_path      = r'D:\Programming\SubiT\src\build'
 org_path        = os.path.join(build_path, 'exe.win32-2.7')
 dest_path       = os.path.join(build_path, 'SubiT_%s' % SubiT.VERSION)
 helpers_path    = os.path.join(build_path, 'helpers')
+linux_path      = dest_path + '_Linux'
 
-os.chdir(build_path.replace(r'\build', ''))
+SubiT.DEBUG = False #Change Debug mode to false for less logs
+
+#os.chdir(build_path.replace(r'\build', ''))
 
 #remove dest_path, in order to start a clean session
 if (os.path.exists(dest_path)):
@@ -17,37 +22,29 @@ if (os.path.exists(dest_path)):
 
 
 #fake build param
-#sys.argv = [sys.argv[0], 'build']
-sys.argv = [sys.argv[0], 'bdist_msi']
+sys.argv = [sys.argv[0], 'build_exe']
 
-buildOptions = dict(optimize=2)#, include_files=[('build\\helpers','')])
-setupOptions = dict(skip_build=0, bdist_dir=dest_path)
+shutil.copytree(helpers_path, dest_path)    
+shutil.copytree(handlers_path, os.path.join(dest_path, 'SubHandlers'), ignore=shutil.ignore_patterns('*.py', '.svn'))
+
+buildOptions = dict(build_exe=dest_path, optimize=2, include_files=['Images'],
+                    copy_dependent_files=True, create_shared_zip=True, compressed=True )
+
 setup(name="SubiT", 
       version=SubiT.VERSION, 
       description="SubiT - Download subtitles with just one click", 
-      options=dict(build_exe = buildOptions, bdist_msi=setupOptions),
+      options=dict(build_exe = buildOptions),
       executables=[Executable("SubiT.py", 
-                              base='Win32GUI',
-							  icon='icon.ico')])
+                              base='Win32GUI' if not SubiT.DEBUG else 'Console',
+							  icon='Images\\icon.ico',
+                              compress=True,
+                              targetDir=dest_path,
+                              copyDependentFiles=True)])
 
-							  
-#os.rename(org_path, dest_path)
-'''
-shutil.rmtree(os.path.join(dest_path, 'tcl'))
-shutil.rmtree(os.path.join(dest_path, 'tk'))
 
-for (current_dir, dirs, files) in os.walk(helpers_path):
-    for f in files:
-        cd = current_dir
-        if (helpers_path in current_dir):
-            cd = current_dir.replace(helpers_path , '').lstrip('\\')
-        
-        destination = os.path.join(dest_path, cd)
-        if not os.path.exists(destination):
-            print 'creating dir: %s' %  destination
-            os.mkdir(destination)
-        print 'copying {0}\\{2} -> {1}\\{2}'.format(current_dir, destination, f)
-        shutil.copy(os.path.join(current_dir,f), destination)
+if (os.path.exists(linux_path)):
+    shutil.rmtree(linux_path)
 
-print 'Done!'
-'''
+shutil.copytree(src_dir_path, linux_path, ignore=shutil.ignore_patterns('*_Linux*', 'Olds', 'build', '.svn', '*.py', '__pycache__', 'setup.py*'))
+shutil.copy(os.path.join(helpers_path, 'README.txt'), linux_path)
+

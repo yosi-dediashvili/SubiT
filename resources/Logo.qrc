@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>os-icon.png</file>
+    <file>icon.png</file>
+  </qresource>
+</RCC>

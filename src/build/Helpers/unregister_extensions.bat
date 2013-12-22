@@ -1,0 +1,2 @@
+SubiT.exe -unregister
+pause

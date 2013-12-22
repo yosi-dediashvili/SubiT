@@ -1,22 +1,29 @@
 #!/usr/bin/python
+#import http
 import httplib
-import urllib
 import os
 import tempfile
 import re
 import gzip
 import zipfile
-from StringIO import StringIO 
+#import io
+#StringIO = io.StringIO
+from StringIO import StringIO
 import uuid
 import sys
 import time
 
 import UserAgents
 import Logs 
+from Settings import Registry
 
 INFO_LOGS = Logs.LOGS.INFO
 WARN_LOGS = Logs.LOGS.WARN
 DIRC_LOGS = Logs.LOGS.DIRECTION
+
+MOVIE_EXT   = Registry.getExtList()
+SUB_EXT     = [ '.srt', '.sub' ]
+
 
 class HttpRequestTypes:
     GET  = 'GET'  #Retrieve only
@@ -55,17 +62,24 @@ def performrequest( domain, url, data, type, more_headers, retry = False ):
         headers.update(more_headers)
 
     httpcon.request( type, url, data, headers )     
-    
+    response = httpcon.getresponse( ).read()
     if retry:
-        return httpcon.getresponse( ).read()
+        return response
     else:
-        return gzip.GzipFile(fileobj=StringIO(httpcon.getresponse( ).read())).read().replace('\r\n', '')
+        try:
+            return gzip.GzipFile(fileobj=StringIO(response)).read().replace('\r\n', '')
+        except IOError as ex:
+            if ex.message == 'Not a gzipped file':
+                return response
+            else:
+                raise ex
 
 #===============================================================================
 # Downloand the file from the given url, and saves it at the given location
 # domain    = domain name
 # url       = url inside the domain
-# path      = directory in which the subtitle will be saved (after extraction), leave empty for current dir)
+# path      = directory in which the subtitle will be saved (after extraction), 
+#             leave empty for current dir)
 # file_name = name to give to the subtitle file after extraction. 
 #    note: will use the original name if: 
 #        a. file_name is empty 
@@ -75,9 +89,9 @@ def performrequest( domain, url, data, type, more_headers, retry = False ):
 #===============================================================================
 def getfile(domain, url, path, file_name):
     #temp location for the zip file
-    file_location       = os.path.abspath(path)
-    dst_file            = os.path.join(file_location, file_name)
-    defaultextraction   = lambda zf: zf.extractall( file_location )
+    file_location       = os.path.abspath(path)                     #Directory path
+    dst_file            = os.path.join(file_location, file_name)    #Filename of the moviefile, with sub ext
+    defaultextraction   = lambda zf: zf.extractall( file_location ) #Default extraction in case of failure
     
     writelog( INFO_LOGS.STARTING_SUBTITLE_DOWNLOAD_PROCEDURE )
     writelog(INFO_LOGS.DESTINATION_DIRECTORY_FOR_SUBTITLE % file_location)
@@ -91,14 +105,25 @@ def getfile(domain, url, path, file_name):
 
                 with zipfile.ZipFile(random_name, 'r') as zfile:
                     try:
-                        #if we have one file in the zip
-                        if len(zfile.namelist()) == 1:
-                            file_name_in_archive = zfile.namelist()[0]
-                            open(dst_file, 'wb').write(zfile.open(file_name_in_archive).read())
-                            writelog( INFO_LOGS.SUCCESSFULL_EXTRACTION_FROM_ARCHIVE )
+                        #Filter to relevant file extensions
+                        filterednamelist = filter(lambda x: x.lower().endswith(tuple(SUB_EXT)), zfile.namelist())
+                        #If Archive does'nt is lacking of subtitle files
+                        if not filterednamelist:
+                            writelog( WARN_LOGS.NO_SUBTITLE_FILES_IN_THE_ARCHIVE )
                         else:
-                            writelog( INFO_LOGS.GOT_SEVERAL_FILES_IN_THE_ARCHIVE )
-                            defaultextraction(zfile)
+                            #If we don't have one file in archive, we keep original filenames
+                            if len(filterednamelist) > 1:
+                                writelog( INFO_LOGS.GOT_SEVERAL_FILES_IN_THE_ARCHIVE )
+                                #Extracting of the subtitles in the archive, one by one
+                                for subfile in filterednamelist:
+                                    open(os.path.join(file_location, subfile), 'wb').write(zfile.open(subfile).read())
+                                    writelog( INFO_LOGS.EXTRACTED_SUBTITLE_FILE % subfile )
+                            #Else mean we got one subtitle (because we already checked for empty...
+                            else:
+                                #Use the movie filename
+                                open(dst_file, 'wb').write(zfile.open(filterednamelist[0]).read())
+                                writelog( INFO_LOGS.EXTRACTED_SUBTITLE_FILE % file_name )
+                            #On Finish
                             writelog( INFO_LOGS.SUCCESSFULL_EXTRACTION_FROM_ARCHIVE )
                     except:
                         writelog( WARN_LOGS.FAILED_SPECIAL_EXTRACTION_OF_SUBTITLE )
@@ -110,11 +135,10 @@ def getfile(domain, url, path, file_name):
                 if not retry: #at first try
                     writelog( INFO_LOGS.TRYING_ANOTHER_METHOD_FOR_DOWNLOADING_SUB )
         else:
-            writelog(WARN_LOGS.FAILED_DOWNLOADING_SUBTITLE_ARCHIVE)
-            
+            writelog(WARN_LOGS.FAILED_DOWNLOADING_SUBTITLE_ARCHIVE)            
     writelog(INFO_LOGS.FINISHED_SUBTITLE_DOWNLOAD_PROCEDURE)
-        
-        
+    
+    #Tempfile removal
     try:
         os.remove(random_name)
         return True
@@ -140,29 +164,30 @@ HELP_ARGS = ['/?', '?', '--help', 'help']
 
 
 def printhelp():
-    print ''
-    print 'SubiT - Auto Subtitles Downloader'
-    print 'Usage: SubiT.exe [moviename | filename] [Directory]'
-    print ''
-    print 'moviename: movie name'
-    print 'filename:  name of movie file, with extension'
-    print 'Directory: destination directory for storing the subtitle,'
-    print '           omitting this parameter will keep original subtitle filename'
+    print ('')
+    print ('SubiT - Auto Subtitles Downloader')
+    print ('Usage: SubiT.exe [moviename | filename] [Directory]')
+    print ('')
+    print ('moviename: movie name')
+    print ('filename:  name of movie file, with extension')
+    print ('Directory: destination directory for storing the subtitle,')
+    print ('           omitting this parameter will keep original subtitle filename')
     raw_input()
     sys.exit()
 	
 #params[0] is Dir
 #params[1] is filename without ext    
 def parseargs():
-    params = ['','']
+    params = ['','','']
 
     if len(sys.argv) > 1:
         if sys.argv[1].lower() in HELP_ARGS: 
             printhelp()
         elif len(sys.argv) == 2:
             if os.path.isfile(sys.argv[1]):
-                params = list(os.path.split(sys.argv[1]))
+                params[:2] = list(os.path.split(sys.argv[1]))
                 params[1] = os.path.splitext(params[1])[0] #File name without ext
+                params[2] = sys.argv[1]
             elif os.path.isdir(sys.argv[1]):
                 params[0] = sys.argv[1]
         else:
