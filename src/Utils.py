@@ -55,7 +55,7 @@ def IsInConsoleMode():
     """
     if not IsWindowPlatform():
         WriteDebug('We are not under windows platform, returning True for ConsoleMode')
-        return False
+        return True
     exe_name = sys.argv[0]
     is_in_console = exe_name.endswith('SubiT-cli.exe')
     WriteDebug('is_in_console is %s' % is_in_console)
