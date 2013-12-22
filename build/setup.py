@@ -435,7 +435,7 @@ def buildLinux():
         buildLinuxDeb(True)
         log('Finished building debug version')
     _build_release()
-    #_build_debug()
+    _build_debug()
     log('Builing SubiT %s for Linux platform finished!' % subit_version)
 # ============================================================================ #
 # ============================================================================ #

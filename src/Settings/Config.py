@@ -16,7 +16,7 @@ CONFIG_FILE_PATH = os.path.join(GetProgramDir(), 'Settings', CONFIG_FILE_NAME)
 def CreateDefaultConfigFile(config_path):
     configs = """
 [Global]
-version = 2.0.0
+version = 2.0.1
 interaction_type = 0
 close_on_finish = True
 default_directory = $DEFAULTDIR$

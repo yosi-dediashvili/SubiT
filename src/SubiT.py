@@ -40,7 +40,7 @@ class SubiTWorkerThread(Thread):
                     if updater.DownloadUpdate(_latest_url, _latest_ver):
                         WriteDebug('Update zip downloaded, restarting!')
                         restart()
-                elif not updater.ShouldAutoUpdate and _latest_url:
+                elif not updater.ShouldAutoUpdate() and _latest_url:
                     getInteractor().notifyNewVersion\
                         (updater.CurrentVersion(), _latest_ver, _latest_url)
 

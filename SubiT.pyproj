@@ -59,36 +59,21 @@
     <Folder Include="src\SubRankers" />
     <Folder Include="src\SubProviders\OpenSubtitles\all_OpenSubtitlesProvider\" />
     <Folder Include="src\Settings\" />
-    <Folder Include="src\Settings\__pycache__\" />
     <Folder Include="src\SubProviders" />
     <Folder Include="src\SubProviders\Addic7ed" />
     <Folder Include="src\SubProviders\Addic7ed\heb_Addic7edProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles" />
     <Folder Include="src\SubProviders\OpenSubtitles\eng_OpenSubtitlesProvider" />
-    <Folder Include="src\SubProviders\OpenSubtitles\eng_OpenSubtitlesProvider\__pycache__" />
     <Folder Include="src\SubProviders\OpenSubtitles\heb_OpenSubtitlesProvider" />
-    <Folder Include="src\SubProviders\OpenSubtitles\heb_OpenSubtitlesProvider\__pycache__" />
     <Folder Include="src\SubProviders\OpenSubtitles\rus_OpenSubtitlesProvider" />
-    <Folder Include="src\SubProviders\OpenSubtitles\rus_OpenSubtitlesProvider\__pycache__" />
-    <Folder Include="src\SubProviders\OpenSubtitles\__pycache__" />
     <Folder Include="src\SubProviders\Subtitle" />
     <Folder Include="src\SubProviders\Subtitle\eng_SubtitleProvider" />
-    <Folder Include="src\SubProviders\Subtitle\eng_SubtitleProvider\__pycache__" />
     <Folder Include="src\SubProviders\Subtitle\heb_SubtitleProvider" />
-    <Folder Include="src\SubProviders\Subtitle\heb_SubtitleProvider\__pycache__" />
-    <Folder Include="src\SubProviders\Subtitle\__pycache__" />
     <Folder Include="src\SubProviders\SubsCenter" />
     <Folder Include="src\SubProviders\SubsCenter\eng_SubsCenterProvider" />
-    <Folder Include="src\SubProviders\SubsCenter\eng_SubsCenterProvider\__pycache__" />
     <Folder Include="src\SubProviders\SubsCenter\heb_SubsCenterProvider" />
-    <Folder Include="src\SubProviders\SubsCenter\heb_SubsCenterProvider\__pycache__" />
-    <Folder Include="src\SubProviders\SubsCenter\__pycache__" />
     <Folder Include="src\SubProviders\Torec" />
     <Folder Include="src\SubProviders\Torec\TorecProvider" />
-    <Folder Include="src\SubProviders\Torec\TorecProvider\__pycache__" />
-    <Folder Include="src\SubProviders\Torec\__pycache__" />
-    <Folder Include="src\SubProviders\__pycache__" />
-    <Folder Include="src\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="build\minifier.py" />

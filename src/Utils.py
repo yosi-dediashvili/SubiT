@@ -121,6 +121,8 @@ def GetSeriesParams(query):
     result = []
     WriteDebug('Retriving series param from: %s' % query)
     for regex in series_regexes:
+        # We might end up with result being None because takefirst returns None
+        # if there are no items in an iterable.
         result = takefirst(getregexresults(regex, query, False))
         WriteDebug('Regex of %s got us: %s' % (regex, result))
         if result:
@@ -135,7 +137,14 @@ def GetSeriesParams(query):
             WriteDebug('Finished converting the regex results to integers')
             break
     WriteDebug('Series params retrivied, the result is: %s' % result)
-    return tuple(result)
+    
+     
+    # result might be None (as it's says earlier in the function), so we can
+    # get exception if result is None and we try to convert it to tuple.
+    if result is None:
+        return tuple([])
+    else:
+        return tuple(result)
 # ============================================================================ #
 # ============================================================================ #
 
@@ -473,14 +482,30 @@ def takefirst(items):
 def FormatMovieName(movie_name, to_list = True, splitters = './ -:'):
     """ Will format the movie name to SubiT's standard format, 
         ie: "<movie name> [ver_0] [ver_[1] [ver_n]" 
-        also, if to_list is true, will return the name as a list, 
-        splitted using the slitters given.
+        also, if to_list is true, will return the name as a list, splitted 
+        using the splitters given. Otherwise, will return the movie_name after
+        replacing the splitters with space. The string returned are in lower
+        case format.
     """
-    # Replace all the splitters in the movie_name with space
-    result = reduce(lambda x,y: x.replace(y, ' '), splitters, 
-                    movie_name.lower()).strip()
-    # Return as string if to_list is False, else return as list
-    return result if not to_list else result.split(' ')
+    separator = '|'
+
+    # Replace all the splitters in the movie_name with the separator
+    result = reduce(lambda name, splitter: name.replace(splitter, separator), 
+                    splitters, movie_name.lower()).strip()
+    # If we get two splitters or more together in the movie_name, we end up 
+    # with the a separtor sequence instead of a single one. For example, if the
+    # movie_name is "the.matrix: reloaded", the result after the reduce will be
+    # "the|matrix||reloaded", so we use re.sub to replace a separator sequence
+    # with a singal instance and after that strip the result with the separator
+    # as the char in order to make sure that we dont leave some in the start or
+    # end of the result.
+    result = re.sub('\%s{2,}' % separator, separator, result)
+    result = result.strip(separator)
+
+    if to_list:
+        return result.split(separator)
+    else:
+        return result.replace(separator, ' ')
         
 HELP_ARGS = ['/?', '?', '--help', 'help']
 
