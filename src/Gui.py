@@ -1,184 +1,144 @@
+from Tkinter import *
 import time
+import threading
+import tkFont
+import tkMessageBox
+import tkFileDialog
 import os
-import sys
 
-from PySide import QtCore, QtGui
-
+import TorecResult
 import Utils
 import SubiT
-import Logs
-from GuiWidgets import GWTextInput
-from GuiWidgets import GWListWidget
-from Settings.AboutBoxDialog import AboutBoxDialog
-from Settings.SettingsBoxDialog import SettingsBoxDialog
+from AboutBox import AboutBox
 
 
-IMAGES_LOCATION = os.path.join(os.path.split(os.path.abspath(__file__))[0]
+
+ICON_LOCATION = os.path.join(os.path.split(os.path.abspath(__file__))[0]
                                                   .replace('\\library.zip', '')
-                                                  , 'Images')
-
+                                                  , 'icon.ico')
 class BOXES_SIZES:
     WIDTH = 50
     LOG_HEIGHT = 7
     CHOICE_HEIGHT = 8
     FRAME_PAD = 2
 
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    _fromUtf8 = lambda s: s
+class gui:
+    def __init__(self):
+        self.root = Tk()
+        self.root.title('SubiT - %s' % SubiT.VERSION)
+        
+        if os.name == 'nt':
+            self.root.iconbitmap(default=ICON_LOCATION)
+        self.root.geometry("700x350")
+        self.root.resizable(width=FALSE, height=FALSE)
+        
+        self.cfont = tkFont.Font(family='Arial', size=8)        
+        #=======================================================================
+        # Right frame - subtitle files choice
+        #=======================================================================
+        self.framer = Frame(self.root, borderwidth=2, relief=GROOVE)
+        self.framer.pack(side=RIGHT, fill=BOTH, expand=1, padx=BOXES_SIZES.FRAME_PAD, pady=BOXES_SIZES.FRAME_PAD)
+        #label
+        self.labelr = Label(self.framer, text='Versions:', anchor=W)
+        self.labelr.pack(fill=X)
+        #inside frame for listbox&scrollbar
+        self.framercb = Frame(self.framer)
+        self.framercb.pack(fill=BOTH)
+        #scrollbar&listbox
+        self.choicescrollrcb = Scrollbar(self.framercb)
+        self.choicescrollrcb.pack(side=RIGHT, fill=Y)
+        self.choicelistboxrcb = Listbox(self.framercb, state=DISABLED, width=40, height=340, 
+                                        yscrollcommand = self.choicescrollrcb.set)
+        self.choicelistboxrcb.config(font = self.cfont, selectbackground='Dark Gray', activestyle='none')
+        self.choicelistboxrcb.pack(fill=BOTH, anchor=NE)
+        self.choicescrollrcb.config(command = self.choicelistboxrcb.yview)
+        #=======================================================================
+        
+        
+        #=======================================================================
+        # Left frame - log + movie choice + textbox
+        #=======================================================================
+        #upper left frame
+        self.framelu = Frame(self.root, borderwidth=2, relief=GROOVE )
+        self.framelu.pack(side=TOP, fill=X, expand=1, padx=BOXES_SIZES.FRAME_PAD, pady=BOXES_SIZES.FRAME_PAD)
+        #log label
+        self.loglabel = Label(self.framelu, text='Log:', anchor=W)
+        self.loglabel.pack(fill=X)
+        #scrollbar&text frame
+        self.framelu0 = Frame(self.framelu)
+        self.framelu0.pack(fill=BOTH)
+        #scrollbar
+        self.logscroll = Scrollbar(self.framelu0)
+        self.logscroll.pack(side=RIGHT, fill=Y)
+        #log text
+        self.logtext = Text(self.framelu0, height=BOXES_SIZES.LOG_HEIGHT, 
+                            state=DISABLED, yscrollcommand = self.logscroll.set)
+        self.logtext.config(font = self.cfont)
+        self.logtext.pack(fill=BOTH, anchor=W)
+        self.logscroll.config(command = self.logtext.yview)
+        
+        #bottom left frame
+        self.framelb = Frame(self.root, borderwidth=2, relief=GROOVE )
+        self.framelb.pack( fill=X, side=BOTTOM, expand=1, padx=BOXES_SIZES.FRAME_PAD, pady=BOXES_SIZES.FRAME_PAD)
+        #options label
+        self.optionslabel = Label(self.framelb, text='Movies:', anchor=W)
+        self.optionslabel.pack(fill=X)
+        #Buttons================
+        #about
+        self.cancelbutton = Button(self.framelb, text='About', command=self.showabout)
+        self.cancelbutton.pack(fill=X,side=BOTTOM)
+        #ok
+        self.gobutton = Button(self.framelb, text='Go!', state=DISABLED, command=lambda: self.disablebutton())
+        self.gobutton.pack(fill=BOTH, side=BOTTOM)
+        #textbox
+        self.frametbandbtn = Frame(self.framelb)
+        self.frametbandbtn.pack(fill=X, side=BOTTOM)
+        self.texttextbox = Entry(self.frametbandbtn, state=DISABLED, width=65)
+        self.texttextbox.config(font = self.cfont)
+        self.texttextbox.pack(fill=X, side=LEFT)
+        self.browsebutton = Button(self.frametbandbtn, text='...', width=3, command=self.dobrowse)
+        self.browsebutton.config(state=DISABLED)
+        self.browsebutton.pack(side=RIGHT)
+        #inputlabel
+        self.inputlabel = Label(self.framelb, text='Input:', anchor=W)
+        self.inputlabel.pack(fill=X, side=BOTTOM)        
+        #choice frame
+        self.framelb0 = Frame(self.framelb)
+        self.framelb0.pack(fill=BOTH)
 
-class gui(QtGui.QMainWindow):
-    def __init__(self):    
-        super(gui, self).__init__()
+        #scrollbar
+        self.choicescroll = Scrollbar(self.framelb0)
+        self.choicescroll.pack(side=RIGHT, fill=Y)
+        #listbox
+        self.choicelistbox = Listbox(self.framelb0, state=DISABLED, width=BOXES_SIZES.WIDTH, 
+                                     height=BOXES_SIZES.CHOICE_HEIGHT, yscrollcommand = self.choicescroll.set)
+        self.choicelistbox.config(font = self.cfont, selectbackground='Dark Gray', activestyle='none')
+        self.choicelistbox.pack(fill=BOTH, anchor=NE)
         
-        self.setObjectName(_fromUtf8("SubiTMainForm"))
-        self.setWindowModality(QtCore.Qt.WindowModal)
-        self.setEnabled(True)
-        self.resize(710, 390)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(100)
-        sizePolicy.setVerticalStretch(100)
-        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        self.setSizePolicy(sizePolicy)
-        self.setMinimumSize(QtCore.QSize(710, 390))
-        self.setMaximumSize(QtCore.QSize(710, 390))
-        self.setWindowTitle(QtGui.QApplication.translate("SubiTMainForm", "SubiT - %s" % SubiT.VERSION, None, QtGui.QApplication.UnicodeUTF8))
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8(os.path.join(IMAGES_LOCATION, "icon.png"))), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.setWindowIcon(icon)
-        self.logGroupBox = QtGui.QGroupBox(self)
-        self.logGroupBox.setGeometry(QtCore.QRect(10, 0, 691, 131))
-        self.logGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", " Log ", None, QtGui.QApplication.UnicodeUTF8))
-        self.logGroupBox.setObjectName(_fromUtf8("logGroupBox"))
-        self.logTextBrowser = QtGui.QTextEdit(self.logGroupBox)
-        self.logTextBrowser.setGeometry(QtCore.QRect(5, 20, 681, 101))
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.logTextBrowser.sizePolicy().hasHeightForWidth())
-        self.logTextBrowser.setSizePolicy(sizePolicy)
-        self.logTextBrowser.setLineWrapMode(QtGui.QTextEdit.LineWrapMode.NoWrap)
-        self.logTextBrowser.setReadOnly(True)
-        self.logTextBrowser.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.logTextBrowser.setObjectName(_fromUtf8("logTextBrowser"))
+        self.choicescroll.config(command = self.choicelistbox.yview)
 
-        self.moviesGroupBox = QtGui.QGroupBox(self)
-        self.moviesGroupBox.setGeometry(QtCore.QRect(10, 130, 341, 201))
-        self.moviesGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", " Movies ", None, QtGui.QApplication.UnicodeUTF8))
-        self.moviesGroupBox.setObjectName(_fromUtf8("moviesGroupBox"))
-        #self.moviesListWidget = QtGui.QListWidget(self.moviesGroupBox)
-        self.moviesListWidget = GWListWidget(self.moviesGroupBox)
-        self.moviesListWidget.setGeometry(QtCore.QRect(5, 20, 331, 101))
-        self.moviesListWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.moviesListWidget.setObjectName(_fromUtf8("moviesListWidget"))
-        self.moviesListWidget.setEnabled(False)
-        self.inputGoupBox = QtGui.QGroupBox(self.moviesGroupBox)
-        self.inputGoupBox.setGeometry(QtCore.QRect(10, 120, 321, 81))
-        self.inputGoupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", "Input ", None, QtGui.QApplication.UnicodeUTF8))
-        self.inputGoupBox.setFlat(True)
-        self.inputGoupBox.setObjectName(_fromUtf8("inputGoupBox"))
+    def dobrowse(self):
+        chosendir = tkFileDialog.askdirectory(initialdir=self.texttextbox.get() if os.path.isdir(self.texttextbox.get()) else '')
+        self.texttextbox.delete(0, END)
+        self.texttextbox.insert(0, chosendir)
         
-        self.inputLineEdit = GWTextInput(self.inputGoupBox)
-        self.inputLineEdit.setGeometry(QtCore.QRect(0, 20, 295, 21))
-        self.inputLineEdit.setObjectName(_fromUtf8("inputLineEdit"))
-        self.inputLineEdit.setEnabled(False)
-        
-        self.browseBTN = QtGui.QToolButton(self.inputGoupBox)
-        self.browseBTN.setGeometry(QtCore.QRect(295, 20, 25, 21))
-        self.browseBTN.setText(QtGui.QApplication.translate("SubiTMainForm", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseBTN.setAutoRaise(False)
-        self.browseBTN.setEnabled(False)
-        self.browseBTN.setArrowType(QtCore.Qt.NoArrow)
-        self.browseBTN.setObjectName(_fromUtf8("browseBTN"))
-        self.goBTN = QtGui.QPushButton(self.inputGoupBox)
-        self.goBTN.setGeometry(QtCore.QRect(0, 42, 321, 30))
-        self.goBTN.setText(QtGui.QApplication.translate("SubiTMainForm", "Go", None, QtGui.QApplication.UnicodeUTF8))
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(os.path.join(IMAGES_LOCATION, "icon-go.png"))), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.goBTN.setIcon(icon1)
-        self.goBTN.setIconSize(QtCore.QSize(24, 24))
-        self.goBTN.setCheckable(False)
-        self.goBTN.setAutoExclusive(False)
-        self.goBTN.setEnabled(False)
-        self.goBTN.setAutoDefault(False)
-        self.goBTN.setDefault(True)
-        self.goBTN.setCheckable(True)
-        self.goBTN.setFlat(False)
-        self.goBTN.setObjectName(_fromUtf8("goBTN"))
-        self.versionsGroupBox = QtGui.QGroupBox(self)
-        self.versionsGroupBox.setGeometry(QtCore.QRect(360, 130, 341, 251))
-        self.versionsGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", " Versions ", None, QtGui.QApplication.UnicodeUTF8))
-        self.versionsGroupBox.setObjectName(_fromUtf8("versionsGroupBox"))
-        #self.versionsListWidget = QtGui.QListWidget(self.versionsGroupBox)
-        self.versionsListWidget = GWListWidget(self.versionsGroupBox)
-        self.versionsListWidget.setGeometry(QtCore.QRect(5, 20, 331, 221))
-        self.versionsListWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.versionsListWidget.setObjectName(_fromUtf8("versionsListWidget"))
-        self.versionsListWidget.setEnabled(False)
-        self.settingsBTN = QtGui.QCommandLinkButton(self)
-        self.settingsBTN.setGeometry(QtCore.QRect(10, 335, 111, 51))
-        font = QtGui.QFont()
-        font.setFamily(_fromUtf8("Segoe UI"))
-        font.setItalic(False)
-        font.setKerning(True)
-        self.settingsBTN.setFont(font)
-        self.settingsBTN.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.settingsBTN.setAutoFillBackground(False)
-        self.settingsBTN.setText(QtGui.QApplication.translate("SubiTMainForm", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(os.path.join(IMAGES_LOCATION, "icon-config.png"))), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.settingsBTN.setIcon(icon2)
-        self.settingsBTN.setIconSize(QtCore.QSize(32, 32))
-        self.settingsBTN.setCheckable(False)
-        self.settingsBTN.setAutoRepeat(False)
-        self.settingsBTN.setObjectName(_fromUtf8("settingsBTN"))
-        self.aboutBTN = QtGui.QCommandLinkButton(self)
-        self.aboutBTN.setGeometry(QtCore.QRect(130, 335, 111, 51))
-        font = QtGui.QFont()
-        font.setFamily(_fromUtf8("Segoe UI"))
-        font.setItalic(False)
-        font.setKerning(True)
-        self.aboutBTN.setFont(font)
-        self.aboutBTN.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.aboutBTN.setAutoFillBackground(False)
-        self.aboutBTN.setText(QtGui.QApplication.translate("SubiTMainForm", "About", None, QtGui.QApplication.UnicodeUTF8))
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(_fromUtf8(os.path.join(IMAGES_LOCATION, "icon-about.png"))), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.aboutBTN.setIcon(icon3)
-        self.aboutBTN.setIconSize(QtCore.QSize(32, 32))
-        self.aboutBTN.setCheckable(False)
-        self.aboutBTN.setAutoRepeat(False)
-        self.aboutBTN.setObjectName(_fromUtf8("aboutBTN"))
-        self.aboutBTN.clicked.connect(self.showabout)
-        self.settingsBTN.clicked.connect(self.showSettings)
-        
-        self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
-
-    def retranslateUi(self):
-        pass
-    
-    @staticmethod    
-    def load(func):
-        app = QtGui.QApplication(sys.argv)
-        Utils.GuiInstance = gui()
-        func()
-        Utils.GuiInstance.show()
-        sys.exit(app.exec_())
+    def load(self, functorun, ms):
+        self.doneinit = True
+        self.root.after(ms, functorun)
+        self.root.mainloop()
 
     def writelog(self, message):
-        if SubiT.DEBUG:
-            print message
-        self.logTextBrowser
-        delim = Logs.LOGS.DELIMITER
-        (colr_message,real_message) = message.split(delim)
-        color = Logs.LOGS.TYPE_TO_COLOR[colr_message]
+        self.logtext.config( state=NORMAL )
+        #coding is different from torec and from computer, we try to change it.
+        #if we fail, we'll use the original(the listboxes will always insert items
+        #from torec, so there's no need to try another coding)
+        try:
+            self.logtext.insert( END, unicode(str(message + '\n'), 'cp1255'))
+        except:
+            self.logtext.insert( END, message + '\n')
 
-        formatted_message = gui.getUnicode('<font color=\"%s\">%s</font><br>' % (color, real_message))
-                
-        self.logTextBrowser.insertHtml(formatted_message)
-        self.logTextBrowser.ensureCursorVisible()
+        self.logtext.see(END)
+        self.logtext.config( state=DISABLED )
     
     #===========================================================
     # Sub selection Handling
@@ -188,21 +148,20 @@ class gui(QtGui.QMainWindow):
         self.versionchoices = choices
         
         Utils.writelog( message )
-        
-        self.versionsListWidget.setEnabled(True)
-        self.versionsListWidget.clear()
-        
+        self.choicelistboxrcb.config( state=NORMAL )
+        self.choicelistbox.config( state=NORMAL )
+        self.choicelistboxrcb.delete(0, END)
         for choice in choices:
-            self.versionsListWidget.doAddItem.str_signal.emit(gui.getUnicode(choice.VerSum))
-            
+            self.choicelistboxrcb.insert( END, choice.VerSum)
                 
     def getsubselection(self):
-        self.versionsListWidget.setEnabled(True)
-        self.versionsListWidget.setFocus(QtCore.Qt.FocusReason.OtherFocusReason)
-        self.versionsListWidget.doubleClicked.connect(self.notifySubSelection)
+        self.choicelistbox.config( state=NORMAL )
+        self.choicelistboxrcb.config( state=NORMAL )
 
-    def notifySubSelection(self):
-        self.notifyselection('SUB')
+        self.choicelistboxrcb.focus()
+        self.choicelistboxrcb.bind('<Double-Button-1>', lambda x: self.notifyselection('SUB'))
+        self.choicelistboxrcb.bind('<Return>', lambda x: self.notifyselection('SUB'))
+        self.choicelistbox.bind('<Double-Button-1>', lambda x: self.notifyselection('MOVIE'))
          
     #===========================================================================
     # Movie selection handling
@@ -212,32 +171,28 @@ class gui(QtGui.QMainWindow):
         self.moviechoices = choices
         
         Utils.writelog( message )
-
-        self.moviesListWidget.setEnabled(True)        
-        self.moviesListWidget.clear()
-        
+        self.choicelistboxrcb.config( state=NORMAL )
+        self.choicelistbox.config( state=NORMAL )
+        self.choicelistbox.delete(0, END)
         for choice in choices:
-            self.moviesListWidget.doAddItem.str_signal.emit(gui.getUnicode(choice.MovieName + ' -> ' + choice.VerSum))
-            
-        self.moviesListWidget.setFocus(QtCore.Qt.FocusReason.OtherFocusReason)
+            self.choicelistbox.insert( END, choice.MovieName + ' -> ' + choice.VerSum)
         
     def getmovieselection(self):
-        self.moviesListWidget.setEnabled(True)        
-        self.moviesListWidget.setFocus(QtCore.Qt.FocusReason.OtherFocusReason)
-        self.moviesListWidget.doubleClicked.connect(self.notifyMovieSelection)
-
-    
-    def notifyMovieSelection(self):
-        self.notifyselection('MOVIE')
+        self.choicelistboxrcb.config( state=NORMAL )
+        self.choicelistbox.config( state=NORMAL )
+        self.choicelistbox.focus()
+        self.choicelistbox.bind('<Double-Button-1>', lambda x: self.notifyselection('MOVIE'))
+        self.choicelistbox.bind('<Return>', lambda x: self.notifyselection('MOVIE'))
+        self.choicelistboxrcb.bind('<Double-Button-1>', lambda x: self.notifyselection('SUB'))
 
     #===========================================================================
     # Selection logic
     #===========================================================================
     def notifyselection(self, source):
         if source == 'SUB':
-            self.subselected = bool(self.versionsListWidget.currentRow()+1)
+            self.subselected = bool(self.choicelistboxrcb.curselection())
         elif source == 'MOVIE':
-            self.movieselected = bool(self.moviesListWidget.currentRow()+1)
+            self.movieselected = bool(self.choicelistbox.curselection())
     
     def getselection(self, type):
         selection = ('','')
@@ -245,61 +200,74 @@ class gui(QtGui.QMainWindow):
             self.subselected = False
             self.getsubselection()
             #Wait for selection
-            while not self.subselected: 
-                time.sleep(0.05)
-            selection = ('SUB', self.versionchoices[self.versionsListWidget.currentRow()])
-            self.versionsListWidget.clear()
+            while not self.subselected: time.sleep(0.05)
+            selection = ('SUB', self.versionchoices[int(self.choicelistboxrcb.curselection()[0])])
+            self.choicelistbox.delete(0, END)
+            self.choicelistboxrcb.delete(0, END)
                 
         elif type == 'MOVIE':
             self.movieselected = False
             self.getmovieselection()
             #Wait for selection
             while not self.movieselected: time.sleep(0.05)
-            selection = ('MOVIE', self.moviechoices[self.moviesListWidget.currentRow()])
-            
+            selection = ('MOVIE', self.moviechoices[int(self.choicelistbox.curselection()[0])])
+                
         elif type == 'ANY':
             self.subselected = False
             self.movieselected = False
             self.getsubselection()
             self.getmovieselection()
-            
             #Wait for selection
-            while (not self.subselected) and (not self.movieselected): 
-                time.sleep(0.05)
-                
+            while (not self.subselected) and (not self.movieselected): time.sleep(0.05)
             if self.subselected:
-                selection = ('SUB', self.versionchoices[self.versionsListWidget.currentRow()])
-                self.versionsListWidget.clear()
-                self.moviesListWidget.clear()
-                
+                selection = ('SUB', self.versionchoices[int(self.choicelistboxrcb.curselection()[0])])
+                self.choicelistbox.delete(0, END)
+                self.choicelistboxrcb.delete(0, END)
             elif self.movieselected:
-                selection = ('MOVIE', self.moviechoices[self.moviesListWidget.currentRow()])
-                
-        self.versionsListWidget.setEnabled(False)
-        self.moviesListWidget.setEnabled(False)
-      
+                selection = ('MOVIE', self.moviechoices[int(self.choicelistbox.curselection()[0])])
+        
+        if self.choicelistboxrcb.cget('state') == NORMAL:
+            self.choicelistboxrcb.config( state=DISABLED )
+        if self.choicelistbox.cget('state') == NORMAL:    
+            self.choicelistbox.config( state=DISABLED )        
         return selection
             
     #===========================================================================        
     
     def getuserinput(self, message, canempty, withdialog=False):
         Utils.writelog( message )
-        return self.inputLineEdit.waitForInput(self.goBTN, canempty=canempty, brwsbtn=self.browseBTN if withdialog else None)
-                        
+        self.texttextbox.config(state=NORMAL)
+        self.texttextbox.focus()
+        
+        if withdialog:
+            self.browsebutton.config(state=NORMAL)
+        else:
+            self.browsebutton.config(state=DISABLED)
+            
+        
+        if not canempty:
+            while self.texttextbox.get() == '':
+                time.sleep(0.05)
+        
+        self.enablebutton()
+
+        while not self.gobutton['state'] == DISABLED:
+            time.sleep(0.05)
+        
+        movie_name = self.texttextbox.get()
+        self.texttextbox.delete(0, len(self.texttextbox.get()) + 1)
+        self.texttextbox.config(state=DISABLED)
+        self.browsebutton.config(state=DISABLED)
+        return movie_name
+        
+        
+    def enablebutton(self, event = None):
+        self.gobutton.config( state=NORMAL )
+        self.root.bind('<Return>', self.disablebutton)
+        
+    def disablebutton(self, event = None):
+        self.gobutton.config( state=DISABLED )
+        self.root.bind('<Return>', None)
+        
     def showabout(self):
-        AboutBoxDialog(self).open()
-    
-    def showSettings(self):
-        SettingsBoxDialog(self).open()
-    
-    @staticmethod
-    def getUnicode(message):
-        formatted_message = message
-        try:
-            formatted_message = unicode(formatted_message, 'utf-8')
-        except UnicodeDecodeError as eX:
-            try:
-                formatted_message = unicode(formatted_message)
-            except:
-                formatted_message = message
-        return formatted_message
+        AboutBox().show()

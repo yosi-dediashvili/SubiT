@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SubiTRegister", "registryCheck\registryCheck.vcxproj", "{C3F8465B-1187-44CF-86A8-3962D81C44C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C3F8465B-1187-44CF-86A8-3962D81C44C1}.Debug|Win32.ActiveCfg = Release|Win32
+		{C3F8465B-1187-44CF-86A8-3962D81C44C1}.Debug|Win32.Build.0 = Release|Win32
+		{C3F8465B-1187-44CF-86A8-3962D81C44C1}.Release|Win32.ActiveCfg = Release|Win32
+		{C3F8465B-1187-44CF-86A8-3962D81C44C1}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
