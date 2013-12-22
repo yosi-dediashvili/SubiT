@@ -14,11 +14,11 @@ class OPENSUBTITLES_PAGES:
     API_SERVER  = 'http://api.opensubtitles.org/xml-rpc'
 
 class OpenSubtitlesHandler(ISubHandler):
-    HANDLER_NAME    = 'rus@www.opensubtitles.org'
+    HANDLER_NAME    = 'Russian - www.opensubtitles.org'
     TOKEN           = None
     SERVER          = None
 #    USER_AGENT      = 'SubiTApp %s' % SubiT.VERSION
-    USER_AGENT      = 'SubiTApp 1.1.0'
+    USER_AGENT      = 'SubiTApp 1.2.0'
     MovieSearchDict = {'sublanguageid'  : 'rus',
                        'moviehash'      : 0,
                        'moviebytesize'  : 0,

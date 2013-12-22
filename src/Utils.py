@@ -24,6 +24,7 @@ DIRC_LOGS = Logs.LOGS.DIRECTION
 MOVIE_EXT   = Registry.getExtList()
 SUB_EXT     = [ '.srt', '.sub' ]
 
+DEBUG = True
 
 class HttpRequestTypes:
     GET  = 'GET'  #Retrieve only
@@ -156,8 +157,11 @@ def getfile(domain, url, path, file_name):
 # Query the content and returns list of all result, in case of multi-group pattern, 
 # will return a list of tuples (tuple for each group)
 #===============================================================================
-def getregexresults( pattern, content ):
+def getregexresults( pattern, content, with_groups = False):
     c_pattern = re.compile( pattern )
+
+    if with_groups:
+        return map(lambda i: i.groupdict(), re.finditer(c_pattern, content))
     return re.findall( c_pattern, content )
 
 HELP_ARGS = ['/?', '?', '--help', 'help']
@@ -174,7 +178,7 @@ def printhelp():
     print ('           omitting this parameter will keep original subtitle filename')
     raw_input()
     sys.exit()
-	
+
 #params[0] is Dir
 #params[1] is filename without ext    
 def parseargs():
@@ -204,7 +208,13 @@ GuiInstance = None
 
 #Basic function to print messages (modification will be done later)
 def writelog( message ):
+    if DEBUG:
+        print message
     GuiInstance.writelog( message )
+
+def WriteDebug( message ):
+    if DEBUG:
+        print message
 
 def askuser( question, canempty, withdialog=False ):
     return GuiInstance.getuserinput(question, canempty, withdialog)

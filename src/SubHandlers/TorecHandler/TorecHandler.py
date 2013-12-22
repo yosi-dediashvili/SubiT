@@ -37,7 +37,7 @@ class TOREC_REGEX:
                                 '\:0\ auto\;margin\-top\:20px\;\"\>\<a\ href\=\"sub\.asp\?sub\_id\=(?P=subid)\")') 
     
 class TorecHandler(ISubHandler):
-    HANDLER_NAME = 'heb@www.torec.net'
+    HANDLER_NAME = 'Hebrew - www.torec.net'
     def __init__(self):
         Hamster()
  #===========================================================================
@@ -79,8 +79,8 @@ class TorecHandler(ISubHandler):
         return map(lambda x: SubResult.SubMovie(x[0], x[1][0], x[1][1]), results.items())
 
 
-    #Send request for the given sub_id, and return two-dim array with each 
-	#item as [0 = sub_code, 1=sub_version]
+    #Send request for the given sub_id, and return two-dim array with each
+    #item as [0 = sub_code, 1=sub_version]
     @staticmethod
     def findversionslist( subMovie ):
         sub_id = subMovie.MovieCode
@@ -111,8 +111,8 @@ class TorecHandler(ISubHandler):
         sleep_time  = 8
         sub_url     = ''    
 
-        #In case we fail at the first time, the request is inside a loop 
-		#(keep in mind - possible endless loop, but who cares :})
+        #In case we fail at the first time, the request is inside a loop
+        #(keep in mind - possible endless loop, but who cares :})
         while sub_url == '':
             (sleep_time, guest_code) = Hamster.getCode()
             sub_req = TorecHandler.buildsubrequest( sub_id, guest_code , sleep_time, sub_code )

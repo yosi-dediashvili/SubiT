@@ -15,7 +15,7 @@ class LOGS:
 		FAILED_TEMP_ZIP_FILE_REMOVAL					= 'WARN__||__Failure while deleting temp zip file'
 		FAILED_EXTRACTING_SUBTITLE_FILE_FROM_ARCHIVE	= 'WARN__||__Failure while extracting from the archive'
 		ERROR_DIRECTORY_DOESNT_EXISTS 					= 'WARN__||__Error: %s doesn\'t exists'
-        
+
 	class INFO:
 		STARTING 											= 'INFO__||__Starting. . .'
 		SELECTED_SUB_HANDLER_IS 							= 'INFO__||__Using: %s as subtitle provider'
@@ -51,7 +51,7 @@ class LOGS:
 		FINISHED_DO_FILE_PROCEDURE  						= 'INFO__||__Finished working on file'
 		FINISHED_DO_DIR_PROCEDURE   						= 'INFO__||__Finished working on directory'
 		FINISHED 											= 'INFO__||__Finished'
-                
+
 	class DIRECTION:
         #Movie name query logs
 		INSERT_MOVIE_NAME_FOR_QUERY 						= 'DIRECTION__||__Please insert  a movie name'

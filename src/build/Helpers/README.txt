@@ -16,11 +16,11 @@ How To Uninstall:
 2. Delete SubiT folder
 
 Changelog:
-Version 1.1.0 
+Version 1.2.0 
 
-Added support to www.OpenSubtitles.org subtitle services
-Added support for selecting different subtitle handler
-Gui Improvments
+Added support to www.subscenter.org subtitles (Movies only)
+Added restart options in settings windows
+Fixed crashing problems
 
 
 --==Special thanks to www.OpenSubtitles.org for delivering their API==--

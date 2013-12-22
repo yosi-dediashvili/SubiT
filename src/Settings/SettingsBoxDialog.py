@@ -8,10 +8,13 @@
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
+from itertools import groupby
 
 import SubHandlers
 import os
+import sys
 import Gui
+import Utils
 import Registry
 
 try:
@@ -36,13 +39,14 @@ class SettingsBoxDialog(QtGui.QDialog):
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(230, 210, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Apply|QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Save)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Save)
         self.buttonBox.setCenterButtons(False)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.buttonBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(False)
+        #self.buttonBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(False)
         
-        self.buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.onSaveClicked)
+        self.buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.onApplyClicked)
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.onCancelClicked)
+        #self.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(self.onApplyClicked)
         
         
         self.groupBox = QtGui.QGroupBox(self)
@@ -60,10 +64,17 @@ class SettingsBoxDialog(QtGui.QDialog):
         self.line = QtGui.QFrame(self)
         
         handlers_names = map(lambda x: x.HANDLER_NAME, SubHandlers.getHandlers())
-        selected_handler = SubHandlers.getSelectedHandler().HANDLER_NAME
-        self.handlersComboBox.insertItems(-1, handlers_names)
+        #Sort by both lang & handler name
+        handlers_names.sort(lambda x, y: cmp(cmp(x[1], y[1]), cmp(x[0],y[0])), lambda z: z.split(' - '))
 
-        self.handlersComboBox.setCurrentIndex(handlers_names.index(selected_handler))
+        selected_handler = SubHandlers.getSelectedHandler().HANDLER_NAME
+        
+        for group, handlers in groupby(handlers_names, lambda h: h.split(' - ')[1]):
+            for h in handlers:
+                self.handlersComboBox.insertItem(0, h)
+            self.handlersComboBox.insertSeparator(-1)
+            
+        self.handlersComboBox.setCurrentIndex(self.handlersComboBox.findText(selected_handler))
         
         #Add extension handling only if it's Windows
         if os.name == 'nt':
@@ -113,6 +124,18 @@ class SettingsBoxDialog(QtGui.QDialog):
 
     def onCancelClicked(self):
         self.close()
+
+    def onApplyClicked(self):
+        self.onSaveClicked()
+        ret = QtGui.QMessageBox.question(self, 'Restart',
+                               self.tr("In order to apply changes, application will need to restart.\r\nContinue?"),
+                               QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+        if ret == QtGui.QMessageBox.Yes:
+            #Subit.exe + path to movie
+            if len(sys.argv) > 1:
+                os.execl(sys.executable, sys.executable, '"%s"' % sys.argv[1])
+            else:
+                os.execl(sys.executable, sys.executable)
     
     def onSaveClicked(self):
         #Setting the new handler

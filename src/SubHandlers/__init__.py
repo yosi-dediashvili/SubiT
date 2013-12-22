@@ -1,5 +1,6 @@
 #import ISubHandler
 import SubiT
+import Utils
 
 import inspect
 import os
@@ -10,6 +11,8 @@ import TorecHandler
 import heb_OpenSubtitlesHandler
 import rus_OpenSubtitlesHandler
 import eng_OpenSubtitlesHandler
+import heb_SubsCenter
+import eng_SubsCenter
 #===============================================================================
 
 TotalHandlerModules = []
@@ -17,15 +20,15 @@ TotalHandlerClasses = []
 
 
 sys.path.append(__path__[0])
-print ('Current Path is: %s' % __path__[0])
+Utils.WriteDebug ('Current Path is: %s' % __path__[0])
 for module in os.listdir(__path__[0]):
     fullpathModule = os.path.join(__path__[0], module)
     if os.path.isdir(fullpathModule):
         try:
             TotalHandlerModules.append(__import__(module))
-            print( 'Loaded: %s' % module )
+            Utils.WriteDebug( 'Loaded: %s' % module )
         except Exception as eX:
-            print( 'Failed Loading: %s => %s' % (module, eX))
+            Utils.WriteDebug( 'Failed Loading: %s => %s' % (module, eX))
 
 
 
@@ -52,7 +55,7 @@ def findISubHandlerImplementation(startModule):
                          #We Face another handler, and therfore, put it in the list
                          TotalHandlerClasses.append(obj)
         except Exception as eX: 
-            print( 'Failure => %s' % eX )
+            Utils.WriteDebug( 'Failure => %s' % eX )
             #We do nothing on execption
 
 def getHandlers():
@@ -65,17 +68,22 @@ def getSelectedHandler():
     if selectedHandler is None:
         #If there's no file, we set the first handler
         if not os.path.exists(SELECTED_HANDLER_CONFIG_FILE_NAME):
-            print('Selected handler file is missing, using first handler in the list')
+            Utils.WriteDebug('Selected handler file is missing, using first handler in the list')
             setSelectedHandler(getHandlers()[0].HANDLER_NAME)
-            
-        selectedHandlerName = open(SELECTED_HANDLER_CONFIG_FILE_NAME, 'r').read()
-        
-        print('Location: %s' % __path__[0])
-        print('selectedHandlerName: %s' % selectedHandlerName)
-        print('Total handlers: %d' % len(getHandlers()))
 
-        selectedHandler = filter(lambda handlerClass: handlerClass.HANDLER_NAME == selectedHandlerName, getHandlers())[0]
+        try:
+            selectedHandlerName = open(SELECTED_HANDLER_CONFIG_FILE_NAME, 'r').read()
         
+            Utils.WriteDebug('Location: %s' % __path__[0])
+            Utils.WriteDebug('selectedHandlerName: %s' % selectedHandlerName)
+            Utils.WriteDebug('Total handlers: %d' % len(getHandlers()))
+
+            selectedHandler = filter(lambda handlerClass: handlerClass.HANDLER_NAME == selectedHandlerName, getHandlers())[0]
+        except:
+            Utils.WriteDebug('Failed Reading Handler name from file, taking first')
+            setSelectedHandler(getHandlers()[0].HANDLER_NAME)
+            selectedHandler = getHandlers()[0]
+
     return selectedHandler
 
 def setSelectedHandler(selectedHandlerName):

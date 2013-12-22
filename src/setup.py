@@ -28,7 +28,7 @@ shutil.copytree(helpers_path, dest_path)
 shutil.copytree(handlers_path, os.path.join(dest_path, 'SubHandlers'), ignore=shutil.ignore_patterns('*.py', '.svn'))
 
 buildOptions = dict(build_exe=dest_path, optimize=2, include_files=['Images'],
-                    copy_dependent_files=True, create_shared_zip=True, compressed=True )
+                    copy_dependent_files=True, create_shared_zip=True, compressed=True, bin_path_excludes=['.svn'] )
 
 setup(name="SubiT", 
       version=SubiT.VERSION, 
@@ -45,6 +45,6 @@ setup(name="SubiT",
 if (os.path.exists(linux_path)):
     shutil.rmtree(linux_path)
 
-shutil.copytree(src_dir_path, linux_path, ignore=shutil.ignore_patterns('*_Linux*', 'Olds', 'build', '.svn', '*.py', '__pycache__', 'setup.py*'))
+shutil.copytree(src_dir_path, linux_path, ignore=shutil.ignore_patterns('*_Linux*', 'Olds', 'build', '.svn', '*.py', '__pycache__', 'setup.py*', '*.bat'))
 shutil.copy(os.path.join(helpers_path, 'README.txt'), linux_path)
 

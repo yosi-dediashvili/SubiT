@@ -61,3 +61,20 @@ class GWListWidget(QtGui.QListWidget):
     @QtCore.Slot(str)
     def sendAddItem(self, item):
         self.addItem(item)
+
+class GWTextEdit(QtGui.QTextEdit):
+    def __init__(self, parent):
+        super(GWTextEdit, self).__init__(parent)
+        self.doAddLogItem = Communicator()
+        self.doAddLogItem.str_signal.connect(self.sendAddLogItem)
+
+    @QtCore.Slot(str)
+    def sendAddLogItem(self, item):
+        self.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
+        self.insertHtml(item)
+        self.ensureCursorVisible()
+
+    def insertHtmlSlot(self, item):
+        self.doAddLogItem.str_signal.emit(item)
+
+    

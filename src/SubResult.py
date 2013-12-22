@@ -65,12 +65,14 @@ class SubMovie:
     MovieName = ''
     MovieCode = ''
     VerSum = ''
+    Extra = {}
     _versions = None
     
-    def __init__( self, moviecode, moviename, versum ):
+    def __init__( self, moviecode, moviename, versum, extra = {} ):
         self.MovieName  = moviename.encode(errors='replace') if type(moviename) is unicode else moviename
         self.MovieCode  = moviecode
         self.VerSum     = versum.encode(errors='replace') if type(versum) is unicode else versum
+        self.Extra = extra
         
     def Versions(self):
         if self._versions == None:
@@ -101,11 +103,13 @@ class SubVersion:
     VerSum  = ''
     VerCode = ''
     MovieCode = ''
+    Extra = {}
     
-    def __init__(self, vercode, versum, moviecode):
+    def __init__(self, vercode, versum, moviecode, extra={}):
         self.VerCode    = vercode
         self.VerSum     = versum.encode(errors='replace') if type(versum) is unicode else versum
         self.MovieCode  = moviecode
+        self.Extra      = extra
         
     def Download(self, path, filename):
         Utils.writelog( INFO_LOGS.SENDING_SUBTITLE_FILE_REQUEST_FOR_SUBTITLE % 

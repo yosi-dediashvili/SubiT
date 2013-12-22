@@ -9,6 +9,7 @@ import SubiT
 import Logs
 from GuiWidgets import GWTextInput
 from GuiWidgets import GWListWidget
+from GuiWidgets import GWTextEdit
 from Settings.AboutBoxDialog import AboutBoxDialog
 from Settings.SettingsBoxDialog import SettingsBoxDialog
 
@@ -51,15 +52,15 @@ class gui(QtGui.QMainWindow):
         self.logGroupBox.setGeometry(QtCore.QRect(10, 0, 691, 131))
         self.logGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", " Log ", None, QtGui.QApplication.UnicodeUTF8))
         self.logGroupBox.setObjectName(_fromUtf8("logGroupBox"))
-        self.logTextBrowser = QtGui.QTextEdit(self.logGroupBox)
+        #self.logTextBrowser = GWTextEdit(self.logGroupBox)
+        self.logTextBrowser = QtGui.QListWidget(self.logGroupBox)
         self.logTextBrowser.setGeometry(QtCore.QRect(5, 20, 681, 101))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.logTextBrowser.sizePolicy().hasHeightForWidth())
         self.logTextBrowser.setSizePolicy(sizePolicy)
-        self.logTextBrowser.setLineWrapMode(QtGui.QTextEdit.LineWrapMode.NoWrap)
-        self.logTextBrowser.setReadOnly(True)
+        self.logTextBrowser.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
         self.logTextBrowser.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.logTextBrowser.setObjectName(_fromUtf8("logTextBrowser"))
 
@@ -67,7 +68,6 @@ class gui(QtGui.QMainWindow):
         self.moviesGroupBox.setGeometry(QtCore.QRect(10, 130, 341, 201))
         self.moviesGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", " Movies ", None, QtGui.QApplication.UnicodeUTF8))
         self.moviesGroupBox.setObjectName(_fromUtf8("moviesGroupBox"))
-        #self.moviesListWidget = QtGui.QListWidget(self.moviesGroupBox)
         self.moviesListWidget = GWListWidget(self.moviesGroupBox)
         self.moviesListWidget.setGeometry(QtCore.QRect(5, 20, 331, 101))
         self.moviesListWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
@@ -110,7 +110,6 @@ class gui(QtGui.QMainWindow):
         self.versionsGroupBox.setGeometry(QtCore.QRect(360, 130, 341, 251))
         self.versionsGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", " Versions ", None, QtGui.QApplication.UnicodeUTF8))
         self.versionsGroupBox.setObjectName(_fromUtf8("versionsGroupBox"))
-        #self.versionsListWidget = QtGui.QListWidget(self.versionsGroupBox)
         self.versionsListWidget = GWListWidget(self.versionsGroupBox)
         self.versionsListWidget.setGeometry(QtCore.QRect(5, 20, 331, 221))
         self.versionsListWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
@@ -160,25 +159,29 @@ class gui(QtGui.QMainWindow):
         pass
     
     @staticmethod    
-    def load(func):
+    def load():
         app = QtGui.QApplication(sys.argv)
         Utils.GuiInstance = gui()
-        func()
+        #func()
         Utils.GuiInstance.show()
         sys.exit(app.exec_())
 
-    def writelog(self, message):
-        if SubiT.DEBUG:
-            print message
-        self.logTextBrowser
-        delim = Logs.LOGS.DELIMITER
-        (colr_message,real_message) = message.split(delim)
-        color = Logs.LOGS.TYPE_TO_COLOR[colr_message]
+    def writelog(self, message):        
+        delim = Logs.LOGS.DELIMITER #String Splitter
+        (colr_message,real_message) = message.split(delim) #Split...
+        #Use dict in order to get the color
+        color = Logs.LOGS.TYPE_TO_COLOR[colr_message] 
 
-        formatted_message = gui.getUnicode('<font color=\"%s\">%s</font><br>' % (color, real_message))
-                
-        self.logTextBrowser.insertHtml(formatted_message)
-        self.logTextBrowser.ensureCursorVisible()
+        #Html for log message
+        #formatted_message = gui.getUnicode('<font color=\"%s\">%s</font><br>' % (color, real_message)) 
+
+        logItem = QtGui.QListWidgetItem(gui.getUnicode(real_message))
+        logItem.setForeground(QtGui.QBrush(QtGui.QColor(color)))
+        #logItem.setFlags(logItem.flags() | QtCore.Qt.ItemIsEditable)
+
+        self.logTextBrowser.addItem(logItem)
+        self.logTextBrowser.setCurrentItem(logItem)
+        self.logTextBrowser.scrollToItem(logItem, QtGui.QAbstractItemView.ScrollHint.EnsureVisible)        
     
     #===========================================================
     # Sub selection Handling
