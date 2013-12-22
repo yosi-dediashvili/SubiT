@@ -50,46 +50,41 @@ class TorecFlow:
         #We got more then one movie
         else:
             if interactive:
-                #Logic for interactive selection
-                Utils.setmoviechoices( torecSearch.Results(), DIRC_LOGS.CHOOSE_MOVIE_FROM_MOVIES )
-                while not torecVersion:
-                    (type, result) = Utils.getselection('ANY')
-                    if type == 'MOVIE':
-                        torecMovie = result
-                        Utils.setversionchoices(torecMovie.Versions(), DIRC_LOGS.CHOOSE_VERSION_FROM_VERSIONS)
-                    elif type == 'SUB':
-                        torecVersion = result
-                #=================================
+                torecMovie = (Utils.setmoviechoices( torecSearch.Results(), 
+                                                     DIRC_LOGS.CHOOSE_MOVIE_FROM_MOVIES ))
+                return
             #We apply self logic - Rank by Version Summary at the search page [TorecMovie.VerSum]
             else:
                 torecMovie = torecSearch.RankResults()
-
+        
         #=======================================================================
         #===========third stage - Sub Selection Stage - third stage=============
         #=======================================================================                
-        if torecVersion is None:
-            (results, first_is_certain) = torecMovie.RankVersions(filename)        
-            if not first_is_certain:
-                if interactive:
-                    Utils.writelog( INFO_LOGS.NO_EXACT_MATCH_FROM_VERSIONS_RANKING )
-                    #ask user for version
-                    Utils.setversionchoices(torecMovie.Versions(), DIRC_LOGS.CHOOSE_VERSION_FROM_VERSIONS)
-                    torecVersion = Utils.getselection('SUB')[1]
-                else:
-                    Utils.writelog( INFO_LOGS.NO_EXACT_MATCH_FROM_VERSIONS_RANKING_TAKING_FIRST )
-                    #take the first results after ranking
-                    torecVersion = results[0]
+        Utils.writelog(INFO_LOGS.SENDING_QUERY_FOR_SUB_VERSIONS_FOR_MOVIE % 
+                       torecMovie.MovieName + ' -> ' + (torecMovie.VerSum if len(torecMovie.VerSum) < 20 else 
+                                                        torecMovie.VerSum[0:20].ljust(23, '.')) )
+        (results, first_is_certain) = torecMovie.RankVersions(filename)        
+        if not first_is_certain:
+            if interactive:
+                Utils.writelog( INFO_LOGS.NO_EXACT_MATCH_FROM_VERSIONS_RANKING )
+                #ask user for version
+                torecVersion = Utils.setversionchoices(torecMovie.Versions(), 
+                                                       DIRC_LOGS.CHOOSE_VERSION_FROM_VERSIONS)
             else:
-                Utils.writelog( INFO_LOGS.GOT_EXACT_MATCH_FROM_VERSIONS_RANKING )
+                Utils.writelog( INFO_LOGS.NO_EXACT_MATCH_FROM_VERSIONS_RANKING_TAKING_FIRST )
+                #take the first results after ranking
                 torecVersion = results[0]
+        else:
+            Utils.writelog( INFO_LOGS.GOT_EXACT_MATCH_FROM_VERSIONS_RANKING )
+            torecVersion = results[0]
 
         #=======================================================================
         #===========forth stage - Sub Download Stage - forth stage==============
         #=======================================================================            
-
+        Utils.writelog( INFO_LOGS.SENDING_SUBTITLE_FILE_REQUEST_FOR_SUBTITLE % torecVersion.VerSum )
         #there is no way that dir is empty in non-interactive mode, therefore - 
         #    there is no need to check for interactive value.
-        dir = dir if len(dir) else Utils.askuser( DIRC_LOGS.INSERT_LOCATION_FOR_SUBTITLE_DOWNLOAD % os.getcwd(), True, True )
+        dir = dir if len(dir) else Utils.askuser( DIRC_LOGS.INSERT_LOCATION_FOR_SUBTITLE_DOWNLOAD, True )
         torecVersion.Download(dir, filename)
 
         Utils.writelog( INFO_LOGS.FINISHED_DO_FILE_PROCEDURE )
