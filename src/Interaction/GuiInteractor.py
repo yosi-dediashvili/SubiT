@@ -1,4 +1,5 @@
 from PySide import QtCore, QtGui
+
 import sys
 import os
 
@@ -8,14 +9,18 @@ from Interaction import SubiTMainGui
 from Interaction import SubiTAboutGui
 from Interaction import SubiTSettingsGui
 from Interaction import SubiTUpdateGui
+from Interaction import SubiTLanguageGui
 
 
 from Logs import MessageColor
 from Logs import MessageString
 from Logs import MessageType
 from Logs import DIRECTION, INFO, FINISH
+from Logs import GUI_SPECIAL as GUI_SPECIAL_LOGS
 
 import Utils
+from PySide.QtGui import QApplication
+
 WriteDebug = Utils.WriteDebug
     
 class UPDATE_STATUS:
@@ -37,7 +42,7 @@ class DIRECTION_IMAGES:
     FINISHED_LOG    = ':/MainWindow/icon-main-finished.png'
 
 class Signals(QtCore.QObject):
-    """ We use the signals to pass the messages between the workder thread and
+    """ We use the signals to pass the messages between the worker thread and
         the main (GUI) thread. Otherwise, we will get cross-thread warning and
         might crash also.
     """
@@ -47,6 +52,7 @@ class Signals(QtCore.QObject):
     _searchSignal       = QtCore.Signal()
     _directorySignal    = QtCore.Signal(str)
     _updateSignal       = QtCore.Signal(str, str, str)
+    _languageSignal     = QtCore.Signal()
 
 class ChoiceTypes:
     """ Enum for possible user selection of SubStages. We need to use such an
@@ -86,13 +92,18 @@ class GuiInteractor(IInteractor.IInteractor):
         self.messages_signals._directorySignal.connect\
             (self._getDestinationDirectoryInput)
         self.messages_signals._updateSignal.connect(self._notifyNewVersion)
+        self.messages_signals._languageSignal.connect(self._showLanguageSelection)
 
         # Start new instance of the gui
         self.app = QtGui.QApplication(sys.argv)
         self.mainWindow = QtGui.QMainWindow()
+
+        self.mainWindow.closeEvent = self.onClose
+
         self.subitMainWindow = SubiTMainGui.Ui_SubiTMainWindow()
         # Build the Gui
         self.subitMainWindow.setupUi(self.mainWindow)
+
         self.finilizeSubiTMainGuiWidgets(self.mainWindow, self.subitMainWindow)
 
     def load(self):
@@ -103,6 +114,28 @@ class GuiInteractor(IInteractor.IInteractor):
 
     def notifyLoaded(self):
         GuiInteractor.IS_LOADED = True
+
+    def onClose(self, close_event):
+        from Settings.Config import SubiTConfig
+
+        if SubiTConfig.Singleton().getBoolean\
+            ('Gui', 'remember_last_window_size', True):
+            current_window_size = \
+                [str(self.mainWindow.width()), str(self.mainWindow.height())]
+            SubiTConfig.Singleton().setList\
+                ('Gui', 'last_window_size', current_window_size)
+
+        if SubiTConfig.Singleton().getBoolean\
+            ('Gui', 'remember_last_window_position', False):
+            current_window_position = \
+                [str(self.mainWindow.x()), str(self.mainWindow.y())]
+            SubiTConfig.Singleton().setList\
+                ('Gui', 'last_window_position', current_window_position)
+
+        SubiTConfig.Singleton().setValue\
+            ('Gui', 'show_log', self.subitMainWindow.logDockWidget.isVisible())
+
+        close_event.accept()
 
     @staticmethod
     def IsLoaded():
@@ -143,8 +176,11 @@ class GuiInteractor(IInteractor.IInteractor):
         # with a info icon. If not, we place the DIRECTION.LOADING_PLEASE_WAIT 
         # value, with a wait icon
         self._set_log_image(type)
-        if MessageType(logMsg) in [DIRECTION._TYPE_, FINISH._TYPE_]:
+        if type in [DIRECTION._TYPE_, FINISH._TYPE_]:
             self.subitMainWindow.directionLogsLabel.setText(real_message)
+        elif type == GUI_SPECIAL_LOGS._TYPE_:
+            self.subitMainWindow.movieNameLineEdit.setText(real_message)
+            return
         else:
             # We are appending dots to the end of the message in order to give
             # a more "working" feeling. We add up to 3 dots to the end
@@ -390,8 +426,10 @@ class GuiInteractor(IInteractor.IInteractor):
         if e.mimeData().hasUrls():
             _dropped_urls = e.mimeData().urls()
             if len(_dropped_urls) == 1:
+                WriteDebug("_dropped_urls[0]: %s" % _dropped_urls[0])
                 # Remove leading dot from extensions
                 _path = _dropped_urls[0].toLocalFile()
+                WriteDebug("_path: %s" % _path)
                 if Utils.IsWindowPlatform():
                     _path = _path.replace('/', '\\')
                 if os.path.splitext(_path)[1].lower() in \
@@ -411,6 +449,7 @@ class GuiInteractor(IInteractor.IInteractor):
         """
         self.subitMainWindow.movieNameLineEdit.setStyleSheet(None)
         file_path = e.mimeData().urls()[0].toLocalFile()
+        WriteDebug("_onMovieFileDropEvent(): %s" % file_path)
         if Utils.IsWindowPlatform():
             file_path = file_path.replace('/', '\\')
 
@@ -500,9 +539,9 @@ class GuiInteractor(IInteractor.IInteractor):
     @QtCore.Slot(object)
     def _onLogToggle(self):
         if self.log_action.isChecked():
-            self.subitMainWindow.logDockWidget.setHidden(False)
+            self.subitMainWindow.logDockWidget.show()
         else:
-            self.subitMainWindow.logDockWidget.setHidden(True)
+            self.subitMainWindow.logDockWidget.hide()
 
     @QtCore.Slot(object)
     def _onToolsToolButtonClicked(self):
@@ -532,6 +571,12 @@ class GuiInteractor(IInteractor.IInteractor):
             .text() or DEFAULT_DIRECTORY_DEFAULT_VAL
         always_use_default_directory = self.subitSettingsDialog\
             .alwaysUseDefaultDirCheckBox.isChecked()
+
+        remember_last_window_size = self.subitSettingsDialog\
+            .rememberLastWindowSizeCheckBox.isChecked()
+        remember_last_window_position = self.subitSettingsDialog\
+            .rememberLastWindowPositionCheckBox.isChecked()
+
         check_updates = self.subitSettingsDialog.checkForUpdatesCheckBox\
             .isChecked()
         auto_update = self.subitSettingsDialog.autoUpdateCheckBox.isChecked()
@@ -560,6 +605,8 @@ class GuiInteractor(IInteractor.IInteractor):
 
         do_properties_based_ranks = self.subitSettingsDialog\
             .rankUsingPropertiesCheckBox.isChecked()
+        do_in_depth_search = \
+            self.subitSettingsDialog.inDepthSearchCheckBox.isChecked()
 
         #============================================
         # Association Tab
@@ -572,6 +619,18 @@ class GuiInteractor(IInteractor.IInteractor):
                 .findItems('.*', QtCore.Qt.MatchFlag.MatchRegExp)
             extensions_keys = list(map(lambda i: i.text(), extensions_items))
 
+
+            from Interaction import InteractionTypes
+            from Utils import myfilter
+            interaction_desc = self.subitSettingsDialog\
+                .interactionTypeSelectionComboBox.currentText()
+            # Take the interaction_type of the selected item in the combobox
+            interaction_type = myfilter\
+                (lambda i: i[1] == interaction_desc, 
+                 InteractionTypes.InteractionTypeDescriptions.items(), 
+                 lambda i: i[0], 
+                 True)
+
         
         # Now we finally save the settings
         SubiTConfig.Singleton().setValue\
@@ -580,23 +639,34 @@ class GuiInteractor(IInteractor.IInteractor):
             ('Global', 'default_directory', default_directory)
         SubiTConfig.Singleton().setValue\
             ('Global', 'always_use_default_directory', always_use_default_directory)
+
         SubiTConfig.Singleton().setValue\
-            ('Global', 'check_updates', check_updates)
+            ('Gui', 'remember_last_window_size', remember_last_window_size)
         SubiTConfig.Singleton().setValue\
-            ('Global', 'auto_update', auto_update)
+            ('Gui', 'remember_last_window_position', remember_last_window_position)
+
+        SubiTConfig.Singleton().setValue\
+            ('Updates', 'check_updates', check_updates)
+        SubiTConfig.Singleton().setValue\
+            ('Updates', 'auto_update', auto_update)
 
         SubiTConfig.Singleton().setList\
             ('Providers', 'languages_order', languages_order)
         SubiTConfig.Singleton().setList\
             ('Providers', 'providers_order', providers_order)
         SubiTConfig.Singleton().setValue\
-            ('Providers', 'do_properties_based_rank', do_properties_based_ranks)
+            ('Flow', 'do_properties_based_rank', do_properties_based_ranks)
+        SubiTConfig.Singleton().setValue\
+            ('Flow', 'in_depth_search', do_in_depth_search)
 
         if getAssociator():
             SubiTConfig.Singleton().setValue\
                 ('Association', 'associate_extensions', associate_extensions)
             SubiTConfig.Singleton().setList\
                 ('Association', 'extensions_keys', extensions_keys)
+            SubiTConfig.Singleton().setValue\
+                ('Association', 'interaction_type', interaction_type)
+
             if associate_extensions:
                 getAssociator().SetAssociation()
             else:
@@ -627,7 +697,7 @@ class GuiInteractor(IInteractor.IInteractor):
         current_index   = listWidget.currentRow()
         current_item    = listWidget.currentItem()
         if current_index < listWidget.count() - 1:
-            #Delete the item from the previous position
+            # Delete the item from the previous position
             listWidget.takeItem(current_index)
             new_index = current_index + 1
             listWidget.insertItem(new_index, current_item)
@@ -637,7 +707,7 @@ class GuiInteractor(IInteractor.IInteractor):
         current_index   = listWidget.currentRow()
         current_item    = listWidget.currentItem()
         if current_index > 0:
-            #Delete the item from the previous position
+            # Delete the item from the previous position
             listWidget.takeItem(current_index)
             new_index = current_index - 1
             listWidget.insertItem(new_index, current_item)
@@ -659,9 +729,84 @@ class GuiInteractor(IInteractor.IInteractor):
         self.finilizeSubiTAboutGuiWidgets()
         self.aboutDialog.open()
 
+    @QtCore.Slot(object)
+    def _showLanguageSelection(self):
+        self.languageDialog =\
+        QtGui.QDialog(self.mainWindow, QtCore.Qt.WindowSystemMenuHint)
+        self.subitLanguageDialog = SubiTLanguageGui.Ui_Dialog()
+        self.subitLanguageDialog.setupUi(self.languageDialog)
+        self.finilizeSubiTLanguageSelectionGuiWidgets()
+        self.languageDialog.open()
+
+    def showLanguageSelection(self):
+        self.messages_signals._languageSignal.emit()
+
+    def _onLanguageSelectionOkClicked(self):
+        from Settings.Config import SubiTConfig
+
+        languages_items = self.subitLanguageDialog.languageOrderListWidget\
+            .findItems('.*', QtCore.Qt.MatchFlag.MatchRegExp)
+        # We take only the checked once, and return their text() value
+        languages_order = Utils.myfilter\
+            (lambda i: i.checkState() == QtCore.Qt.CheckState.Checked,
+             languages_items,
+             lambda i: i.text())
+
+        SubiTConfig.Singleton().setList\
+            ('Providers', 'languages_order', languages_order)
+
+        Utils.restart()
+
     # ======================================================================== #                  
     # Windows widget finilizing
     # ======================================================================== #
+    def finilizeSubiTLanguageSelectionGuiWidgets(self):
+        from SubProviders import getAvaliableLanguages
+        from Settings.Config import SubiTConfig
+
+        languages_order = SubiTConfig.Singleton().getList\
+            ('Providers', 'languages_order')
+        all_languages = getAvaliableLanguages()
+        not_selected_languages = filter\
+            (lambda l: l not in languages_order, all_languages)
+
+        def _add_languages(languages, check_state):
+            for language in languages:
+                lang_item = QtGui.QListWidgetItem(language)
+                lang_item.setCheckState(check_state)
+                self.subitLanguageDialog.languageOrderListWidget.addItem\
+                    (lang_item)
+
+        _add_languages(languages_order, QtCore.Qt.CheckState.Checked)
+        _add_languages(not_selected_languages, QtCore.Qt.CheckState.Unchecked)
+
+        def _on_item_clicked(item):
+            languages_items = \
+                self.subitLanguageDialog.languageOrderListWidget.findItems\
+                    ('.*', QtCore.Qt.MatchFlag.MatchRegExp)
+            languages_checked = Utils.myfilter\
+                (lambda i: i.checkState() == QtCore.Qt.CheckState.Checked,
+                 languages_items)
+            self.subitLanguageDialog.okPushButton.setEnabled\
+                (len(languages_checked) > 0)
+
+        self.subitLanguageDialog.languageOrderListWidget.itemClicked.connect\
+            (_on_item_clicked)
+
+        # Connect the click event on up and down buttons
+        self.subitLanguageDialog.languageDownToolButton.clicked.connect\
+            (lambda: (self._onDownToolButtonClicked
+                          (self.subitLanguageDialog.languageOrderListWidget)))
+        self.subitLanguageDialog.languageUpToolButton.clicked.connect\
+            (lambda: (self._onUpToolButtonClicked
+                          (self.subitLanguageDialog.languageOrderListWidget)))
+        self.subitLanguageDialog.okPushButton.clicked.connect\
+            (self._onLanguageSelectionOkClicked)
+
+        from Utils import exit
+        self.subitLanguageDialog.cancelPushButton.clicked.connect(exit)
+
+
     def finilizeSubiTAboutGuiWidgets(self):
         from Settings.Config import SubiTConfig
         version = SubiTConfig.Singleton().getStr\
@@ -682,19 +827,31 @@ class GuiInteractor(IInteractor.IInteractor):
             ('Global', 'close_on_finish', False)
         default_directory = SubiTConfig.Singleton().getStr\
             ('Global', 'default_directory', Utils.GetProgramDir())
-        alway_use_default_directory = SubiTConfig.Singleton().getBoolean\
+        always_use_default_directory = SubiTConfig.Singleton().getBoolean\
             ('Global', 'always_use_default_directory', False)
+
+        remember_last_window_size = SubiTConfig.Singleton().getBoolean\
+            ('Gui', 'remember_last_window_size', True)
+        remember_last_window_position = SubiTConfig.Singleton().getBoolean\
+            ('Gui', 'remember_last_window_position', False)
+
         check_updates = SubiTConfig.Singleton().getBoolean\
-            ('Global', 'check_updates', True)
+            ('Updates', 'check_updates', True)
         auto_update = SubiTConfig.Singleton().getBoolean\
-            ('Global', 'auto_update', False)
+            ('Updates', 'auto_update', False)
 
         self.subitSettingsDialog.closeOnFinishCheckBox\
             .setChecked(close_on_finish)
         self.subitSettingsDialog.defaultDirectoryLineEdit\
             .setText(default_directory)
         self.subitSettingsDialog.alwaysUseDefaultDirCheckBox\
-            .setChecked(alway_use_default_directory)
+            .setChecked(always_use_default_directory)
+
+        self.subitSettingsDialog.rememberLastWindowSizeCheckBox.setChecked\
+            (remember_last_window_size)
+        self.subitSettingsDialog.rememberLastWindowPositionCheckBox.setChecked\
+            (remember_last_window_position)
+
         self.subitSettingsDialog.checkForUpdatesCheckBox\
             .setChecked(check_updates)
         self.subitSettingsDialog.autoUpdateCheckBox\
@@ -769,10 +926,33 @@ class GuiInteractor(IInteractor.IInteractor):
             (lambda: (self._onDownToolButtonClicked
                       (self.subitSettingsDialog.advancedProvidersListWidget)))
 
+
+        def _select_all_providers(select):
+            # If the checkbox is checked, we want to disable the widget because
+            # we are going to select all the providers.
+            self.subitSettingsDialog.advancedProvidersListWidget.setEnabled(not select)
+            self.subitSettingsDialog.providerUpTooButton.setEnabled(not select)
+            self.subitSettingsDialog.providerDownToolButton.setEnabled(not select)
+
+            if select:
+                providers_items = self.subitSettingsDialog.\
+                    advancedProvidersListWidget.findItems\
+                    ('.*', QtCore.Qt.MatchFlag.MatchRegExp)
+                for item in providers_items:
+                    # Check
+                    item.setCheckState(QtCore.Qt.CheckState.Checked)
+
+
+        self.subitSettingsDialog.useAllProvidersCheckBox.toggled.connect(_select_all_providers)
+
         do_properties_based_ranks = SubiTConfig.Singleton().getBoolean\
-            ('Providers', 'do_properties_based_rank', False)
+            ('Flow', 'do_properties_based_rank', True)
         self.subitSettingsDialog.rankUsingPropertiesCheckBox.setChecked\
             (do_properties_based_ranks)
+        do_in_depth_search = SubiTConfig.Singleton().getBoolean\
+            ('Flow', 'in_depth_search', False)
+        self.subitSettingsDialog.inDepthSearchCheckBox.setChecked\
+            (do_in_depth_search)
 
         #============================================
         # Association Tab
@@ -793,6 +973,19 @@ class GuiInteractor(IInteractor.IInteractor):
                 (self._onExtensionsDeleteToolButtonClicked)
             self.subitSettingsDialog.extensionsAddToolButton.clicked.connect\
                 (self._onExtensionsAddToolButtonClicked)
+
+            from Interaction import getDefaultInteractorByConfig
+            from Interaction import InteractionTypes
+            
+            interaction_type = getDefaultInteractorByConfig()
+            self.subitSettingsDialog.interactionTypeSelectionComboBox.addItem\
+                (InteractionTypes.InteractionTypeDescriptions[interaction_type])
+
+            for type in InteractionTypes.InteractionTypeDescriptions.iteritems():
+                if type[0] != interaction_type:
+                    self.subitSettingsDialog\
+                        .interactionTypeSelectionComboBox.addItem(type[1])
+
         else:
             # We disable the whole tab
             self.subitSettingsDialog.fileExtensionsGroupBpx.setEnabled(False)
@@ -814,7 +1007,21 @@ class GuiInteractor(IInteractor.IInteractor):
         self.subitMainWindow.movieNameLineEdit.textChanged.connect\
             (lambda text: (self.subitMainWindow.movieNameGoToolButton
                            .setEnabled(bool(text))))
-        
+
+        # Enter shortcut for movie name entering
+        enter_shortcut = \
+            QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Enter),
+                            self.subitMainWindow.movieNameLineEdit)
+        return_shortcut = \
+            QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Return),
+                            self.subitMainWindow.movieNameLineEdit)
+
+        enter_shortcut.activated.connect\
+            (self.subitMainWindow.movieNameGoToolButton.click)
+        return_shortcut.activated.connect\
+            (self.subitMainWindow.movieNameGoToolButton.click)
+
+
         # Item selection scope
         self.subitMainWindow.moviesListWidget.itemDoubleClicked.connect\
             (lambda e: self._notifyChoice(ChoiceTypes.MOVIE))
@@ -857,13 +1064,42 @@ class GuiInteractor(IInteractor.IInteractor):
 
         self.subitMainWindow.toolsToolButton.clicked.connect\
             (self._onToolsToolButtonClicked)
-        
-        # We position ourself to the same point of the curesor
-        _cursor_pos = QtGui.QCursor().pos()
-        mainWindow.setGeometry(_cursor_pos.x(), _cursor_pos.y(), 
-                               mainWindow.width(), mainWindow.height())
-        # Hide the log
-        self._onLogToggle()
-        self.mainWindow.resize(580, 250)
+
+        from Settings.Config import SubiTConfig
+
+        # We first re-show the log, and then, if needed, making it hidden. We do
+        # it that way in order to correctly set the check state of the log
+        # button.
+        self.log_action.trigger()
+        if not SubiTConfig.Singleton().getBoolean('Gui', 'show_log', False):
+            self.log_action.trigger()
+
+        if SubiTConfig.Singleton().getBoolean\
+            ('Gui', 'remember_last_window_size', True):
+            current_window_size = SubiTConfig.Singleton().getList\
+                ('Gui', 'last_window_size', [580, 250])
+            current_window_size =\
+                map(lambda i: int(i), current_window_size)
+            self.mainWindow.resize(*current_window_size)
+        else:
+            self.mainWindow.resize(580, 250)
+
+        if SubiTConfig.Singleton().getBoolean\
+            ('Gui', 'remember_last_window_position', False):
+            current_window_position = SubiTConfig.Singleton().getList\
+                ('Gui', 'last_window_position', [0, 0])
+            current_window_position = \
+                map(lambda i: int(i), current_window_position)
+            self.mainWindow.move(*current_window_position)
+        else:
+            cursor_pos = QtGui.QCursor().pos()
+            # We figure out the correct screen by the point of the mouse
+            cursor_screen_center = \
+                self.app.desktop().screenGeometry(cursor_pos).center()
+            # Put the center of the program at the center of the screen
+            self.mainWindow.move\
+                (cursor_screen_center - self.mainWindow.rect().center())
+
+
     # ======================================================================== #
     # ======================================================================== #

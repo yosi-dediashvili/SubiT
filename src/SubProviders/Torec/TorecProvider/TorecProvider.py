@@ -42,8 +42,7 @@ class TOREC_REGEX:
 class TorecProvider(ISubProvider):
     PROVIDER_NAME = 'Hebrew - www.torec.net'
     PROVIDER_PNG = 'icon-subprovider-torec.png'
-    def __init__(self):
-        Hamster()
+
 #===========================================================================
 # Function to build well-formatted get request for subtitle
 #===========================================================================
@@ -118,14 +117,19 @@ class TorecProvider(ISubProvider):
         sleep_time  = 8
         sub_url     = ''    
 
-        #In case we fail at the first time, the request is inside a loop
-        #(keep in mind - possible endless loop, but who cares :})
+        hamster = Hamster(sub_id)
+
+        # In case we fail at the first time, the request is inside a loop
+        # (keep in mind - possible endless loop, but who cares :})
         while sub_url == '':
-            (sleep_time, guest_code) = Hamster.getCode()
+            (sleep_time, guest_code) = hamster.getCode()
             sub_req = TorecProvider.buildsubrequest( sub_id, guest_code , sleep_time, sub_code )
             sub_url = Utils.PerformRequest(TOREC_PAGES.DOMAIN, 
                                            TOREC_PAGES.DOWNLOAD, 
                                            sub_req, 
                                            HttpRequestTypes.POST, 
                                            '')
+
+        hamster.stop()
+
         return (TOREC_PAGES.DOMAIN, sub_url, TOREC_PAGES.DOMAIN)

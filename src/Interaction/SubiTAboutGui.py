@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\dev\SubiT\resources\gui\SubiTAboutUi_2.0.0.ui'
+# Form implementation generated from reading ui file 'D:/dev/SubiT/2.1.0/resources/gui\SubiTAboutUi.ui'
 #
-# Created: Wed Jul 25 22:54:19 2012
-#      by: pyside-uic 0.2.14 running on PySide 1.1.1
+# Created: Sun Oct 07 14:39:55 2012
+#      by: pyside-uic 0.2.14 running on PySide 1.1.2
 #
 # WARNING! All changes made in this file will be lost!
 

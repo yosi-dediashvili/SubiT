@@ -16,8 +16,7 @@
     <InterpreterId>2af0f10d-7135-4994-9156-5d01c9c11b7e</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>
-    </CommandLineArguments>
+    <CommandLineArguments>-m BY-CONFIG</CommandLineArguments>
     <InterpreterPath />
     <InterpreterArguments />
   </PropertyGroup>
@@ -47,6 +46,8 @@
     <Folder Include="resources\gui\" />
     <Folder Include="src\" />
     <Folder Include="src\Interaction" />
+    <Folder Include="src\Settings\Associators\WinAssociator\" />
+    <Folder Include="src\SubInputs\" />
     <Folder Include="src\SubStages" />
     <Folder Include="src\SubChoosers" />
     <Folder Include="src\Settings\Associators\" />
@@ -82,8 +83,10 @@
     <Compile Include="src\Interaction\ImagesResources.py" />
     <Compile Include="src\Interaction\SubiTUpdateGui.py" />
     <Compile Include="src\Settings\Associators\IAssociator.py" />
-    <Compile Include="src\Settings\Associators\WinAssociatorHelper.py" />
-    <Compile Include="src\Settings\Associators\WinAssociator.py" />
+    <Compile Include="src\Settings\Associators\WinAssociator\WinAssociator.py" />
+    <Compile Include="src\Settings\Associators\WinAssociator\WinAssociatorExtension.py" />
+    <Compile Include="src\Settings\Associators\WinAssociator\WinAssociatorHelper.py" />
+    <Compile Include="src\Settings\Associators\WinAssociator\__init__.py" />
     <Compile Include="src\Settings\Associators\__init__.py" />
     <Compile Include="src\Settings\Updaters\IUpdater.py" />
     <Compile Include="src\Settings\Updaters\LinuxUpdater.py" />
@@ -99,6 +102,11 @@
     <Compile Include="src\SubChoosers\CertainSubStagesChooser.py" />
     <Compile Include="src\SubChoosers\UncertainSubStagesChooser.py" />
     <Compile Include="src\SubChoosers\__init__.py" />
+    <Compile Include="src\SubInputs\SingleInput.py" />
+    <Compile Include="src\SubInputs\SingleInputsQueue.py" />
+    <Compile Include="src\SubInputs\SubInputsUtils.py" />
+    <Compile Include="src\SubInputs\__init__.py" />
+    <Compile Include="src\SubiTArgumentParser.py" />
     <Compile Include="src\SubiTProxy.py" />
     <Compile Include="src\SubProviders\Addic7ed\eng_Addic7edProvider\Addic7edProvider.py" />
     <Compile Include="src\SubProviders\Addic7ed\eng_Addic7edProvider\__init__.py" />

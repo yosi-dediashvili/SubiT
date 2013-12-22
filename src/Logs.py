@@ -32,6 +32,8 @@ class INFO:
     STARTING                                            = BuildLog(_TYPE_, 'Starting. . .')
     SELECTED_SUB_PROVIDER_IS                            = BuildLog(_TYPE_, 'Using: %s as subtitle provider')
     SETTING_PROVIDER                                    = BuildLog(_TYPE_, 'Setting Provider: %s')
+    STARTING_PROCESSING_OF_SINGLE_INPUT                 = BuildLog(_TYPE_, 'Starting search for a SingleInput: %s')
+    CURRENT_QUERY_BEING_PROCESSED_IS                    = BuildLog(_TYPE_, 'The current query that is being processed is: %s')
     STARTING_DO_FILE_PROCEDURE                          = BuildLog(_TYPE_, 'Searching subtitle for the movie: %s')
     STARTING_DO_DIR_PROCEDURE                           = BuildLog(_TYPE_, 'Searching subtitles for directory: %s')
     STARTING_SEARCH_FOR                                 = BuildLog(_TYPE_, 'Searching for: %s')
@@ -81,14 +83,20 @@ class FINISH:
     _TYPE_ = 'FINISH'
 
     #Finish
+    FINISHED_PROCESSING_SINGLE_INPUT                    = BuildLog(_TYPE_, 'Finished processing a SingleInput: %s')
     FINISHED_DO_FILE_PROCEDURE                          = BuildLog(_TYPE_, 'Finished working on a movie file.')
     FINISHED_DO_DIR_PROCEDURE                           = BuildLog(_TYPE_, 'Finished working on directory.')
     FINISHED                                            = BuildLog(_TYPE_, 'Finished.')
     APPLICATION_WILL_NOW_EXIT                           = BuildLog(_TYPE_, 'Finished, application will now exit.')
 
+class GUI_SPECIAL:
+    _TYPE_ = 'GUI_SPECIAL'
+    SEARCH_LINE_UPDATE = BuildLog(_TYPE_, '%s')
 
 class OTHER:
     _TYPE_ = 'OTHER'
+
+
 # ============================================================================ #
 
 TYPE_TO_COLOR = {WARN._TYPE_        :'Red', 

@@ -1,23 +1,23 @@
 """ 
 SubiTProxy serves us for performing operation before starting the real program
-with the GUI and all the stuff. Currently, we use it for association and updates.
+with the GUI and all the stuff. Currently, we use it for association and 
+updates.
 
-The order of execution is as it apears in main(). Keep in mind, that the last
-function call should be for handle_regular() which will initiate the real program.
+The order of execution is as it appears in main(). Keep in mind, that the last
+function call should be for handle_rest() which will initiate the real 
+program.
 
-Each handler should wether or not he should perform his job when he gets called.
-We're not handling it in the main().
+Each handler, whether he should or should not perform his job when he gets
+called, should be called directly, without any check in the main function. 
+We are not performing any check in the main().
 """
-import sys
-import traceback
 
-def handle_regular():
-    from Utils import ShouldLaunchInConsoleMode, LaunchInConsole
-    if not ShouldLaunchInConsoleMode():
-        import SubiT
-        SubiT.start()
-    else:
-        LaunchInConsole()
+import sys
+from traceback import print_exc as print_trace_exc
+
+def handle_rest():
+    import SubiTArgumentParser
+    SubiTArgumentParser.Parse()
 
 def handle_update():
     from Settings.Updaters import getUpdater
@@ -28,31 +28,17 @@ def handle_update():
         if update_is_waiting:
             updater.ApplyUpdate(update_path)
 
-def handle_association():
-    from Settings.Associators import getAssociator
-    associator = getAssociator()
-    if len(sys.argv) > 1 and associator:
-        association_params = \
-            {associator.ASSOCIATE_COMMAND   : lambda: associator.SetAssociation(),
-             associator.UNASSOCIATE_COMMAND : lambda: associator.RemoveAssociation()}
-        #If parameter is for association, and we have an associator
-        if sys.argv[1] in association_params and associator:
-            #execute relevant lambda
-            association_params[sys.argv[1]]()
-            sys.exit(0)
-
 def main():    
-    handle_association()
     handle_update()
-    handle_regular()
+    handle_rest()
 
 
 if __name__ == '__main__':
-    from Utils import GetProgramDir, CurrentTimePrintable
-    import os
-    log_path = os.path.join(GetProgramDir(), 'Settings', 'crash.log')
+    from Utils import GetProgramDir
+    from os import path as os_path
+    log_path = os_path.join(GetProgramDir(), 'Settings', 'crash.log')
     try:
         main()
     except Exception as eX:
-        traceback.print_exc(file=open(log_path, 'w'))
+        print_trace_exc(file=open(log_path, 'w'))
         raise

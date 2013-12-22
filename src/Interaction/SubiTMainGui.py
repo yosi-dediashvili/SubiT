@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\dev\SubiT\resources\gui\SubiTMainUi_2.0.0.ui'
+# Form implementation generated from reading ui file 'D:/dev/SubiT/2.1.0/resources/gui\SubiTMainUi.ui'
 #
-# Created: Wed Jul 25 22:54:19 2012
-#      by: pyside-uic 0.2.14 running on PySide 1.1.1
+# Created: Sun Oct 07 14:39:55 2012
+#      by: pyside-uic 0.2.14 running on PySide 1.1.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -349,7 +349,6 @@ class Ui_SubiTMainWindow(object):
         SubiTMainWindow.setWindowTitle(QtGui.QApplication.translate("SubiTMainWindow", "SubiT", None, QtGui.QApplication.UnicodeUTF8))
         self.movieNameLabel.setText(QtGui.QApplication.translate("SubiTMainWindow", "Movie name:", None, QtGui.QApplication.UnicodeUTF8))
         self.movieNameLineEdit.setPlaceholderText(QtGui.QApplication.translate("SubiTMainWindow", "Drag or Enter movie", None, QtGui.QApplication.UnicodeUTF8))
-        self.movieNameGoToolButton.setShortcut(QtGui.QApplication.translate("SubiTMainWindow", "Return", None, QtGui.QApplication.UnicodeUTF8))
         self.movieNameBrowseToolButton.setText(QtGui.QApplication.translate("SubiTMainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.moviesGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainWindow", "Movies", None, QtGui.QApplication.UnicodeUTF8))
         self.versionsGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainWindow", "Versions", None, QtGui.QApplication.UnicodeUTF8))

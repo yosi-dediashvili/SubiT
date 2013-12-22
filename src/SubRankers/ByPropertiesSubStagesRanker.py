@@ -7,8 +7,9 @@ from Utils import FormatMovieName
 
 class ByPropertiesSubStagesRanker(ISubStagesRanker):
     """ SubStageRanker that ranks the results by using the video and audio
-        properties. The ranker is written after a request from some users. 
+        properties. The ranker was written after a request from some users. 
     """
+
     # We store the properties in lower case, and that's how we'll check matches
     VideoProperties = ['480p', '720p', '1080p', '1080i', 'dvdrip', 'ts', 
                        'bluray', 'blu-ray', 'x264', 'hddvd', 'brrip', 

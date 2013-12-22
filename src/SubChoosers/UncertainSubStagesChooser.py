@@ -37,9 +37,9 @@ class UncertainSubStagesChooser(ISubStagesChooser):
         """ Choose the first VersionSubStage after ranking the values in the 
             version_sub_stages using the ByPropertiesSubStagesRanker.
 
-            The function will return VersionSubStage regardless of the value in 
-            first_is_certain. The only case for returning None is if the value
-            in version_sub_stages is empty.
+            The function will return VersionSubStage only if the value in 
+            first_is_certain is True. In any other case, the function returns
+            None.
         """
         version_sub_stage = None
         if version_sub_stages:

@@ -35,18 +35,27 @@ def LaunchInConsole():
     """ Will launch the console mode of SubiT under windows platform, will do
         nothing if we're not under windows, and if the cli exe is missing
     """
+    WriteDebug('LaunchInConsole() called')
+
     if not IsWindowPlatform():
         WriteDebug('Not in windows, skipping start in console mode')
+        return
 
     console_exe_path = os.path.join(GetProgramDir(), 'SubiT-cli.exe')
+    
     if not os.path.exists(console_exe_path):
         WriteDebug('SubiT-cli.exe is missing from: %s' % console_exe_path)
         return
+    
+    WriteDebug('Launching in console. See you soon')
 
     if len(sys.argv) > 1:
-        os.execl(console_exe_path, console_exe_path, '"%s"' % sys.argv[1])
+        argument = ' '.join(x if x.startswith('-') else '"%s"' % x 
+                            for x in sys.argv[1:])
+        WriteDebug('Passing args to the exe: %s' % argument)
+        os.execl(console_exe_path, '"%s"' % console_exe_path, argument)
     else:
-        os.execl(console_exe_path, console_exe_path)
+        os.execl(console_exe_path, '"%s"' % console_exe_path)
 
 def IsInConsoleMode():
     """ Check wether we're running in console mode under windows platform, will
@@ -62,19 +71,24 @@ def IsInConsoleMode():
     return is_in_console
 
 def ShouldLaunchInConsoleMode():
+    """ Checks wether we need to launch the console mode of SubiT. We check if
+        we are not already in Console, and wether we are running in Windows
+        (return True) or not (return False).
+    """
     if IsInConsoleMode():
         WriteDebug('We are already in console mode')
         return False
-
-    from Interaction import InteractionTypes, getDefaultInteractorByConfig
-    _interaction_type = getDefaultInteractorByConfig()
-    if _interaction_type in \
-        [InteractionTypes.Console, InteractionTypes.ConsoleSilent]:
-        WriteDebug('We are under console interactor, returning True')
+    if IsWindowPlatform():
+        WriteDebug('We are in windows, so we should launch console')
         return True
     else:
-        WriteDebug('We are not under console interactor, returning False')
+        WriteDebug('We are in windows, so we should not launch console')
         return False
+
+
+def SplitToFileAndDirectory(path):
+    """ Will split the given path into a tuple of (Directory, FileName). """
+    return os.path.split(path)
 
 # ============================================================================ #
 # Series handling
@@ -147,83 +161,6 @@ def GetSeriesParams(query):
         return tuple(result)
 # ============================================================================ #
 # ============================================================================ #
-
-
-def GetSubtitleSavingExtension(original_file_name = ''):
-    """ Return the extension that we need to add to the subtitle file that we
-        are saving after download. The value is returned from the configuration
-        file under Global.subtitles_saving_extension. On failure, the function
-        will return the default extension [.srt]. If the original_file_name is 
-        specified, the funciton will append the extension to the file name (if 
-        the file name didnt contained the extension already)
-    """
-    from Settings.Config import SubiTConfig
-    WriteDebug('Retriving subtitle extension for file saving')
-    ext = SubiTConfig.Singleton().getStr\
-        ('Global', 'subtitles_saving_extension', '.srt')
-    WriteDebug('The subtitle extensions for files is: %s' % ext)
-
-    if not original_file_name.lower().endswith(ext):
-        original_file_name += ext
-    WriteDebug('original_file_name is now: %s' % original_file_name)
-    
-    return original_file_name
-
-def GetSubtitleDownloadDirectory(dir_by_flow = None, interactive = False):
-    """ Get the full path for the subtitle download directory. the argument
-        dir_by_flow specify the directory in which the movie file exists.
-        The function might return None if dir_by_flow is missing, and the value
-        of Global.always_use_default_directory in the configuration is set to 
-        False.
-    """
-    from Settings import DEFAULT_DIRECTORY_DEFAULT_VAL
-    from Settings.Config import SubiTConfig
-
-    from Logs import WARN as WARN_LOGS
-    from Logs import DIRECTION as DIRC_LOGS
-
-    download_directory = None
-    conf_default_directory = SubiTConfig.Singleton().getStr\
-        ('Global', 'default_directory', DEFAULT_DIRECTORY_DEFAULT_VAL)
-    conf_always_use_default_dir = SubiTConfig.Singleton().getBoolean\
-        ('Global', 'always_use_default_directory', False)
-
-    if conf_default_directory == DEFAULT_DIRECTORY_DEFAULT_VAL:
-        WriteDebug('conf_default_directory is: [%s], giving os.getcwd() [%s]' % (conf_default_directory, os.getcwd()))
-        conf_default_directory = os.getcwd()
-    elif not os.path.exists(conf_default_directory):
-        WriteDebug('conf_default_directory [%s] is missing, giving os.getcwd() [%s]' % (conf_default_directory, os.getcwd()))
-        conf_default_directory = os.getcwd()
-
-    # The result of these 4 lines is simple. If dir_by_flow exists, and the conf
-    # of always_use_default_dir is False, we return the dir_by_flow, if it's True
-    # we return the conf_default_directory. In any other case, we return None
-    if os.path.exists(dir_by_flow):
-        WriteDebug('Setting download_directory to be dir_by_flow [%s]' % dir_by_flow)
-        download_directory = dir_by_flow
-    if conf_always_use_default_dir:
-        WriteDebug('Setting download_directory to be conf_default_directory [%s]' % conf_default_directory)
-        download_directory = conf_default_directory
-
-    if not download_directory and interactive:
-        import Interaction
-        Interactor  = Interaction.getInteractor()
-        writeLog = Interactor.writeLog
-
-        while not download_directory:
-            user_dir_choice = Interactor.getDestinationDirectoryInput\
-                (conf_default_directory, DIRC_LOGS.INSERT_LOCATION_FOR_SUBTITLE_DOWNLOAD)
-            if os.path.exists(user_dir_choice):
-                WriteDebug('User enter legit path, using it: %s' % user_dir_choice)
-                download_directory = user_dir_choice
-            else:
-                WriteDebug('User enter non-legit path [%s], asking again!' % user_dir_choice)
-                writeLog(WARN_LOGS.ERROR_DIRECTORY_DOESNT_EXISTS % user_dir_choice)
-    elif not download_directory:
-        WriteDebug('To avoid problems, setting download_directory to conf_default_directory: %s' % conf_default_directory)
-        download_directory = conf_default_directory
-
-    return download_directory
 
 def GetSubtitlesExtensions(with_dot = True):
     """Return all the extensions associated to subtitle files as it apear in 
@@ -479,19 +416,100 @@ def takefirst(items):
         pass
     return first_item
 
-def FormatMovieName(movie_name, to_list = True, splitters = './ -:'):
+LATIN_TO_DECIMAL = { 'i': 1, 'v': 5, 'x': 10, 'l': 50, 'c': 100,
+                     'd': 500, 'm': 1000 }
+
+LATIN_MAPPING = [('cd', 4 * 'c'),
+                 ('xl', 4 * 'x'),
+                 ('iv', 4 * 'i'),
+                 ('d', 5 * 'c'),
+                 ('l', 5 * 'x'),
+                 ('v', 5 * 'i'),
+                 ('cm', 9 * 'c'),
+                 ('xc', 9 * 'x'),
+                 ('ix', 9 * 'i')]
+
+LATIN_BIG_NUMS = [('m', 1000), ('c', 100), ('x', 10), ('i', 1)]
+
+def IsLatinNumber(number):
+    """ Will check if the number string might be a latin (roman) number. """
+    latin_chars = LATIN_TO_DECIMAL.keys()
+    number = str(number).lower()
+
+    for i in number:
+        if i not in  latin_chars:
+            return False
+    return True
+
+def IsArabicNumber(number):
+    """ Will check if the number string is an integer (arabic one). """
+    try:
+        int(number)
+        return True
+    except:
+        return False
+
+def FromLatinToArabicNumber(latin_number):
+    """ Will convert to the latin (roman) number to it's arabic representation
+        as an integer. On failure, will return None.
+    """
+    WriteDebug('FromLatinToArabicNumber: %s' % latin_number)
+    latin_number = latin_number.lower()
+    if not IsLatinNumber(latin_number):
+        return None
+
+    for (short_ver, long_ver) in LATIN_MAPPING:
+        latin_number = latin_number.replace(short_ver, long_ver)
+
+    latin_number = '+'.join(list(latin_number))
+
+    for (character, word) in LATIN_BIG_NUMS:
+        latin_number = latin_number.replace(character, str(word))
+
+    if latin_number == '':
+        latin_number = '0'
+
+    return eval(latin_number)
+
+def FromArabicToLatinNumber(arabic_number):
+    """ Will convert to the arabic number to it's latin (roman) representation
+        as an str, in lower-case. On failure, will return None.
+    """
+    WriteDebug('FromArabicToLatinNumber: %s' % arabic_number)
+    if not (IsArabicNumber(arabic_number)):
+        return None
+
+    latin_number = ''
+
+    for (character, word) in LATIN_BIG_NUMS:
+        latin_number += (arabic_number / word) * character
+        arabic_number %= word
+
+    for (short_ver, long_ver) in reversed(LATIN_MAPPING):
+        latin_number = latin_number.replace(long_ver,short_ver)
+
+    return latin_number
+
+def FormatMovieName\
+        (movie_name, to_list = True, splitters = './ -:',
+         separator = '|', convert_latin = True):
     """ Will format the movie name to SubiT's standard format, 
         ie: "<movie name> [ver_0] [ver_[1] [ver_n]" 
-        also, if to_list is true, will return the name as a list, splitted 
-        using the splitters given. Otherwise, will return the movie_name after
-        replacing the splitters with space. The string returned are in lower
-        case format.
+
+        If to_list is true, will return the name as a list, using the splitters
+        given. Otherwise, will return the movie_name after replacing the
+        splitters with the separator. If convert_latin is True, the latin
+        numbers appearing in the string will be converted to their arabic
+        representation. For example: 'men in black ii' will be 'men in black 2'
+        and so on.
+
+        The string returned are in lower case format.
     """
-    separator = '|'
 
     # Replace all the splitters in the movie_name with the separator
     result = reduce(lambda name, splitter: name.replace(splitter, separator), 
                     splitters, movie_name.lower()).strip()
+
     # If we get two splitters or more together in the movie_name, we end up 
     # with the a separtor sequence instead of a single one. For example, if the
     # movie_name is "the.matrix: reloaded", the result after the reduce will be
@@ -502,109 +520,50 @@ def FormatMovieName(movie_name, to_list = True, splitters = './ -:'):
     result = re.sub('\%s{2,}' % separator, separator, result)
     result = result.strip(separator)
 
+    result_list = result.split(separator)
+    if convert_latin:
+        def _convert(i):
+            if IsLatinNumber(i):
+                i_tmp = FromLatinToArabicNumber(i)
+                if type(i_tmp) is int:
+                    return str(i_tmp)
+            return i
+        result_list = map(_convert, result_list)
+
+    WriteDebug('result_list is: %s' % result_list)
+
     if to_list:
-        return result.split(separator)
+        return result_list
     else:
-        return result.replace(separator, ' ')
+        return ' '.join(result_list)
         
-HELP_ARGS = ['/?', '?', '--help', 'help']
-
-def printhelp():
-    print ('')
-    print ('SubiT - Automated system for subtitle downloading')
-    print ('Usage: SubiT.exe [Moviename | Filename | Directory]')
-    print ('')
-    print ('Moviename: movie name')
-    print ('Filename:  name of movie file, with extension')
-    print ('Directory: destination directory for storing the subtitle,')
-    print ('           omitting this parameter will keep original subtitle filename')
-    input()
-    sys.exit()
-
-def GetDirFileNameAndFullPath():
-    params = ['','','']
-    
-    def win32_unicode_argv():
-        """
-        Uses shell32.GetCommandLineArgvW to get sys.argv as a list of Unicode
-        strings.
-
-        Versions 2.x of Python don't support Unicode in sys.argv on
-        Windows, with the underlying Windows API instead replacing multi-byte
-        characters with '?'.
-        """
-
-        from ctypes import POINTER, byref, cdll, c_int, windll
-        from ctypes.wintypes import LPCWSTR, LPWSTR
-
-        GetCommandLineW = cdll.kernel32.GetCommandLineW
-        GetCommandLineW.argtypes = []
-        GetCommandLineW.restype = LPCWSTR
-
-        CommandLineToArgvW = windll.shell32.CommandLineToArgvW
-        CommandLineToArgvW.argtypes = [LPCWSTR, POINTER(c_int)]
-        CommandLineToArgvW.restype = POINTER(LPWSTR)
-
-        cmd = GetCommandLineW()
-        argc = c_int(0)
-        argv = CommandLineToArgvW(cmd, byref(argc))
-        WriteDebug('argc: %s' % argc.value)
-        if argc.value > 0:
-            return [argv[i] for i in range(0, argc.value)]
-
-    if IsWindowPlatform():
-        sys.argv = win32_unicode_argv()
-    
-    WriteDebug('Parameters passed: %s' % sys.argv)
-    WriteDebug('Parameters count:  %s' % len(sys.argv))
-
-    if len(sys.argv) > 1:
-        WriteDebug('Got Params!')
-        if sys.argv[1].lower() in HELP_ARGS:
-            WriteDebug('Got help param!')
-            printhelp()
-        elif len(sys.argv) == 2:
-            WriteDebug('Got Two params!')
-            WriteDebug('sys.argv[0]: %s' % sys.argv[0])
-            WriteDebug('sys.argv[1]: %s' % sys.argv[1])
-            if os.path.isfile(sys.argv[1]):
-                WriteDebug('File passed!')
-                params[:2] = list(os.path.split(sys.argv[1]))
-                params[1] = os.path.splitext(params[1])[0] #File name without ext
-                params[2] = sys.argv[1]
-            elif os.path.isdir(sys.argv[1]):
-                WriteDebug('Dir passed!')
-                params[0] = sys.argv[1]
-            else:
-                WriteDebug('Query passed!')
-                params[1] = sys.argv[1]
-    return params
-
 def restart(args = None, override_sys = False):
     """Restart the program with params if args is exists"""
     WriteDebug('argv is: %s' % sys.argv)
     WriteDebug('args is: %s' % args)
-    
+   
     if args and (len(sys.argv) <= 1 or override_sys):
         WriteDebug('Restarting with args: %s' % args)
-        os.execl(sys.executable, sys.executable, '"%s"' % args)
+        os.execl(sys.executable, '"%s"' % sys.executable, '"%s"' % args)
     elif len(sys.argv) > 1:
-        WriteDebug('Restarting with argv: %s' % sys.argv[1])
-        os.execl(sys.executable, sys.executable, '"%s"' % sys.argv[1])
+        argument = ' '.join(x if x.startswith('-') else '"%s"' % x 
+                            for x in sys.argv[1:])
+        WriteDebug('Restarting with argv: %s' % argument)
+        os.execl(sys.executable, '"%s"' % sys.executable, argument)
     else:
         WriteDebug('Restarting without args!')
-        os.execl(sys.executable, sys.executable)
+        os.execl(sys.executable, '"%s"' % sys.executable)
 
 def sleep(secs_to_sleep):
     """Sleep the thread"""
     time.sleep(secs_to_sleep)
 
-def exit(secs_to_sleep = 0):
+def exit(secs_to_sleep = 0, return_value = 0):
     """Exit the program"""
     WriteDebug('Exiting in %s seconds' % secs_to_sleep)
     if secs_to_sleep:
         sleep(secs_to_sleep)
-    os._exit(0)
+    os._exit(return_value)
 
 
 # ============================================================================ #
@@ -626,6 +585,10 @@ def IsVistaOrLater():
         system_major_version = int(platform.version().split('.')[0])
         value =  system_major_version >= vista_or_later_major
     return value
+
+def Is64BitWindows():
+    """ Check if the OS is windows in his 64 bit version. """
+    return IsWindowPlatform() and '64' in platform.machine()
 # ============================================================================ #
 # ============================================================================ #
     
@@ -671,7 +634,9 @@ def WriteDebug( message ):
         try:
             print(message)
         except:
-            print(message.encode('utf-8', 'ignore').decode('ascii', 'ignore'))
+            try:
+                print(message.encode('utf-8', 'ignore').decode('ascii', 'ignore'))
+            except: pass
     else:
         pass
 

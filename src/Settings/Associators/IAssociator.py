@@ -11,12 +11,6 @@ class IAssociator(object):
         but there might be exceptions to that rule. ie: .desktop format under 
         linux requires a file format, and not extension.
     """
-    # The text that will apear in the
-    MENU_TEXT           = 'SubiT'
-    # Params for program
-    ASSOCIATE_COMMAND   = '-associate'
-    UNASSOCIATE_COMMAND = '-unassociate'
-
 
     @classmethod
     def GetRelevantPlatform(cls):

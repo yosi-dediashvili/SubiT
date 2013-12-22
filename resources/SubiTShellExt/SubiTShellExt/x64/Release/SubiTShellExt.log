@@ -1,0 +1,30 @@
+﻿Build started 9/16/2012 2:01:09 AM.
+     1>Project "D:\dev\SubiT\2.1.0\resources\SubiTShellExt\SubiTShellExt\SubiTShellExt.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "x64\Release\SubiTShellExt.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+       ResourceCompile:
+         All outputs are up-to-date.
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.dll" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:"GlobalExportFunctions.def" /MANIFEST /ManifestFile:"x64\Release\SubiT.ShellExt.64.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.lib" /MACHINE:X64 /DLL x64\Release\SubiTShellExt.res
+         x64\Release\ClassFactory.obj
+         x64\Release\dllmain.obj
+         x64\Release\FileContextMenuExt.obj
+            Creating library D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.lib and object D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.exp
+     1>SubiT.ShellExt.64.exp : warning LNK4070: /OUT:SubiT.ShellExt directive in .EXP differs from output filename 'D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.dll'; ignoring directive
+         Generating code
+         Finished generating code
+     1>SubiT.ShellExt.64.exp : warning LNK4070: /OUT:SubiT.ShellExt directive in .EXP differs from output filename 'D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.dll'; ignoring directive
+         SubiTShellExt.vcxproj -> D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\x64\Release\SubiT.ShellExt.64.dll;#2" /manifest x64\Release\SubiT.ShellExt.64.dll.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "x64\Release\SubiTShellExt.unsuccessfulbuild".
+         Touching "x64\Release\SubiTShellExt.lastbuildstate".
+     1>Done Building Project "D:\dev\SubiT\2.1.0\resources\SubiTShellExt\SubiTShellExt\SubiTShellExt.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.12

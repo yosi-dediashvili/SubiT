@@ -115,7 +115,6 @@ def getSubProviderPngByName(provider_name):
 
     return provider_png
 
-
 def getSubProviderByName(provider_name):
     """ Function to get an provider using PROVIDER_NAME value. On failure, 
         returns None.
@@ -134,6 +133,14 @@ def getSubProviderByName(provider_name):
         WriteDebug('Failed getting provider: %s -> %s' % (provider_name, eX))
     return provider
 
+def getSelectedLanguages():
+    """ Function to get the selected languages currently set for SubiT. """
+    return SubiTConfig.Singleton().getList('Providers', 'languages_order')
+
+def getSelectedProviders():
+    """ Function to get the selected providers currently set for SubiT. """
+    return SubiTConfig.Singleton().getList('Providers', 'providers_order')
+
 def getAvaliableLanguages(provider = None):
     """ Function to get all the avaliable languages under the current list of 
         SubProviders. If provider is given, the result will be all the langs 
@@ -144,7 +151,7 @@ def getAvaliableLanguages(provider = None):
         # If provider is not None, and the provider is not in provider_name
         if not provider or provider in provider_name:
             provider_lang = provider_name.split(' - ')[0]
-            if not provider_lang in all_languages:
+            if provider_lang != 'Global' and not provider_lang in all_languages:
                 all_languages.append(provider_lang)
     # We return asc order of the languages
     return sorted(all_languages)
@@ -202,6 +209,14 @@ def buildSubProviderName(lang, name):
     """
     return '%s - %s' % (lang, name)
 
+def getLanguageFromProviderName(name):
+    """ Will return the first part of the provider name - the language. """
+    return name.split(' - ')[0]
+
+def getNameFromProviderName(name):
+    """ Will return the second part of the provider name - the name. """
+    return name.split(' - ')[1]
+
 #===========================================================
 # First, import all the modules under SubProviders directory.
 #===========================================================
@@ -228,10 +243,8 @@ for providerModule in TotalProviderModules:
 # queue is sorted, so calling the getNextProvider method will 
 # give the next provider following the configured order.
 #===========================================================
-providers_lang_order = SubiTConfig.Singleton().getList\
-    ('Providers', 'languages_order')
-providers_name_order = SubiTConfig.Singleton().getList\
-    ('Providers', 'providers_order')
+providers_lang_order = getSelectedLanguages()
+providers_name_order = getSelectedProviders()
 
 for provider_lang in providers_lang_order:
     for provider_name in providers_name_order:

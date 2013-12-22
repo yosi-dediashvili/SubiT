@@ -13,7 +13,7 @@ AppPublisherURL=http://www.subit-app.sf.net/
 AppSupportURL=http://www.subit-app.sf.net/
 AppUpdatesURL=http://www.subit-app.sf.net/
 ChangesAssociations=yes
-SetupIconFile=D:\dev\SubiT\build\setup\win32\_helpers\subit-icon-setup.ico
+SetupIconFile=D:\dev\SubiT\|$#VERSION#$|\build\setup\win32\_helpers\subit-icon-setup.ico
 SolidCompression=True
 ShowLanguageDialog=no
 VersionInfoVersion=|$#VERSION#$|
@@ -25,8 +25,8 @@ VersionInfoProductVersion=|$#VERSION#$|
 VersionInfoProductTextVersion=|$#VERSION#$|
 InternalCompressLevel=ultra
 CompressionThreads=2
-WizardSmallImageFile=D:\dev\SubiT\build\setup\win32\_helpers\subit-logo-setup.bmp
-WizardImageFile=D:\dev\SubiT\build\setup\win32\_helpers\subit-image-setup.bmp
+WizardSmallImageFile=D:\dev\SubiT\|$#VERSION#$|\build\setup\win32\_helpers\subit-logo-setup.bmp
+WizardImageFile=D:\dev\SubiT\|$#VERSION#$|\build\setup\win32\_helpers\subit-image-setup.bmp
 WizardImageStretch=False
 UninstallDisplayName=SubiT
 UninstallDisplayIcon={app}\SubiT.exe
@@ -35,14 +35,18 @@ DisableDirPage=yes
 DefaultGroupName=SubiT
 DisableProgramGroupPage=yes
 PrivilegesRequired=none
+UsePreviousAppDir=False
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 
+[InstallDelete]
+Type: files; Name: "{app}\settings\config.ini"
+
 [Files]
-Source: "D:\dev\SubiT\build\bin\win32\|$#VERSION#$|\debug\*"; DestDir: "{userappdata}\SubiT"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "D:\dev\SubiT\|$#VERSION#$|\build\bin\win32\|$#VERSION#$|\debug\*"; DestDir: "{userappdata}\SubiT"; Flags: ignoreversion createallsubdirs recursesubdirs
 ; NOTE Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -52,11 +56,13 @@ Name: "{group}\{cm:UninstallProgram,SubiT}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\SubiT"; Filename: "{app}\SubiT.exe";
 
 [Run]
-Filename: "{app}\SubiT.exe"; Parameters: "-associate"; WorkingDir: "{app}"; Flags: postinstall waituntilterminated skipifsilent; Description: "Associate SubiT with video files extensions"
+Filename: "{app}\SubiT.exe"; Parameters: "-associate"; WorkingDir: "{app}"; Flags: postinstall waituntilterminated; Description: "Associate SubiT with video files extensions"
 Filename: "{app}\SubiT.exe"; Flags: nowait postinstall skipifsilent; Description: "{cm:LaunchProgram,SubiT}"
 
 [UninstallRun]
-Filename: "{app}\SubiT.exe"; Parameters: "-unassociate"; WorkingDir: "{app}"; Flags: waituntilterminated;
+Filename: "{app}\SubiT.exe"; Parameters: "-disassociate"; WorkingDir: "{app}"; Flags: waituntilterminated;
+Filename: "taskkill.exe"; Parameters: "/im explorer.exe /f"; Flags: waituntilterminated;
+Filename: "explorer.exe"; Flags: nowait;
 
 
 [Dirs]

@@ -16,25 +16,37 @@ CONFIG_FILE_PATH = os.path.join(GetProgramDir(), 'Settings', CONFIG_FILE_NAME)
 def CreateDefaultConfigFile(config_path):
     configs = """
 [Global]
-version = 2.0.2
-interaction_type = 0
+version = 2.1.0
 close_on_finish = True
 default_directory = $DEFAULTDIR$
 always_use_default_directory = False
-check_updates = True
-auto_update = True
-last_update_check = 0
 subtitles_saving_extension = .srt
 subtitles_extensions = .srt|.sub|.idx
 
+[Updates]
+check_updates = True
+auto_update = True
+last_update_check = 0
+
 [Providers]
-languages_order = Hebrew
-providers_order = www.torec.net|www.subtitle.co.il|www.subscenter.org|www.opensubtitles.org|www.addic7ed.com
+languages_order =
+providers_order = www.torec.net|www.subscenter.org|www.subtitle.co.il|www.opensubtitles.org|www.addic7ed.com
+
+[Flow]
+in_depth_search = True
 do_properties_based_rank = True
 
 [Association]
 associate_extensions = False
+interaction_type = 0
 extensions_keys = .mkv|.avi|.wmv|.mp4|Directory
+
+[Gui]
+show_log = False
+remember_last_window_size = True
+last_window_size = 600|280
+remember_last_window_position = False
+last_window_position = 0|0
 """
 
     settings_dir = os.path.join(GetProgramDir(), 'Settings')
@@ -136,7 +148,10 @@ class SubiTConfig():
         WriteDebug('Retrieving: %s.%s as list' % (section, option))        
         try:    
             str_value = self.getStr(section, option, '')
-            return_value = str_value.split(SubiTConfig.LIST_DELIMITER)
+            if str_value != '':
+                return_value = str_value.split(SubiTConfig.LIST_DELIMITER)
+            else:
+                return_value = []
         except: 
             WriteDebug('Failure while trying to get value, using default')
         WriteDebug('Value: %s.%s => %s' % (section, option, return_value))

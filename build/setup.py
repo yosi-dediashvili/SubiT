@@ -21,9 +21,11 @@ dropbox_src_path = r'D:\Dropbox\SubiT\src'
 
 
 if IsWindowsPlatform():
-    pyinstaller_utils_path = r'C:\Program Files (x86)\Python\Python27\Lib\site-packages\pyinstaller\utils'
+    pyinstaller_utils_path = \
+        r'C:\Program Files (x86)\Python\Python27\Lib\site-packages\pyinstaller\utils'
 else:
-    pyinstaller_utils_path = r'/usr/lib/python2.7/site-packages/pyinstaller/utils'
+    pyinstaller_utils_path = \
+        r'/usr/lib/python2.7/site-packages/pyinstaller/utils'
 
 pyinstaller_make_spec_path = os.path.join\
     (pyinstaller_utils_path, 'Makespec.py')
@@ -199,12 +201,20 @@ bin_path_win32                  = os.path.join(bin_path_base, 'win32')
 helpers_path_win32              = os.path.join(bin_path_win32, '_helpers')
 spec_file_base_win32            = os.path.join(helpers_path_win32, 'SubiT.spec')
 icon_file_win32                 = os.path.join(helpers_path_win32, 'icon.ico')
+win_associator_win32            = os.path.join(helpers_path_win32, 'WinAssociator')
 manifest_file_base_win32        = os.path.join(helpers_path_win32, 'SubiT.exe.manifest')
 bin_path_win32_and_version      = os.path.join(bin_path_win32, subit_version)
 
 setup_path_win32                = os.path.join(setup_path, 'win32')
 setup_helpers_path_win32        = os.path.join(setup_path_win32, '_helpers')
 setup_path_win32_and_version    = os.path.join(setup_path_win32, subit_version)
+
+def copyWinAssociatorDir(dest_dir):
+    """ Will copy the files win32._helpers.WinAssociator to 
+        dest_dir\Settings\Associators\WinAssociator.
+    """
+    log('Copying WinAssociator from [%s] to [%s]' % (win_associator_win32, dest_dir))
+    shutil.copytree(win_associator_win32, dest_dir)
 
 def getWin32ApplicationManifets():
     """ Get a win32 application manifest for subit. The manifest is returned as
@@ -230,9 +240,12 @@ def getWin32SpecFile(tmp_path_for_build, build_path, manifest_path):
     return _base_spec_content.format(
         subit_proxy_py_path, 
         build_src_dir_path, 
-        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, subit_name + '.exe'),
-        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, subit_name + '-cli.exe'),
-        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, 'Settings', 'Updaters', subit_name + '-updater.exe'),
+        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, 
+                     subit_name + '.exe'),
+        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, 
+                     subit_name + '-cli.exe'),
+        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, 
+                     'Settings', 'Updaters', subit_name + '-updater.exe'),
         icon_file_win32, 
         manifest_path,
         build_path)
@@ -274,6 +287,8 @@ def buildWin32Dir(debug):
 
     log('Exe building finished: %s' % _bin_path)
     copySubProvidersFilesToDir(os.path.join(_bin_path, 'SubProviders'))
+    copyWinAssociatorDir\
+        (os.path.join(_bin_path, 'Settings', 'Associators', 'WinAssociator'))
     compileSubProvidersFiles(os.path.join(_bin_path, 'SubProviders'))
 
 def buildWin32Setup(debug):
@@ -340,7 +355,6 @@ def buildWin32():
         log('Finished building debug version')
     _build_release()
     _build_debug()
-    #copySrcDirToDropbox()
     log('Builing SubiT %s for win32 platform finished!' % subit_version)
 # ============================================================================ #
 # ============================================================================ #
@@ -445,5 +459,6 @@ if __name__ == '__main__':
         buildWin32()
     else:
         buildLinux()
-    log('==================================FINISHED===============================')
+    copySrcDirToDropbox()
+    log('================================FINISHED=============================')
     raw_input('Press any key to exit . . .')

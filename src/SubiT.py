@@ -1,5 +1,3 @@
-import sys
-import os
 from threading import Thread
 
 from Settings.Updaters import getUpdater
@@ -7,13 +5,10 @@ from Settings.Config import SubiTConfig
 
 VERSION = SubiTConfig.Singleton().getStr('Global', 'version')
 
-
-from Utils import WriteDebug, DEBUG
+from Utils import WriteDebug
 from Utils import exit, restart, sleep
-from Utils import GetDirFileNameAndFullPath
 from Utils import GetProgramDir
 
-from Interaction import setDefaultInteractorByConfig
 from Interaction import InteractionTypes
 from Interaction import getInteractor
 
@@ -21,17 +16,56 @@ from Logs import INFO as INFO_LOGS
 from Logs import WARN as WARN_LOGS
 from Logs import DIRECTION as DIRC_LOGS
 from Logs import FINISH as FINISH_LOGS
+from Logs import GUI_SPECIAL as GUI_SPECIAL_LOGS
 from Logs import BuildLog
 
-if DEBUG():
-    import traceback
+from SubInputs import getSingleInputFromQuery
+from SubInputs.SingleInputsQueue import SingleInputsQueue
 
 SUBIT_WORKER_THREAD = None
 
+class EXIT_CODES:
+    """ The currently exit status codes that SubiT supports. The return code
+        is the can be achieved using the OS API for getting the last error of
+        a program and so on (LAST_ERROR in windows).
+    """
+
+    # All the SingleInputs in the queue got subtitles.
+    ALL_QUERIES_GOT_RESULTS = 0
+    # None of the SingleInputs in the queue got subtitle.
+    ALL_QUERIES_FAILED_GETTING_RESULTS = 2
+    # Some of the SingleInputs in the queue got subtitles and some did not.
+    NOT_ALL_QUERIES_GOT_RESULTS = 3
+
 class SubiTWorkerThread(Thread):
     """ The Worker Thread of SubiT, that's where the real flow starts """
+    def __init__(self, queries, files, directories):
+        # Put the SingleInput instances from the parameters into the Queue
+        self.single_input_queue = \
+            SingleInputsQueue(queries, files, directories)
+
+        self.number_of_success = 0
+        self.number_of_failures = 0
+
+        # It's considered interactive only if a single input was passed (i.e.
+        # single file or single query. directory is considered to be multipile
+        # inputs), or no input passed.
+        try:
+            self.interactive_by_input = (
+                (len(directories) == 0 == len(queries) and len(files) == 1) or
+                (len(directories) == 0 == len(files) and len(queries) == 1) or
+                (len(directories) == 0 == len(queries) == len(files)))
+        except:
+            WriteDebug("We failed in deciding the interactive value. True is default.")
+            self.interactive_by_input = True
+
+        WriteDebug("interactive_by_input: %s" % self.interactive_by_input)
+
+        # Default constructor
+        Thread.__init__(self)
+
     def doUpdateCheck(self):
-        """ Will run the whole flow for update, Return None """
+        """ Will run the whole flow for update, Return None. """
         updater = getUpdater()
         if updater and updater.ShouldCheckUpdates():
             (_is_latest, _latest_ver, _latest_url) = updater.IsLatestVersion()
@@ -44,82 +78,128 @@ class SubiTWorkerThread(Thread):
                     getInteractor().notifyNewVersion\
                         (updater.CurrentVersion(), _latest_ver, _latest_url)
 
+    def _get_exit_code(self):
+        """ Will calculate and return the exit code for the program. """
+        if self.number_of_failures == 0:
+            return EXIT_CODES.ALL_QUERIES_GOT_RESULTS
+        elif self.number_of_success == 0:
+            return EXIT_CODES.ALL_QUERIES_FAILED_GETTING_RESULTS
+        else:
+            return EXIT_CODES.NOT_ALL_QUERIES_GOT_RESULTS
+
+    def _update_working_stats(self, single_input):
+        """ Will update the working states according to the info in the
+            SingleInput that is passed to it.
+        """
+
+        # Notice that we are not checking for the "finished" variable of the
+        # SingleInput. The reason for that is that the variable state only
+        # whether we are still working on the SingleInput or not, and not
+        # whether we succeeded in getting the subtitle. In order to check for
+        # that we need to check the value of the final_version_sub_stage of the
+        # SingleInput.
+        if single_input.final_version_sub_stage:
+            self.number_of_success += 1
+        else:
+            self.number_of_failures += 1
+
+    def _put_user_single_input_in_queue(self):
+        query = getInteractor().getSearchInput\
+            (DIRC_LOGS.INSERT_MOVIE_NAME_FOR_QUERY)
+        self.interactive = True
+        WriteDebug('The query from the user is: %s' % query)
+        new_single_input = getSingleInputFromQuery(query)
+        WriteDebug('Created SingleInput from the query, adding it to the queue')
+        self.single_input_queue.putSingleInput(new_single_input)
+
     def run(self):
+        """ Execute the procedure. """
+
         # Wait until the interactor finishes the loading procedure        
-        while (not getInteractor() or not getInteractor().IsLoaded()):
+        while not getInteractor() or not getInteractor().IsLoaded():
             sleep(0.05)
+
+        # We can set the writeLog variable only after the interactor was
+        # loaded, because before that, we don't have the right underlying
+        # function for the writeLog.
         writeLog = getInteractor().writeLog
 
+        if getInteractor().InteractionType == InteractionTypes.Gui:
+            from SubProviders import getSelectedLanguages
+            # We need to ask the user to select his languages.
+            if not getSelectedLanguages():
+                getInteractor().showLanguageSelection()
+
+        # We are checking for update in each program's load.
         self.doUpdateCheck()
 
-        # Now we are ready for the real work
+        # Now we are ready for the real work.
         from SubFlow import SubFlow
-        dir, movie_name, full_path = GetDirFileNameAndFullPath()
         close_on_finish = SubiTConfig.Singleton().getBoolean\
             ('Global', 'close_on_finish', False)
+        interactive_by_interactor = getInteractor().InteractionType in [
+            InteractionTypes.Console, InteractionTypes.Gui]
 
-        while True:
+        self.interactive = \
+            interactive_by_interactor and self.interactive_by_input
+
+        writeLog(INFO_LOGS.STARTING)
+
+        if self.single_input_queue.empty() and interactive_by_interactor:
+            WriteDebug('The queue is empty from the start, adding user query.')
+            self._put_user_single_input_in_queue()
+
+        while not self.single_input_queue.empty():
+            WriteDebug('Getting next_single_input form the queue.')
+            next_single_input = self.single_input_queue.getSingleInput()
+            WriteDebug('Got next_single_input: %s' % next_single_input.printableInfo())
+            writeLog(INFO_LOGS.STARTING_PROCESSING_OF_SINGLE_INPUT %
+                     next_single_input.printableInfo())
+            writeLog(GUI_SPECIAL_LOGS.SEARCH_LINE_UPDATE % next_single_input.query)
             try:
-                def _debug_params(_dir, _movie_name, _full_path):
-                    """ Nice printing of the running params """
-                    WriteDebug('Parameters:')
-                    WriteDebug('      dir:        %s' % _dir)
-                    WriteDebug('      movie_name: %s' % _movie_name)
-                    WriteDebug('      full_path:  %s' % _full_path)
+                SubFlow(next_single_input).process(self.interactive)
+            except Exception as eX:
+                WriteDebug('Failed processing the next_single_input: %s' % eX)
+                writeLog(BuildLog(WARN_LOGS._TYPE_,
+                                  'SingleInput failure: %s' % str(eX)))
+            else:
+                writeLog(FINISH_LOGS.FINISHED_PROCESSING_SINGLE_INPUT % 
+                         next_single_input.printableInfo())
+            # Update the stats after processing the SingleInput
+            self._update_working_stats(next_single_input)
 
-                WriteDebug('Initiating SubFlow')
-                writeLog(INFO_LOGS.STARTING)
-                subFlow = SubFlow()
-                if len(dir) and not len(movie_name):
-                    WriteDebug('No movie name was passed, running on dir')
-                    _debug_params(dir, movie_name, full_path)
-                    subFlow.executeFlowOnTheGivenDirectory(dir)
-                else:
-                    if not movie_name:
-                        WriteDebug('No movie_name was passed, asking for it')
-                        movie_name = getInteractor().getSearchInput\
-                            (DIRC_LOGS.INSERT_MOVIE_NAME_FOR_QUERY)
-                        if os.path.exists(movie_name):
-                            WriteDebug('Path does exists!')
-                            full_path = movie_name
-                            dir = os.path.dirname(full_path)
-                            # File name without extension
-                            user_input_name = os.path.basename(movie_name)
-                            user_input_name = os.path.splitext\
-                                (user_input_name)[0]
-                            # We change the input to be only the file name
-                            movie_name = user_input_name
-                    _debug_params(dir, movie_name, full_path)
-                    subFlow.executeFlowOnTheGivenQuery\
-                        (dir, movie_name, full_path, True)
-                
-                # Initialize the params for the next run
-                dir, movie_name, full_path=('', '', '')
-                writeLog( FINISH_LOGS.FINISHED )
-            except Exception as ex:
-                writeLog(BuildLog(WARN_LOGS._TYPE_, str(ex)))
-                dir, movie_name, fullpath=('', '', '')
-                if DEBUG():
-                    raise Exception((traceback.print_exc()))
-            if close_on_finish:
-                # write log, wait for 2 secs, and exit loop
-                writeLog(FINISH_LOGS.APPLICATION_WILL_NOW_EXIT)
-                break
-        # Close program in this stage
-        exit(2)
+            if self.single_input_queue.empty() and not close_on_finish:
+                WriteDebug('Queue is empty, getting query from the user.')
+                self._put_user_single_input_in_queue()
 
-def start():
-    WriteDebug('Running From: %s' % GetProgramDir())
+        WriteDebug('Successful downloads: %s' % self.number_of_success)
+        WriteDebug('Failed downloads: %s' % self.number_of_failures)
+        # Finish up.
+        writeLog(FINISH_LOGS.FINISHED)
+        writeLog(FINISH_LOGS.APPLICATION_WILL_NOW_EXIT)                
+        # Close program in this stage.
+        exit(2, self._get_exit_code())
+
+def startWorking(queries = [], files = [], directories = []):
+    """ The entry point for the real work of SubiT. The parameters are those 
+        that parsed successfully from the command line.
+    """
+    WriteDebug('Starting SubiT\'s real work.')
+    WriteDebug('Running from: %s' % GetProgramDir())
     
-    SUBIT_WORKER_THREAD = SubiTWorkerThread()
+    WriteDebug('Creating SUBIT_WORKER_THREAD daemon thread.')
+    SUBIT_WORKER_THREAD = SubiTWorkerThread(queries, files, directories)
     SUBIT_WORKER_THREAD.setDaemon(True)
     SUBIT_WORKER_THREAD.start()
-    
-    setDefaultInteractorByConfig()
-    # In Gui mode, after calling load(), the thread enters the event loop
+    WriteDebug('SUBIT_WORKER_THREAD created and started.')
+
+    # In Gui mode, after calling load(), the thread enters the event loop so
+    # we don't need to take to much care about the rest of the code.
     getInteractor().load()
-    # We wait for the worker thread to finish (otherwise, in console mode we
-    # are ending the run in here (beacuse there is no event loop))
+
+    # In Console modes however, we wait for the worker thread to finish 
+    # (otherwise, we are ending the run in here beacuse there is no event loop
+    # for the console).
     if (getInteractor().InteractionType in \
         [InteractionTypes.Console, InteractionTypes.ConsoleSilent]):
         while SUBIT_WORKER_THREAD.isAlive():

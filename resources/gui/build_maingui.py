@@ -4,7 +4,7 @@ from subprocess import check_output
 
 
 UI_DIR = os.path.dirname(__file__)
-PY_DIR = r'D:\dev\SubiT\src\Interaction'
+PY_DIR = r'D:\dev\SubiT\2.1.0\src\Interaction'
 IMAGES_RESOURCES     = 'ImagesResources'
 IMAGES_RESOURCES_PY  = os.path.join(PY_DIR, '%s.py' % IMAGES_RESOURCES)
 IMAGES_RESOURCES_QRC = os.path.join(UI_DIR, 'images.qrc')
@@ -15,10 +15,11 @@ PYSIDE_DIR = os.path.join(PYTHON_DIR, r'Lib\site-packages\PySide')
 UIC_PATH   = os.path.join(PYSIDE_DIR, r'scripts\uic.py')
 RCC_PATH   = os.path.join(PYSIDE_DIR, 'pyside-rcc.exe' )
 
-PATHS = ({'UI' : r'SubiTMainUi_2.0.0.ui',     'PY' : r'SubiTMainGui.py' },
-         {'UI' : r'SubiTAboutUi_2.0.0.ui',    'PY' : r'SubiTAboutGui.py' },
-         {'UI' : r'SubiTSettingsUi_2.0.0.ui', 'PY' : r'SubiTSettingsGui.py' },
-         {'UI' : r'SubiTUpdateUi_2.0.0.ui',   'PY' : r'SubiTUpdateGui.py'})
+PATHS = ({'UI' : r'SubiTMainUi.ui',     'PY' : r'SubiTMainGui.py' },
+         {'UI' : r'SubiTAboutUi.ui',    'PY' : r'SubiTAboutGui.py' },
+         {'UI' : r'SubiTSettingsUi.ui', 'PY' : r'SubiTSettingsGui.py' },
+         {'UI' : r'SubiTUpdateUi.ui',   'PY' : r'SubiTUpdateGui.py'},
+         {'UI' : r'SubiTLanguageUi.ui', 'PY' : r'SubiTLanguageGui.py'})
 
 if __name__ == '__main__':    
     for path in PATHS:

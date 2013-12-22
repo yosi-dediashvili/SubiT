@@ -76,27 +76,27 @@ class IUpdater(object):
 
     @classmethod
     def ShouldAutoUpdate(cls):
-        """ Return the boolean from Global.auto_update in the config. 
+        """ Return the boolean from Updates.auto_update in the config. 
 
             Notice: If the implementation of the IUpdater is not intended to 
             applying updates, the function should always return False 
         """
         from Settings.Config import SubiTConfig
         return SubiTConfig.Singleton().getBoolean\
-            ('Global', 'auto_update', False)
+            ('Updates', 'auto_update', False)
 
     @classmethod
     def ShouldCheckUpdates(cls):
-        """ Return the boolean from Global.check_updates in the config """
+        """ Return the boolean from Updates.check_updates in the config """
         from Settings.Config import SubiTConfig
         return SubiTConfig.Singleton().getBoolean\
-            ('Global', 'check_updates', True)
+            ('Updates', 'check_updates', True)
 
     @classmethod
     def LastUpdateTime(cls):
-        """ Return an integer from Global.last_update_check in the config """
+        """ Return an integer from Updates.last_update_check in the config """
         from Settings.Config import SubiTConfig
-        return SubiTConfig.Singleton().getInt('Global', 'last_update_check', 0)
+        return SubiTConfig.Singleton().getInt('Updates', 'last_update_check', 0)
 
     @classmethod
     def IsUpdateFileName(cls, file_name):
@@ -193,7 +193,7 @@ class IUpdater(object):
         _latest_url = None
         _latest_ver = None
         _last_check = SubiTConfig.Singleton().getInt\
-            ('Global', 'last_update_check', 0)
+            ('Updates', 'last_update_check', 0)
         WriteDebug('Checking if we got the latest versions')
         if (CurrentTime() - _last_check < cls.TIME_BETWEEN_CHECKS and 
             not force_check):
@@ -213,7 +213,7 @@ class IUpdater(object):
 
             WriteDebug('Latest version %s' % _latest_ver_info)
             SubiTConfig.Singleton().setValue\
-                ('Global', 'last_update_check', CurrentTime())
+                ('Updates', 'last_update_check', CurrentTime())
             _current_ver = cls.CurrentVersion()
             _latest_ver  = _latest_ver_info['version']
             _latest_url  = _latest_ver_info['location']

@@ -1,0 +1,35 @@
+﻿Build started 9/16/2012 1:56:02 AM.
+     1>Project "D:\dev\SubiT\2.1.0\resources\SubiTShellExt\SubiTShellExt\SubiTShellExt.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "Release\SubiTShellExt.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "Release\SubiTShellExt.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _USRDLL /D SUBITSHELLEXT_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ClassFactory.cpp FileContextMenuExt.cpp
+         ClassFactory.cpp
+         FileContextMenuExt.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _USRDLL /D SUBITSHELLEXT_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt dllmain.cpp
+         dllmain.cpp
+       ResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D _UNICODE /D UNICODE /l"0x0409" /nologo /fo"Release\SubiTShellExt.res" SubiTShellExt.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.dll" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:"GlobalExportFunctions.def" /MANIFEST /ManifestFile:"Release\SubiT.ShellExt.32.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.lib" /MACHINE:X86 /DLL Release\SubiTShellExt.res
+         Release\ClassFactory.obj
+         Release\dllmain.obj
+         Release\FileContextMenuExt.obj
+            Creating library D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.lib and object D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.exp
+     1>SubiT.ShellExt.32.exp : warning LNK4070: /OUT:SubiT.ShellExt directive in .EXP differs from output filename 'D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.dll'; ignoring directive
+         Generating code
+         Finished generating code
+     1>SubiT.ShellExt.32.exp : warning LNK4070: /OUT:SubiT.ShellExt directive in .EXP differs from output filename 'D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.dll'; ignoring directive
+         SubiTShellExt.vcxproj -> D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\dev\SubiT\2.1.0\resources\SubiTShellExt\Release\SubiT.ShellExt.32.dll;#2" /manifest Release\SubiT.ShellExt.32.dll.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Release\SubiTShellExt.unsuccessfulbuild".
+         Touching "Release\SubiTShellExt.lastbuildstate".
+     1>Done Building Project "D:\dev\SubiT\2.1.0\resources\SubiTShellExt\SubiTShellExt\SubiTShellExt.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.43

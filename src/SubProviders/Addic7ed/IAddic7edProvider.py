@@ -40,11 +40,25 @@ class IAddic7edProvider(ISubProvider):
                                            query_data, True)
         WriteDebug('Query for %s returned %s results' % (query, len(re_results)))
         _movie_sub_stages = []
+        # The upper limit for the language check
+        check_lang_in_stage = (len(re_results) <= 10)
+
         for result in re_results:
             movie_sub_stage = MovieSubStage\
                 (cls.PROVIDER_NAME, result['MovieName'], result['MovieCode'], '')
             WriteDebug('Adding MovieSubStage. Details: %s' % movie_sub_stage.info())
+
+            # Because addi7ed doesnt says anything about the language if it's
+            # missing, we need to check for each movie_sub_stage we get.
+            # We also check if we should check the language, because we might
+            # end up checking it for 1000 resuls, which might take some time...
+            if check_lang_in_stage and not movie_sub_stage.getVersionSubStages():
+                continue
+
+            # If we got here, we wither don't need to check for the versions,
+            # or we got versions.
             _movie_sub_stages.append(movie_sub_stage)
+
         return _movie_sub_stages
 
     @classmethod

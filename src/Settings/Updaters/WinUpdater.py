@@ -105,4 +105,5 @@ class WinUpdater(IUpdater.IUpdater):
         args = sys.argv
         args[0] = updater_path
         args.insert(1, update_file_path)
+        WriteDebug('Calling os.execv for the updater with args: %s' % args)
         os.execv(updater_path, args)
