@@ -1,9 +1,0 @@
-<?xml version="1.0" ?>
-<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-    <assemblyIdentity 
-        name="SubiT" 
-        processorArchitecture="x86" 
-        type="win32" 
-        version="{0}.0"
-    />
-</assembly>
