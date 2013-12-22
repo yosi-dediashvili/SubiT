@@ -1,65 +1,94 @@
-import ConfigParser
 import os
 
-import Settings
-import Utils
+from Utils import WriteDebug
+from Utils import GetProgramDir
+from Utils import IsPython3
 
-CONFIG_FILE_NAME = 'Config.ini'
-CONFIG_FILE_PATH = os.path.join(Settings.SETTINGS_DIR_LOCATION, CONFIG_FILE_NAME)
+if IsPython3():
+    import configparser
+else:
+    import ConfigParser as configparser
 
-def createDefaultFile():
-    configs = """[Global]
-version = 1.3.1
-is_first_run = True
-close_on_finish = False
-auto_update = False
+
+CONFIG_FILE_NAME = 'config.ini'
+CONFIG_FILE_PATH = os.path.join(GetProgramDir(), 'Settings', CONFIG_FILE_NAME)
+    
+def CreateDefaultConfigFile(config_path):
+    configs = """
+[Global]
+version = 2.0.0
+interaction_type = 0
+close_on_finish = True
+default_directory = $DEFAULTDIR$
+always_use_default_directory = False
 check_updates = True
+auto_update = True
 last_update_check = 0
+subtitles_saving_extension = .srt
+subtitles_extensions = .srt|.sub|.idx
 
-[Handlers]
-selected_handler = Hebrew - www.Torec.net
-advanced_features = True
-primary_lang = Hebrew
-secondary_lang = English
+[Providers]
+languages_order = Hebrew
+providers_order = www.torec.net|www.subtitle.co.il|www.subscenter.org|www.opensubtitles.org|www.addic7ed.com
+do_properties_based_rank = True
 
-[Registry]
-register_extensions = True
-keys = .mkv|.avi|.wmv|.mp4|Directory"""
-    if not os.path.exists(Settings.SETTINGS_DIR_LOCATION):
-        os.mkdir(Settings.SETTINGS_DIR_LOCATION)
-    with open(CONFIG_FILE_PATH, 'wb') as configFile:
-        configFile.write(configs)
+[Association]
+associate_extensions = False
+extensions_keys = .mkv|.avi|.wmv|.mp4|Directory
+"""
+
+    settings_dir = os.path.join(GetProgramDir(), 'Settings')
+    if not os.path.exists(settings_dir):
+        os.mkdir(settings_dir)
+
+    with open(config_path, 'w') as config_file:
+        config_file.write(configs)
 
 
 class SubiTConfig():
-    #Stores the parser
+    LIST_DELIMITER = '|'
+
     _parser    = None
-    _Singleton = None
-    def __init__(self):
-        Utils.WriteDebug('Init Config File')
-        self._parser = ConfigParser.ConfigParser()
-        #If the file is missing, create it
-        if not os.path.exists(CONFIG_FILE_PATH):
-            Utils.WriteDebug('Config file is missing, creating default')
-            createDefaultFile()
-        Utils.WriteDebug('Config path: %s' % CONFIG_FILE_PATH)
-        self._parser.read(CONFIG_FILE_PATH)
-        SubiTConfig._Singleton = self
-        Utils.WriteDebug('Config Singleton Created')
+    _singleton = None 
+
+    def __init__(self, config_path = None):
+        """ The constuctor of SubiTConfig will create a new config file if the
+            current one is missing. If config_path is not given, we will use
+            the global value of CONFIG_FILE_PATH for the file path
+        """
+        WriteDebug('Init SubiTConfig config file...')
+        self._parser = configparser.ConfigParser()
+        
+        if config_path:
+            WriteDebug('config_path was passed, using it for our config file')
+            self.config_path = config_path
+        else: 
+            WriteDebug('config_path was not passed, using CONFIG_FILE_PATH instead')
+            self.config_path = CONFIG_FILE_PATH
+
+        if not os.path.exists(self.config_path) or \
+            not os.stat(self.config_path).st_size:
+            WriteDebug('Config file is missing, creating one with the default values in: %s' % self.config_path)
+            CreateDefaultConfigFile(self.config_path)
+
+        WriteDebug('Config path: %s' % self.config_path)
+        self._parser.read(self.config_path)
+        SubiTConfig._singleton = self
+        WriteDebug('Config Singleton Created')
     
-#======================================================================================#
-# Functions to retrieve values from the config file                                    #
-#======================================================================================# 
+#==============================================================================#
+# Functions to retrieve values from the config file                            #
+#==============================================================================#
     def getStr(self, section, option, on_error_value = ''):
         """Return the config value as str """
         return_value = on_error_value
 
-        Utils.WriteDebug('Retrieving: %s.%s as str' % (section, option))        
+        WriteDebug('Retrieving: %s.%s as str' % (section, option))        
         try:    
             return_value = self._parser.get(section, option)
         except: 
-            Utils.WriteDebug('Failure while trying to get value, using default')
-        Utils.WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
+            WriteDebug('Failure while trying to get value, using default')
+        WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
         return return_value
 
     
@@ -67,87 +96,129 @@ class SubiTConfig():
         """Return the config value as boolean"""
         return_value = on_error_value
 
-        Utils.WriteDebug('Retrieving: %s.%s as boolean' % (section, option))        
+        WriteDebug('Retrieving: %s.%s as boolean' % (section, option))        
         try:    
             return_value = self._parser.getboolean(section, option)
         except Exception as Ex: 
             raise Ex
-            Utils.WriteDebug('Failure while trying to get value, using default')
-        Utils.WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
+            WriteDebug('Failure while trying to get value, using default')
+        WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
         return return_value
 
     def getInt(self, section, option, on_error_value = 0):
         """Return the config value as int"""
         return_value = on_error_value
 
-        Utils.WriteDebug('Retrieving: %s.%s as int' % (section, option))        
+        WriteDebug('Retrieving: %s.%s as int' % (section, option))        
         try:    
             return_value = self._parser.getint(section, option)
         except: 
-            Utils.WriteDebug('Failure while trying to get value, using default')
-        Utils.WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
+            WriteDebug('Failure while trying to get value, using default')
+        WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
         return return_value
 
     def getFloat(self, section, option, on_error_value = 0.0):
         """Return the config value as float"""
         return_value = on_error_value
 
-        Utils.WriteDebug('Retrieving: %s.%s as float' % (section, option))        
+        WriteDebug('Retrieving: %s.%s as float' % (section, option))        
         try:    
             return_value = self._parser.getfloat(section, option)
         except: 
-            Utils.WriteDebug('Failure while trying to get value, using default')
-        Utils.WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
+            WriteDebug('Failure while trying to get value, using default')
+        WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
+        return return_value
+    
+    def getList(self, section, option, on_error_value = []):
+        """Return the config value as list"""
+        return_value = on_error_value
+
+        WriteDebug('Retrieving: %s.%s as list' % (section, option))        
+        try:    
+            str_value = self.getStr(section, option, '')
+            return_value = str_value.split(SubiTConfig.LIST_DELIMITER)
+        except: 
+            WriteDebug('Failure while trying to get value, using default')
+        WriteDebug('Value: %s.%s => %s' % (section, option, return_value))
         return return_value
 
     def hasOption(self, section, option):
-        """Return True if current config has the given option, otherwise, False"""
+        """ Return True if current config has the given option, otherwise, 
+            False """
         has_opt = self._parser.has_option(section, option)
-        Utils.WriteDebug('Is %s.%s exists? %s' % (section, option, has_opt))
+        WriteDebug('Is %s.%s exists? %s' % (section, option, has_opt))
         return has_opt
 
-#======================================================================================
-#======================================================================================
-
+#==============================================================================#
+# Functions to store values in the config file                                 #
+#==============================================================================#
     def setValue(self, section, option, value):
-        Utils.WriteDebug('Setting value for: %s.%s => %s' % (section, option, value))
-        # If the section is missing, and we try to set the value, an exception will 
-        # be raised, therfore, we create the section
+        """ Set the value under the given section.option.value path. values 
+            are converted to str types """
+        WriteDebug('Setting value for: %s.%s => %s' % (section, option, value))
+        # If the section is missing, and we try to set the value, an 
+        # exception will be raised, therfore, we create the section
         if not self._parser.has_section(section):
-            Utils.WriteDebug('Missing section: %s, creating it' % section)
+            WriteDebug('Missing section: %s, creating it' % section)
             self._parser.add_section(section)
 
-        self._parser.set(section, option, value)
+        self._parser.set(section, option, str(value))
         self.save()
 
-    def save(self):
-        with open(CONFIG_FILE_PATH, 'wb') as configFile:
-            self._parser.write(configFile)
+    def setList(self, section, option, list_values):
+        """ Set the value under the given section.option.value path. The list 
+            is converted to piplined str """
+        WriteDebug('Setting list value for: %s.%s => %s' % (section, option, list_values))
+        self.setValue\
+            (section, option, SubiTConfig.LIST_DELIMITER.join(list_values))
 
-        #for some reason, when trying to access the settings value after setting them, exception is thrown.
-        #we set the _Singelton to None in order to reload the config in the next call to the Singelton() function
-        SubiTConfig._Singleton = None
+    def save(self):
+        """ Save the config to the config file. The path to the file is taken
+            from self.config_path
+        """
+        with open(self.config_path, 'w') as config_file:
+            self._parser.write(config_file)
+        # For some reason, when trying to access the settings value after we 
+        # set them, exception is thrown. we set the _singelton to None in order 
+        # to reload the config in the next call to the Singelton() function
+        SubiTConfig._singleton = None
 
     def upgrade(self, new_config_path):
-        """Function to perform upgrade of the current configuration, keeping the current values"""
-        Utils.WriteDebug('Starting upgrade procedure for configuration, using the file: %s' % new_config_path)
+        """ Perform an upgrade to the current configuration. The upgrade will
+            keep the values of the current config file, and will only add the 
+            new settings that are introduced in the new_config_path. The only
+            exception to that rule is the version value, which gets updated.
+        """
+        WriteDebug('Starting upgrade procedure for configuration, using the file: %s' % new_config_path)
         if not os.path.exists(new_config_path):
-            Utils.WriteDebug('Upgrade config file is missing.')
+            WriteDebug('The new_config_path is missing')
         else:
-            upgrade_parser = ConfigParser.ConfigParser()
+            WriteDebug('Init new parser for the config')
+            upgrade_parser = configparser.ConfigParser()
             upgrade_parser.read(new_config_path)
-            Utils.WriteDebug('Config file object created')
-            #Iterate on all sections and values
+            WriteDebug('Config file object created')
+            # Iterate on all sections and values
             for upgrade_section in upgrade_parser.sections():
+                # upgrade_item is a tuple of (name, value) for an option, so we
+                # access the option name by refering to the 0 index
                 for upgrade_item in upgrade_parser.items(upgrade_section):
-                    #Upgrade only if the option is missing from current version
-                    if not self.hasOption(upgrade_section, upgrade_item[0]) or (upgrade_section == 'Global' and upgrade_item[0] == 'version'):
-                        Utils.WriteDebug('Adding new option to the configuration: %s.%s' % (upgrade_section, upgrade_item[0]))
+                    # Upgrade only if the option is missing from current config
+                    if not self.hasOption(upgrade_section, upgrade_item[0]):
+                        WriteDebug('Adding new option to the configuration: %s.%s' % (upgrade_section, upgrade_item[0]))
                         self.setValue(upgrade_section, *upgrade_item)
-        Utils.WriteDebug('Configuration upgrade procedure finished')
+                    # Or if this is the version value, and therfor, we need to
+                    # upgrade to the new value
+                    elif upgrade_section == 'Global' and upgrade_item[0] == 'version':
+                        WriteDebug('Upgrading the Global.version value to: ' % upgrade_item[1])
+                        self.setValue(upgrade_section, *upgrade_item)
+        WriteDebug('Configuration upgrade procedure finished')
 
     @staticmethod
     def Singleton():
-        if SubiTConfig._Singleton == None:
+        """ Get the singleton object of the SubiTConfig. If the _singleton is 
+            None, we will call the Init function of SubiTConfig in order to set
+            the _singleton again
+        """
+        if SubiTConfig._singleton == None:
             SubiTConfig()
-        return SubiTConfig._Singleton
+        return SubiTConfig._singleton
