@@ -1,16 +1,14 @@
 #!/usr/bin/python
-#import http
+DEBUG = True
+
 import httplib
-#import http.client
 import os
+import platform
 import tempfile
 import re
 import gzip
 import zipfile
-#import io
-#StringIO = io.StringIO
 from StringIO import StringIO
-#from io import StringIO
 import uuid
 import sys
 import time
@@ -23,7 +21,6 @@ WARN_LOGS = Logs.LOGS.WARN
 DIRC_LOGS = Logs.LOGS.DIRECTION
 
 SUB_EXT     = [ '.srt', '.sub' ]
-DEBUG = False
 PROGRAM_DIR_PATH = os.path.split(os.path.abspath(__file__))[0].replace('\\library.zip', '')
 
 class HttpRequestTypes:
@@ -190,6 +187,15 @@ def myfilter(filter_func, items, format_func):
             filtered_items.append(format_func(item))
     return filtered_items
 
+def FormatMovieName(movie_name, to_list = True, splitters = './ -:'):
+    """Will format the movie name to SubiT's standard format, ie: "<movie name> [ver_0] [ver_[1] [ver_n]"
+       also, if to_list is true, will return the name as a list, splitted using the slitters given."""
+    #Replace all the splitters in the movie_name with space
+    result = reduce(lambda x,y: x.replace(y, ' '), splitters, movie_name.lower()).strip()
+    #Return as string if to_list is False, else return as list
+    return result if not to_list else result.split(' ')
+    
+    
 HELP_ARGS = ['/?', '?', '--help', 'help']
 
 
@@ -236,6 +242,19 @@ def sleep(secs_to_sleep):
 def exit(secs_to_sleep = 0):
     sleep(secs_to_sleep)
     os._exit(0)
+
+def IsWindowPlatform():
+    """Return True if the system's OS is Windows, else False."""
+    return os.name == 'nt'
+
+def IsVistaOrLater():
+    """Return True if the system is vista or later, else False."""
+    value = False
+    if IsWindowPlatform():
+        vista_or_later_major = 6
+        system_major_version = int(platform.version().split('.')[0])
+        value =  system_major_version >= vista_or_later_major
+    return value
 
 def askuserforname():
     moviename = askuser( DIRC_LOGS.INSERT_MOVIE_NAME_FOR_QUERY, False )

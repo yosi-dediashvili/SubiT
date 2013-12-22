@@ -12,10 +12,15 @@ DIRC_LOGS = Logs.LOGS.DIRECTION
 # access to handler is made via the static method "Handler()".
 #===============================================================================
 class SubHandler:
-    _subHandler = None
+    #Stores the current handler
+    _subHandler         = None
     
     def __init__(self):
-        SubHandler.Handler(SubHandlers.getSelectedHandler())
+        #We reload SubHandlers in order to start a fresh session (fill the handlers queue and so...)
+        global SubHandlers
+        SubHandlers = reload(SubHandlers)
+        #Take the first handler in line
+        SubHandler.Handler(SubHandlers.getNextHandler())
         
     @staticmethod
     def Handler(iSubHandler = None):
@@ -23,8 +28,21 @@ class SubHandler:
             #if we got here, and the handler is null
             raise Exception('No SubHandler Passed!')
         elif iSubHandler != None:
+            Utils.writelog('INFO__||__Settings Handler: %s' % iSubHandler.HANDLER_NAME)
             SubHandler._subHandler = iSubHandler
+            SubHandler._subHandler() #Call the ctor
+
         return SubHandler._subHandler
+
+    @staticmethod
+    def SetNextHandler():
+        """This function will set the next handler in line to be our current handler"""
+        try:
+            #We filter out all the handlers that already been used (and therfor apear in the _usedHandlers list)
+            SubHandler.Handler(SubHandlers.getNextHandler())()
+            return True
+        except:
+            return False
     
 #===============================================================================
 # SubSearch represent the first stage in each subtitle search -> sending the 1st
@@ -38,10 +56,10 @@ class SubSearch:
     def __init__( self, query, path = '' ):
         self.Query = query
         self.Path  = path
-        self.Results()
+        #self.Results()
 
     def Results(self):
-        if self._subMovies == None:
+        if self._subMovies is None or not self._subMovies:
             Utils.writelog( INFO_LOGS.SENDING_QUERY_FOR_MOVIES % self.Query )
             self._subMovies = SubHandler.Handler().findmovieslist( self )
 
@@ -75,7 +93,7 @@ class SubMovie:
         self.Extra = extra
         
     def Versions(self):
-        if self._versions == None:
+        if self._versions is None or not self._versions:
             Utils.writelog(INFO_LOGS.SENDING_QUERY_FOR_SUB_VERSIONS_FOR_MOVIE % 
 						   self.MovieName + ' -> ' + (self.VerSum 
                                                       if len(self.VerSum) < 40 else 

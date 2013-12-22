@@ -4,7 +4,7 @@
 #===============================================================================
 class LOGS:
 	DELIMITER = '__||__'
-	TYPE_TO_COLOR = {'WARN':'Red', 'INFO':'Green', 'DIRECTION':'Blue'}
+	TYPE_TO_COLOR = {'WARN':'Red', 'INFO':'Green', 'DIRECTION':'Blue', 'OTHER':'Black'}
 	class WARN:
 		DO_DIR_NO_MISSING_SUBTITLE_FILES 				= 'WARN__||__All the files in: %s have subtitles, skipping'
 		OS_CANT_GET_MOVIE_NAME_FOR_HASH_VALUE           = 'WARN__||__Can\'t get movie name using the file hash'
@@ -34,7 +34,7 @@ class LOGS:
 		OS_FOUND_MOVIE_NAME                                 = 'INFO__||__Got movie name from www.OpenSubtitles.org'
 		#Movie Ranking
 		GOT_EXACT_MATCH_FROM_MOVIE_RANKING 					= 'INFO__||__There is an exact match for the moive version'
-		NO_EXACT_MATCH_FROM_MOVIE_RANKING_TAKING_FIRST 		= 'INFO__||__There is no exact match for the moive version - downloading the best match'
+		NO_EXACT_MATCH_FROM_MOVIE_RANKING                   = 'INFO__||__There is no exact match for the movie version'
 		#Subtitle versions logs
 		SENDING_QUERY_FOR_SUB_VERSIONS_FOR_MOVIE			= 'INFO__||__Sending query for subtitle version for the movie: %s'
 		MOVIE_CODE_FOR_SUBVERSIONS_IS						= 'INFO__||__The movie code is: %s'
@@ -43,7 +43,7 @@ class LOGS:
 		#Ranking
 		GOT_EXACT_MATCH_FROM_VERSIONS_RANKING				= 'INFO__||__Got an absolute match for: %s'
 		NO_EXACT_MATCH_FROM_VERSIONS_RANKING				= 'INFO__||__Can\'t get an absolute match'
-		NO_EXACT_MATCH_FROM_VERSIONS_RANKING_TAKING_FIRST	= 'INFO__||__Can\'t get an absolute match -downloading the best match: %s'
+		NO_EXACT_MATCH_FROM_VERSIONS_RANKING_TAKING_FIRST	= 'INFO__||__Can\'t get an absolute match - downloading the best match: %s'
 		#Subtitle download
 		STARTING_SUBTITLE_DOWNLOAD_PROCEDURE 				= 'INFO__||__Starting subtitle download procedure'
 		SENDING_SUBTITLE_FILE_REQUEST_FOR_SUBTITLE  		= 'INFO__||__Sending subtitle file request for version: %s'
@@ -61,7 +61,7 @@ class LOGS:
 
 	class DIRECTION:
 		#Movie name query logs
-		INSERT_MOVIE_NAME_FOR_QUERY 						= 'DIRECTION__||__Please insert  a movie name'
+		INSERT_MOVIE_NAME_FOR_QUERY 						= 'DIRECTION__||__Please insert a movie name'
 		CHOOSE_MOVIE_FROM_MOVIES    						= 'DIRECTION__||__Please choose one of the movies'
 		#Subtitle versions query
 		CHOOSE_VERSION_FROM_VERSIONS 						= 'DIRECTION__||__Please choose one subtitle from the versions'

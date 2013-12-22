@@ -1,12 +1,13 @@
 import sys
 import os
 import time
-if os.name == 'nt':
-    import RegistryHandler
 
+import Utils
+if Utils.IsWindowPlatform():
+    import RegistryHandler
 import Settings
 from Settings import Config
-import Utils
+
 
 
 
@@ -32,36 +33,67 @@ def setExtList(extList):
 # Will register one extension to the right key
 #===============================================================================
 def register(extension):
-    (result, hKey) = RegistryHandler.getRelevantKey(extension)
-    if result == 0: #Success
-        RegistryHandler.register(hKey, EXE_LOCATION)
-    Utils.WriteDebug('Registration for ext: %s => %s' % (extension, 'Success' if not result else 'Failed'))
+    (error_code, hKey) = RegistryHandler.getRelevantKey(extension)
+    
+    #Check if we're not registered under the given key
+    if not RegistryHandler.isSubiTRegistered(extension):
+        if error_code == RegistryHandler.ERROR_SUCCESS: #Success
+            error_code = RegistryHandler.register(hKey, EXE_LOCATION)
+        else:
+            Utils.WriteDebug('getRelevantKey error_code: %s' % error_code)
+    Utils.WriteDebug('Registration for ext: %s => %s' % (extension, 'Success' if not error_code else 'Failed'))
+    return error_code
+
+
 #=======================================================================
 # Runs regiser on all extension under EXTENSIONS[]
 #=======================================================================
 def register_all():
-    for ext in getExtList():
-        register(ext)
-    Config.SubiTConfig.Singleton().setValue('Registry', 'register_extensions', True)
-    Config.SubiTConfig.Singleton().save()
+    # TODO: check if we got error_code == ERROR_ACCESS_DENIED and if so, ask the user to run us as administrator
+    try:
+        for ext in getExtList():
+            #If we got access_denied error
+            if register(ext) == RegistryHandler.ERROR_ACCESS_DENIED:
+                #Tell the user we need more privilages, and return from function
+                Utils.GuiInstance.getSettings().tellUserToRunAsAdministrator()
+                return
+        Config.SubiTConfig.Singleton().setValue('Registry', 'register_extensions', True)
+        Config.SubiTConfig.Singleton().save()
+    except Exception as eX:
+        Utils.WriteDebug('Registry exception: %s' % eX)
+        
         
 #===============================================================================
 # Will un-register one extension from the right key
 #===============================================================================
 def unregister(extension):
-    (result, hKey) = RegistryHandler.getRelevantKey(extension)
-    if result == 0: #Success
-        RegistryHandler.unregister(hKey)
-    Utils.WriteDebug('Remove registration for ext: %s => %s' % (extension, 'Success' if not result else 'Failed'))
+    (error_code, hKey) = RegistryHandler.getRelevantKey(extension)
+
+    #Check if we're registered under the given key
+    if RegistryHandler.isSubiTRegistered(extension):
+        if error_code == RegistryHandler.ERROR_SUCCESS: #Success
+            error_code = RegistryHandler.unregister(hKey)
+        else:
+            Utils.WriteDebug('getRelevantKey error_code: %s' % error_code)
+    Utils.WriteDebug('Remove registration for ext: %s => %s' % (extension, 'Success' if not error_code else 'Failed'))
+    return error_code
+
 #=======================================================================
 # Runs unregiser on all extension under EXTENSIONS[]
 #=======================================================================
 def unregister_all():
-    for ext in getExtList():
-        unregister(ext)
-    Config.SubiTConfig.Singleton().setValue('Registry', 'register_extensions', False)
-    Config.SubiTConfig.Singleton().save()
-
+    # TODO: check if we got error_code == ERROR_ACCESS_DENIED and if so, ask the user to run us as administrator
+    try:
+        for ext in getExtList():
+            #If we got access_denied error
+            if unregister(ext) == RegistryHandler.ERROR_ACCESS_DENIED:
+                #Tell the user we need more privilages, and return from function
+                Utils.GuiInstance.getSettings().tellUserToRunAsAdministrator()
+                return
+        Config.SubiTConfig.Singleton().setValue('Registry', 'register_extensions', False)
+        Config.SubiTConfig.Singleton().save()
+    except Exception as eX:
+        Utils.WriteDebug('Registry exception: %s' % eX)
 
 #===============================================================================
 # In case of directly running this script - should'nt happen...

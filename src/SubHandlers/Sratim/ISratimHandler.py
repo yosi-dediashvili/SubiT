@@ -12,9 +12,10 @@ class SRATIM_LANGUAGES:
     ENGLISH = '\xd7\x90\xd7\xa0\xd7\x92\xd7\x9c\xd7\x99\xd7\xaa'
 
 class SRATIM_PAGES:
-    DOMAIN              = 'www.sratim.co.il'
+    #DOMAIN              = 'www.sratim.co.il'
+    DOMAIN              = 'www.subtitle.co.il'
     SEARCH              = '/browse.php?q=%s'
-    MOVIE_SUBTITLES     = '/view.php?id=%s&m=subtitles#'
+    MOVIE_SUBTITLES     = '/view.php?id=%s&m=subtitles'
     SERIES_SUBTITLES    = '/viewseries.php?id=%s&m=subtitles#'
     SERIES_SEASON       = '/viewseries.php?id=%s&m=subtitles&s=%s'      # SeriesId & SeasonId
     SERIES_EPISODE      = '/viewseries.php?id=%s&m=subtitles&s=%s&e=%s' # SeriesId & SeasonId & EpisodeId
@@ -22,10 +23,12 @@ class SRATIM_PAGES:
     LANGUAGE            = SRATIM_LANGUAGES.HEBREW
 
 class SRATIM_REGEX:
-    TV_SERIES_RESULTS_PARSER    = '<div style=\"\"><a href=\"viewseries.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
+    #TV_SERIES_RESULTS_PARSER    = '<div style=\"\"><a href=\"viewseries.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
+    TV_SERIES_RESULTS_PARSER    = '<div class=\"browse_title_name\" itemprop=\"name\"><a href=\"viewseries.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     TV_SEASON_PATTERN           = 'seasonlink_(?P<SeasonCode>\d+).*?>(?P<SeasonNum>\d+)</a>'
     TV_EPISODE_PATTERN          = 'episodelink_(?P<EpisodeCode>\d+).*?>(?P<EpisodeNum>\d+)</a>'
-    MOVIE_RESULTS_PARSER        = '<div style=\"\"><a href=\"view.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
+    #MOVIE_RESULTS_PARSER        = '<div style=\"\"><a href=\"view.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
+    MOVIE_RESULTS_PARSER        = '<div class=\"browse_title_name\" itemprop=\"name\"><a href=\"view.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     SUBTITLE_LIST_PARSER        = 'downloadsubtitle\.php\?id=(?P<VerCode>\d*).*?subt_lang.*?title=\"(?P<Language>.*?)\".*?subtitle_title.*?title=\"(?P<VerSum>.*?)\"'
     VER_SUM_PARSER              = '<td class=\"FamilySubtitlesVerisons\"><a name="f\d"></a>(.*?)</td>'
 

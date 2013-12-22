@@ -42,15 +42,20 @@ class IOpenSubtitlesHandler(ISubHandler):
 		queryresult = None
 		#is_episode  = False
 
+
 		if os.path.exists(path):
 			filesize = os.path.getsize(path)                #calculated file size
 			filehash = IOpenSubtitlesHandler.HashFile(path)  #calculated file hash
 			#format the query for exact match only
 			movienamequery = IOpenSubtitlesHandler.FormatQuery({'moviehash'      : filehash,
 															   'moviebytesize'  : str(filesize)})
-			#send the query
-			queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
-																		   [movienamequery])['data']
+			try:
+				#send the query
+				queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
+																			   [movienamequery])['data']
+			except Exception as eX:
+				Utils.WriteDebug(eX)
+
 			if queryresult is not False:
 				is_episode = queryresult[0]['MovieKind'] == 'episode'
 				if get_movie_name_only: 
@@ -72,9 +77,13 @@ class IOpenSubtitlesHandler(ISubHandler):
 		#is_episode  = False
 
 		movienamequery = IOpenSubtitlesHandler.FormatQuery({ 'query' : fileName })
-		#send the query
-		queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
+		try:
+			#send the query
+			queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
 																		   [movienamequery])['data']
+		except Exception as eX:
+			Utils.WriteDebug(eX)
+
 		if queryresult is not False:
 			is_episode = queryresult[0]['MovieKind'] == 'episode'
 			if get_movie_name_only: 
@@ -118,16 +127,25 @@ class IOpenSubtitlesHandler(ISubHandler):
 			#format the query for exact match only
 			movienamequery = IOpenSubtitlesHandler.FormatQuery({'moviehash'      : filehash,
 															   'moviebytesize'  : str(filesize)})
-			queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
-																		   [movienamequery])['data']
+
+			try:
+				queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
+																				[movienamequery])['data']
+			except Exception as eX:
+				Utils.WriteDebug(eX)
+
 			queryresult = queryresult if queryresult is not False else None
 		#==================================================
 		
 		#If we got NoneFile query, or Hash query returned nothing
 		if queryresult is None:
 			movienamequery = IOpenSubtitlesHandler.FormatQuery({ 'query' : subSearch.Query })
-			queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
-																		   [movienamequery])['data']
+
+			try:
+				queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(), 
+																				[movienamequery])['data']
+			except Exception as eX:
+				Utils.WriteDebug(eX)
 			queryresult = queryresult if queryresult is not False else None
 		#==================================================   
 		
@@ -163,8 +181,13 @@ class IOpenSubtitlesHandler(ISubHandler):
 		subVersions      = []
 		
 		versionsquery = IOpenSubtitlesHandler.FormatQuery({'imdbid' : subMovie.MovieCode})
-		queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(),
-																[versionsquery])['data']
+
+		try:
+			queryresult = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(),
+																			[versionsquery])['data']
+		except Exception as eX:
+				Utils.WriteDebug(eX)
+
 		if queryresult is not False:
 			subVersions = map( lambda x: SubResult.SubVersion(  x[IDSubtitleFile], x[MovieReleaseName],
 																x[IDMovieImdb]), queryresult)                                      
@@ -178,8 +201,13 @@ class IOpenSubtitlesHandler(ISubHandler):
 		url     = None
 		
 		subpathquery = IOpenSubtitlesHandler.FormatQuery({'imdbid' : subVersion.MovieCode})
-		queryresult  = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(),
-																		[subpathquery])['data']
+
+		try:
+			queryresult  = IOpenSubtitlesHandler.GetServer().SearchSubtitles(IOpenSubtitlesHandler.GetToken(),
+																			[subpathquery])['data']
+		except Exception as eX:
+				Utils.WriteDebug(eX)
+
 		if queryresult is not False:
 			url     = filter(lambda x: x[IDSubtitleFile] == subVersion.VerCode, queryresult)[0][ZipDownloadLink]
 			domain  = OPENSUBTITLES_PAGES.DOMAIN

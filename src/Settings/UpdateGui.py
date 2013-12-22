@@ -66,17 +66,25 @@ class UpdateGui(QtGui.QDialog):
         sig.objSignal.emit(self)
 
     def askUserForLink(self, message, link):
+        sig = Communicate()
+        sig.mbSignal.connect(self.slot_askUserForLink)
+        sig.mbSignal.emit(message, link)
+
+    @QtCore.Slot(str, str)
+    def slot_askUserForLink(self, message, link):
+        #self = UpdateGui.Singleton()
         self.doCloseEvent()
         ret = QtGui.QMessageBox.question(   Utils.GuiInstance, 'Update',
                                             message,
                                             QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-
         if ret == QtGui.QMessageBox.Yes:
-            os.startfile(link)
+            import webbrowser
+            webbrowser.get().open(link)
 
     @QtCore.Slot(QtGui.QDialog)
     def doClose(self, w):
         w.accept()
 
 class Communicate(QtCore.QObject):
-    objSignal = QtCore.Signal(QtCore.QObject)
+    objSignal   = QtCore.Signal(QtCore.QObject)
+    mbSignal    = QtCore.Signal(str, str)

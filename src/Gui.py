@@ -7,9 +7,10 @@ from PySide import QtCore, QtGui
 import Utils
 import SubiT
 import Logs
+
 from GuiWidgets import GWTextInput
 from GuiWidgets import GWListWidget
-from GuiWidgets import GWTextEdit
+from GuiWidgets import GWListWidget_Log
 from Settings.AboutBoxDialog    import AboutBoxDialog
 from Settings.SettingsBoxDialog import SettingsBoxDialog
 from Settings.UpdateGui         import UpdateGui
@@ -38,6 +39,7 @@ class gui(QtGui.QMainWindow):
         self.setWindowModality(QtCore.Qt.WindowModal)
         self.setEnabled(True)
         self.resize(710, 390)
+        self.setGeometry(QtGui.QCursor().pos().x(), QtGui.QCursor().pos().y(),710, 390)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(100)
         sizePolicy.setVerticalStretch(100)
@@ -54,7 +56,8 @@ class gui(QtGui.QMainWindow):
         self.logGroupBox.setTitle(QtGui.QApplication.translate("SubiTMainForm", " Log ", None, QtGui.QApplication.UnicodeUTF8))
         self.logGroupBox.setObjectName(_fromUtf8("logGroupBox"))
         #self.logTextBrowser = GWTextEdit(self.logGroupBox)
-        self.logTextBrowser = QtGui.QListWidget(self.logGroupBox)
+        #self.logTextBrowser = QtGui.QListWidget(self.logGroupBox)
+        self.logTextBrowser = GWListWidget_Log(self.logGroupBox)
         self.logTextBrowser.setGeometry(QtCore.QRect(5, 20, 681, 101))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
@@ -168,21 +171,12 @@ class gui(QtGui.QMainWindow):
         sys.exit(app.exec_())
     
     def writelog(self, message):        
-        delim = Logs.LOGS.DELIMITER #String Splitter
-        (colr_message,real_message) = message.split(delim) #Split...
-        #Use dict in order to get the color
-        color = Logs.LOGS.TYPE_TO_COLOR[colr_message] 
-
-        #Html for log message
-        #formatted_message = gui.getUnicode('<font color=\"%s\">%s</font><br>' % (color, real_message)) 
-
-        logItem = QtGui.QListWidgetItem(gui.getUnicode(real_message))
-        logItem.setForeground(QtGui.QBrush(QtGui.QColor(color)))
-        #logItem.setFlags(logItem.flags() | QtCore.Qt.ItemIsEditable)
-
-        self.logTextBrowser.addItem(logItem)
-        self.logTextBrowser.setCurrentItem(logItem)
-        self.logTextBrowser.scrollToItem(logItem, QtGui.QAbstractItemView.ScrollHint.EnsureVisible)        
+        """Writes log message to the main window"""
+        #Utils.sleep(0.05) #Use sleep to avoid to much items waiting for the mutex to release (inside the log write function)
+        #Send the log message via the signal
+        #self.logTextBrowser.doAddItem.str_signal.emit(message) 
+        self.logTextBrowser.addItemAsync(message)
+        
     
     #===========================================================
     # Sub selection Handling
@@ -193,21 +187,23 @@ class gui(QtGui.QMainWindow):
         
         Utils.writelog( message )
         
-        self.versionsListWidget.setEnabled(True)
+        #self.versionsListWidget.setEnabled(True)
+        self.versionsListWidget.enable(True)
         self.versionsListWidget.clear()
         
         for choice in choices:
-            self.versionsListWidget.doAddItem.str_signal.emit(gui.getUnicode(choice.VerSum))
+            #self.versionsListWidget.doAddItem.str_signal.emit(gui.getUnicode(choice.VerSum))
+            self.versionsListWidget.addItemAsync(gui.getUnicode(choice.VerSum))
             
                 
     def getsubselection(self):
-        self.versionsListWidget.setEnabled(True)
+        #self.versionsListWidget.setEnabled(True)
+        self.versionsListWidget.enable(True)
         self.versionsListWidget.setFocus(QtCore.Qt.FocusReason.OtherFocusReason)
         self.versionsListWidget.doubleClicked.connect(self.notifySubSelection)
 
     def notifySubSelection(self):
         self.notifyselection('SUB')
-         
     #===========================================================================
     # Movie selection handling
     #===========================================================================
@@ -217,16 +213,19 @@ class gui(QtGui.QMainWindow):
         
         Utils.writelog( message )
 
-        self.moviesListWidget.setEnabled(True)        
+        #self.moviesListWidget.setEnabled(True)        
+        self.moviesListWidget.enable(True)        
         self.moviesListWidget.clear()
         
         for choice in choices:
-            self.moviesListWidget.doAddItem.str_signal.emit(gui.getUnicode(choice.MovieName + ' -> ' + choice.VerSum))
+            #self.moviesListWidget.doAddItem.str_signal.emit(gui.getUnicode(choice.MovieName + ' -> ' + choice.VerSum))
+            self.moviesListWidget.addItemAsync(gui.getUnicode(choice.MovieName + ' -> ' + choice.VerSum))
             
         self.moviesListWidget.setFocus(QtCore.Qt.FocusReason.OtherFocusReason)
         
     def getmovieselection(self):
-        self.moviesListWidget.setEnabled(True)        
+        #self.moviesListWidget.setEnabled(True)        
+        self.moviesListWidget.enable(True)        
         self.moviesListWidget.setFocus(QtCore.Qt.FocusReason.OtherFocusReason)
         self.moviesListWidget.doubleClicked.connect(self.notifyMovieSelection)
 
@@ -279,8 +278,11 @@ class gui(QtGui.QMainWindow):
             elif self.movieselected:
                 selection = ('MOVIE', self.moviechoices[self.moviesListWidget.currentRow()])
                 
-        self.versionsListWidget.setEnabled(False)
-        self.moviesListWidget.setEnabled(False)
+        #self.versionsListWidget.setEnabled(False)
+        #self.moviesListWidget.setEnabled(False)
+
+        self.versionsListWidget.enable(False)
+        self.moviesListWidget.enable(False)
       
         return selection
             
@@ -295,9 +297,22 @@ class gui(QtGui.QMainWindow):
     
     def showSettings(self):
         self.getSettings().open()
+    
 
-    def getSettings(self):
-        return SettingsBoxDialog(self)
+    _settingsBoxDialog = None
+    def getSettings(self):        
+        gui._settingsBoxDialog = None
+        sig = Communicate()
+        sig.objSignal.connect(self.slot_getSettings)
+        sig.objSignal.emit(self)
+
+        while not gui._settingsBoxDialog:
+            pass
+        return gui._settingsBoxDialog
+
+    @QtCore.Slot(QtGui.QMainWindow)
+    def slot_getSettings(self):
+        gui._settingsBoxDialog = SettingsBoxDialog(self)
     
     def showUpdate(self):
         sig = Communicate()

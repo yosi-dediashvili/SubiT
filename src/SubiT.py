@@ -1,15 +1,22 @@
 #!/usr/bin/python
+DEBUG = True
+
 import sys
 import os
 #from PySide import QtCore
 from threading import Thread
 
+
 from Settings import Registry
 from Settings import Config
-import Utils
-import SubFlow
-import Gui
+VERSION = Config.SubiTConfig.Singleton().getStr('Global', 'version')
 
+if DEBUG:
+    import traceback
+
+import Utils
+import Gui
+from Settings import Update
 
 import Logs
 
@@ -17,11 +24,7 @@ INFO_LOGS = Logs.LOGS.INFO
 WARN_LOGS = Logs.LOGS.WARN
 DIRC_LOGS = Logs.LOGS.DIRECTION
 
-VERSION = Config.SubiTConfig.Singleton().getStr('Global', 'version')
-
-DEBUG = False
-if DEBUG:
-    import traceback
+import SubFlow
 
 #===============================================================================
 # Worker Thread, that's where the real flow starts
@@ -31,9 +34,9 @@ class SubiTWorkerThread(Thread):
         from Settings import Update, UpdateGui    
         #Wait for gui and update module to start
         while Utils.GuiInstance is None or UpdateGui.UpdateGui._Singelton is None: pass
-    
+
         #Check if we're running for the first time and os is windows
-        if Config.SubiTConfig.Singleton().getBoolean('Global', 'is_first_run') and os.name == 'nt':
+        if Config.SubiTConfig.Singleton().getBoolean('Global', 'is_first_run') and Utils.IsWindowPlatform():
             Utils.GuiInstance.getSettings().askForFirstRegistration()
             #After first time, set to False...
             Config.SubiTConfig.Singleton().setValue('Global', 'is_first_run', False)
@@ -44,6 +47,7 @@ class SubiTWorkerThread(Thread):
         Update.performUpdate()
 
         dir, movie_name, fullpath= Utils.parseargs()
+        
         while True:
             try:
                 Utils.WriteDebug('Initiating SubFlow')
@@ -78,21 +82,26 @@ class SubiTWorkerThread(Thread):
 #We start here
 if __name__ == '__main__':
     Utils.WriteDebug('Running From: %s' % Utils.PROGRAM_DIR_PATH)
+    #==========================================================================
+    # Handle zip file if exists
+    #==========================================================================
+    if Utils.IsWindowPlatform():
+        #Handle the update zip file, if there's any (we check it inside the function)    
+        Update.handleUpdateZipFile()
+    #==========================================================================
+
     #Handle registration request
     if len(sys.argv) > 1:
         #Dict for lambda's
         regparams = {   '-register'     : lambda: Registry.register_all(),
                         '-unregister'   : lambda: Registry.unregister_all() }
-        if sys.argv[1] in regparams:
+        #If parameter is for registration, and the os is windows
+        if sys.argv[1] in regparams and Utils.IsWindowPlatform():
             #execute relevant lambda
             regparams[sys.argv[1]]()
             sys.exit(0)
             #exit...
-
-    #Handle the update zip file, if there's any (we check it inside the function)
-    from Settings import Update
-    Update.handleUpdateZipFile()
-    
+        
     subitWorkerThread = SubiTWorkerThread()
     subitWorkerThread.setDaemon(True)
     subitWorkerThread.start()

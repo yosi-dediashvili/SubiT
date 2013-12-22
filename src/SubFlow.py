@@ -18,49 +18,68 @@ class SubFlow:
         #Print Handler name to the log window
         Utils.writelog(INFO_LOGS.SELECTED_SUB_HANDLER_IS % SubResult.SubHandler.Handler().HANDLER_NAME)
     
+
+    def getMovieNameFromEngOpenSubtitles(self, filename, fullpath):
+        #Call to the cstor of the handler
+        eng_OpenSubtitlesHandler.Handler()()
+        os_result = None #result from opensubtitles
+            
+        try:
+            Utils.writelog(INFO_LOGS.OS_SENDING_QUERY_USING_THE_FILE_HASH_VALUE)
+            os_result = eng_OpenSubtitlesHandler.Handler().findByHash(fullpath, True)
+        except:
+            Utils.WriteDebug('Failed: OS-Hash')
+
+        if not os_result:
+            try:
+                Utils.writelog(WARN_LOGS.OS_CANT_GET_MOVIE_NAME_FOR_HASH_VALUE)
+                Utils.writelog(INFO_LOGS.OS_SENDING_QUERY_USING_THE_FILE_NAME)
+                os_result = eng_OpenSubtitlesHandler.Handler().findByFileName(filename, True)
+            except:
+                Utils.WriteDebug('Failed: OS-FileName')
+        if not os_result:
+            Utils.writelog(WARN_LOGS.OS_CANT_GET_MOVIE_NAME_FOR_FILE_NAME)
+        else:
+            Utils.writelog(INFO_LOGS.OS_FOUND_MOVIE_NAME)
+
+        return os_result
+
     #=======================================================================
     #================first stage - Query Stage - first stage================
     #=======================================================================
-    def handleSubSearch(self, subSearch, filename, fullpath, interactive):
+    def handleSubSearch(self, filename, fullpath, interactive):
+        subSearch = SubResult.SubSearch(filename, fullpath)
         #If we can't get results, and we're not already using English@opensubtitles
         if (not len(subSearch.Results()) and (SubResult.SubHandler.Handler().HANDLER_NAME != eng_OpenSubtitlesHandler.Handler().HANDLER_NAME)):
-            #Call to the cstor of the handler
-            eng_OpenSubtitlesHandler.Handler()()
-            os_result = None #result from opensubtitles
+            os_result = self.getMovieNameFromEngOpenSubtitles(filename, fullpath)
+            if not os_result:
+                try:
+                    got_results = False
+                    while SubResult.SubHandler.SetNextHandler():
+                        got_results = bool(subSearch.Results())
+                        if got_results:
+                            break
+                        else:
+                            pass #keep looking at other handlers
 
-            try:
-                Utils.writelog(INFO_LOGS.OS_SENDING_QUERY_USING_THE_FILE_HASH_VALUE)
-                os_result = eng_OpenSubtitlesHandler.Handler().findByHash(fullpath, True)
-                #if there's no result from the hash check
-                if not os_result:
-                    Utils.writelog(WARN_LOGS.OS_CANT_GET_MOVIE_NAME_FOR_HASH_VALUE)
-                    Utils.writelog(INFO_LOGS.OS_SENDING_QUERY_USING_THE_FILE_NAME)
-                    os_result = eng_OpenSubtitlesHandler.Handler().findByFileName(filename, True)
-                    #if there's no result from the file name check
-                    if not os_result:
-                        Utils.writelog(WARN_LOGS.OS_CANT_GET_MOVIE_NAME_FOR_FILE_NAME)
+                    if got_results:
+                        Utils.WriteDebug('Got results from this handler')
+                    else:
+                        Utils.WriteDebug('Tried all handlers, and didnt got results, Going to ask the user')
                         if interactive:
+                            SubResult.SubHandler() #Call init in here, in order to go back to our main handler
+                            subSearch = SubResult.SubSearch( Utils.askuserforname() )
                             #If interactive and we got no results
                             while not len(subSearch.Results()):
                                 #keep asking
-                                subSearch = SubResult.SubSearch( Utils.askuserforname() )
-
+                                subSearch = SubResult.SubSearch( Utils.askuserforname())
+                            filename = subSearch.Query
                         else:
                             #Else - quit/go to next movie(non-interactive)
                             return None
-            #If the handler failed, ask the user
-            except:
-                if interactive:
-                    #If interactive and we got no results
-                    while not len(subSearch.Results()):
-                        #keep asking
-                        subSearch = SubResult.SubSearch( Utils.askuserforname() )
-                else:
-                    #Else - quit/go to next movie(non-interactive)
-                    return None
-
-            if os_result:
-                Utils.writelog(INFO_LOGS.OS_FOUND_MOVIE_NAME)
+                except Exception as eX:
+                    Utils.WriteDebug(eX)                    
+            else:            
                 tempSubSearch = SubResult.SubSearch(os_result)
                 if len(tempSubSearch.Results()):
                     #If we got results, overwrite the value in the original subSearch object
@@ -78,10 +97,10 @@ class SubFlow:
             subMovie = subSearch.Results()[0]
         #We got more then one movie
         else:
-            (result, first_is_certain) = subSearch.RankResults()
+            (results, first_is_certain) = subSearch.RankResults()
             if interactive and not first_is_certain:
                 #Logic for interactive selection
-                Utils.setmoviechoices( subSearch.Results(), DIRC_LOGS.CHOOSE_MOVIE_FROM_MOVIES )
+                Utils.setmoviechoices( results, DIRC_LOGS.CHOOSE_MOVIE_FROM_MOVIES )
                 while not subVersion:
                     (type, result) = Utils.getselection('ANY')
                     if type == 'MOVIE':
@@ -92,7 +111,7 @@ class SubFlow:
                 #=================================
             #We apply self logic - Rank by Version Summary at the search page [TorecMovie.VerSum]
             else:
-                subMovie = result
+                subMovie = results[0]
         return (subMovie, subVersion)
 
     #=======================================================================
@@ -134,9 +153,9 @@ class SubFlow:
         Utils.writelog( INFO_LOGS.STARTING_DO_FILE_PROCEDURE % filename )
         
         #First try to find match, just send the values to the selected handler
-        subSearch = SubResult.SubSearch( filename, fullpath )
+        #subSearch = SubResult.SubSearch( filename, fullpath )
         #Handle the query
-        subSearch = self.handleSubSearch(subSearch, filename, fullpath, interactive)
+        subSearch = self.handleSubSearch(filename, fullpath, interactive)
         #If we got results
         if subSearch:
             #Handle the results -> the movies/serieses. we might get the matched subVersion.
@@ -156,7 +175,7 @@ class SubFlow:
                 #there is no need to check for interactive value.
                 dir = dir if len(dir) else Utils.askuser( DIRC_LOGS.INSERT_LOCATION_FOR_SUBTITLE_DOWNLOAD % os.getcwd(), True, True )
                 subVersion.Download(dir, filename)
-            
+       
         Utils.writelog( INFO_LOGS.FINISHED_DO_FILE_PROCEDURE )
     
     #===========================================================================

@@ -34,8 +34,10 @@ class Hamster:
             ctime = int(time.time()) #time of request
             guest_code = Utils.performrequest(TorecHandler.TOREC_PAGES.DOMAIN, 
                                               TorecHandler.TOREC_PAGES.TICKET, 
-                                              '',
-                                              TorecHandler.HttpRequestTypes.GET, 
+                                              #Torec "improved the mechanizm of the hash code, so it wants us 
+                                              #to deliver the screen res and the sub_id, so we give him something
+                                              'sub_id=1337&s=1337', 
+                                              TorecHandler.HttpRequestTypes.POST, 
                                               '')
             
             Hamster.HashCodes.put((ctime, guest_code), block=True)

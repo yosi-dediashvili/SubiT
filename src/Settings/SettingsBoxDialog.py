@@ -31,15 +31,15 @@ class SettingsBoxDialog(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         
         self.setObjectName(_fromUtf8("settingsQDialog"))
-        self.resize(400, 220)
-        self.setMinimumSize(QtCore.QSize(400, 220))
-        self.setMaximumSize(QtCore.QSize(400, 220))
+        self.resize(400, 240)
+        self.setMinimumSize(QtCore.QSize(400, 240))
+        self.setMaximumSize(QtCore.QSize(400, 240))
         self.setWindowTitle(QtGui.QApplication.translate("settingsQDialog", "SubiT - Settings", None, QtGui.QApplication.UnicodeUTF8))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(os.path.join(Gui.IMAGES_LOCATION, "icon.png"))), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.setWindowIcon(icon)
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(230, 190, 156, 23))
+        self.buttonBox.setGeometry(QtCore.QRect(230, 210, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Save)
         self.buttonBox.setCenterButtons(False)
@@ -49,7 +49,7 @@ class SettingsBoxDialog(QtGui.QDialog):
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.onCancelClicked)
         
         self.settingsTabWidget = QtGui.QTabWidget(self)
-        self.settingsTabWidget.setGeometry(QtCore.QRect(10, 10, 380, 170))
+        self.settingsTabWidget.setGeometry(QtCore.QRect(10, 10, 380, 190))
         self.settingsTabWidget.setObjectName("settingsTabWidget")
 
         self.globalTab = QtGui.QWidget()
@@ -68,6 +68,8 @@ class SettingsBoxDialog(QtGui.QDialog):
         self.globalCheckBox_checkForUpdates.setGeometry(QtCore.QRect(10, 15, 340, 20))
         self.globalCheckBox_autoUpdate = QtGui.QCheckBox(parent = self.globalTab_updateGroupBox, text = 'Auto update')
         self.globalCheckBox_autoUpdate.setGeometry(QtCore.QRect(10, 35, 340, 20))
+        #self.globalCheckBox_autoUpdate.setEnabled(os.name == 'nt')
+        self.globalCheckBox_autoUpdate.setEnabled(False)
         self.globalTab_updateGroupBox_updateBtn = QtGui.QPushButton(self.globalTab_updateGroupBox)
         self.globalTab_updateGroupBox_updateBtn.setGeometry(QtCore.QRect(10, 55, 335, 25))
         self.globalTab_updateGroupBox_updateBtn.setText(QtGui.QApplication.translate("SubiTMainForm", "Check For Update", None, QtGui.QApplication.UnicodeUTF8))
@@ -84,22 +86,41 @@ class SettingsBoxDialog(QtGui.QDialog):
         self.handlersComboBox = QtGui.QComboBox(self.handlersTab)
         self.handlersComboBox.setGeometry(QtCore.QRect(10, 30, 355, 22))
         self.handlersComboBox.setObjectName(_fromUtf8("handlersComboBox"))
-        self.handlersLine = QtGui.QFrame(self.handlersTab)
-        self.handlersLine.setGeometry(QtCore.QRect(20, 60, 321, 20))
-        self.handlersLine.setFrameShape(QtGui.QFrame.HLine)
-        self.handlersLine.setFrameShadow(QtGui.QFrame.Sunken)
-        self.handlersLine.setObjectName(_fromUtf8("handlersLine"))
-        self.handlersCheckBox_useAllHandlers = QtGui.QCheckBox(parent = self.handlersTab, text = 'Use all handlers for selected language')
-        self.handlersCheckBox_useAllHandlers.setGeometry(QtCore.QRect(10, 80, 355, 20))
-        self.handlersCheckBox_useAllHandlers.setEnabled(False)
-        self.handlersLabel_useAllHandlers = QtGui.QLabel(self.handlersTab)
-        self.handlersLabel_useAllHandlers.setGeometry(QtCore.QRect(10, 95, 355, 50))
-        self.handlersLabel_useAllHandlers.setText(QtGui.QApplication.translate("settingsQDialog", "When this value is selected, SubiT will use all avaliable handlers (with \nthe same language) in order to find the subtitle", None, QtGui.QApplication.UnicodeUTF8))
-        self.handlersLabel_useAllHandlers.setObjectName(_fromUtf8("handlersLabel_useAllHandlers"))
-        self.handlersLabel_useAllHandlers.setEnabled(False)
+
+        self.handlersTab_AdvanceGroupBox = QtGui.QGroupBox(self.handlersTab, title = 'Advanced')
+        self.handlersTab_AdvanceGroupBox.setGeometry(QtCore.QRect(10, 80, 355, 80))
+
+        self.handlersAdvancedCheckBox = QtGui.QCheckBox(parent = self.handlersTab, text = 'Enable advanced settings')
+        self.handlersAdvancedCheckBox.setGeometry(QtCore.QRect(10, 60, 355, 20))
+        self.handlersAdvancedCheckBox.stateChanged.connect(lambda i: self.handlersTab_AdvanceGroupBox.setEnabled(True if i == 2 else False))
+        self.handlersAdvancedCheckBox.setChecked(True)
+
+        self.handlersPrimaryLanguageLabel = QtGui.QLabel(self.handlersTab_AdvanceGroupBox)
+        self.handlersPrimaryLanguageLabel.setGeometry(QtCore.QRect(10, 15, 90, 20))
+        self.handlersPrimaryLanguageLabel.setText(QtGui.QApplication.translate("settingsQDialog", "Primary language:", None, QtGui.QApplication.UnicodeUTF8))
+        self.handlersPrimaryLanguageLabel.setObjectName(_fromUtf8("handlersPrimaryLanguageLabel"))
+        self.handlersPrimaryLanguageComboBox = QtGui.QComboBox(self.handlersTab_AdvanceGroupBox)
+        self.handlersPrimaryLanguageComboBox.setGeometry(QtCore.QRect(120, 15, 85, 22))
+        self.handlersPrimaryLanguageComboBox.setObjectName(_fromUtf8("handlersPrimaryLanguageComboBox"))
+
+
+        self.handlersSecondaryLanguageLabel = QtGui.QLabel(self.handlersTab_AdvanceGroupBox)
+        self.handlersSecondaryLanguageLabel.setGeometry(QtCore.QRect(10, 45, 110, 20))
+        self.handlersSecondaryLanguageLabel.setText(QtGui.QApplication.translate("settingsQDialog", "Secondary language:", None, QtGui.QApplication.UnicodeUTF8))
+        self.handlersSecondaryLanguageLabel.setObjectName(_fromUtf8("handlersSecondaryLanguageLabel"))
+        self.handlersSecondaryLanguageComboBox = QtGui.QComboBox(self.handlersTab_AdvanceGroupBox)
+        self.handlersSecondaryLanguageComboBox.setGeometry(QtCore.QRect(120, 45, 85, 22))
+        self.handlersSecondaryLanguageComboBox.setObjectName(_fromUtf8("handlersSecondaryLanguageComboBox"))
+
+
+        self.handlersLanguagesLabel = QtGui.QLabel(self.handlersTab_AdvanceGroupBox)
+        self.handlersLanguagesLabel.setGeometry(QtCore.QRect(220, 15, 120, 50))
+        self.handlersLanguagesLabel.setText(QtGui.QApplication.translate("settingsQDialog", "These handlers will be\r\nused when no result will\r\ncome up using the\r\nselected handler.", None, QtGui.QApplication.UnicodeUTF8))
+        self.handlersLanguagesLabel.setObjectName(_fromUtf8("handlersLanguagesLabel"))
+        self.handlersLanguagesLabel.setEnabled(False)
 
         #Add extension handling only if it's Windows
-        if os.name == 'nt':
+        if Utils.IsWindowPlatform():
             self.registryTab = QtGui.QWidget()
             self.registryTab.setObjectName("registryTab")
             self.settingsTabWidget.addTab(self.registryTab, "Registry")        
@@ -126,8 +147,8 @@ class SettingsBoxDialog(QtGui.QDialog):
             self.extAddButton.clicked.connect(self.onExtAddButtonClicked)
             self.extAddButton.setEnabled(True)
 
-        self.extCheckBox_registerExtensions = QtGui.QCheckBox(parent = self.registryTab, text = 'Register extensions')
-        self.extCheckBox_registerExtensions.setGeometry(QtCore.QRect(10, 115, 340, 20))
+            self.extCheckBox_registerExtensions = QtGui.QCheckBox(parent = self.registryTab, text = 'Register extensions')
+            self.extCheckBox_registerExtensions.setGeometry(QtCore.QRect(10, 115, 340, 20))
 
         self.setConfigs()
         self.retranslateUi()
@@ -146,48 +167,75 @@ class SettingsBoxDialog(QtGui.QDialog):
 
         self.globalCheckBox_closeOnFinish.setChecked(CONFIG_CLOSE_ON_FINISH)
         self.globalCheckBox_checkForUpdates.setChecked(CONFIG_CHECK_UPDATES)
-        self.globalCheckBox_autoUpdate.setChecked(CONFIG_AUTO_UPDATE)
+        #self.globalCheckBox_autoUpdate.setChecked(CONFIG_AUTO_UPDATE and os.name == 'nt')
+        self.globalCheckBox_autoUpdate.setChecked(False)
         #=============================================================
-        #Registry tab
-        CONFIG_REGISTER_EXTENSIONS = Config.SubiTConfig.Singleton().getBoolean('Registry', 'register_extensions')
 
-        self.extCheckBox_registerExtensions.setChecked(CONFIG_REGISTER_EXTENSIONS)
-        if os.name == 'nt':
+        if Utils.IsWindowPlatform():
+            #Registry tab
+            CONFIG_REGISTER_EXTENSIONS = Config.SubiTConfig.Singleton().getBoolean('Registry', 'register_extensions')
+
+            self.extCheckBox_registerExtensions.setChecked(CONFIG_REGISTER_EXTENSIONS)
             for ext in Registry.getExtList():
                 self.addItemToExtListWidget(ext)
             if self.extListWidget.count() > 1:
                 self.extDelButton.setEnabled(False)
         #=============================================================
         #Handlers tab
-        CONFIG_TRY_ALL_HANDLERS = Config.SubiTConfig.Singleton().getBoolean('Handlers', 'try_all_handlers')
+        CONFIG_PRIMARY_LANG         = Config.SubiTConfig.Singleton().getStr('Handlers', 'primary_lang')
+        CONFIG_SECONDARY_LANG       = Config.SubiTConfig.Singleton().getStr('Handlers', 'secondary_lang')
+        CONFIG_ADVANCED_SETTINGS    = Config.SubiTConfig.Singleton().getBoolean('Handlers', 'advanced_features')
+        all_languages = []
 
-        self.handlersCheckBox_useAllHandlers.setChecked(CONFIG_TRY_ALL_HANDLERS)
         #Get handlers name from all avaliable handlers
         handlers_names = map(lambda x: x.HANDLER_NAME, SubHandlers.getHandlers())
         #Sort by both lang & handler name
         handlers_names.sort(lambda x, y: cmp(cmp(x[1], y[1]), cmp(x[0],y[0])), lambda z: z.split(' - '))
         selected_handler = SubHandlers.getSelectedHandler().HANDLER_NAME
         
-        #group results using the left hand side of the handler name (the site name)
+        #group results using the right hand side of the handler name (the site name)
         for group, handlers in groupby(handlers_names, lambda h: h.split(' - ')[1]):
             for h in handlers:
                 self.handlersComboBox.insertItem(0, h)
+                l = h.split(' - ')[0]
+                if l not in all_languages:
+                    all_languages.append(l)
             self.handlersComboBox.insertSeparator(-1)
         #highlight the selected handler            
         self.handlersComboBox.setCurrentIndex(self.handlersComboBox.findText(selected_handler))
+
+        import locale
+        all_languages.sort(locale.strcoll, reverse=True) #Sort them, alphabeticly. we set reverse, because we're putting items at index of 0
+        #group results using the left hand side of the handler name (the language)
+        for lang in all_languages:
+            self.handlersPrimaryLanguageComboBox.insertItem(0, lang)
+            self.handlersSecondaryLanguageComboBox.insertItem(0, lang)
+
+        self.handlersPrimaryLanguageComboBox.setCurrentIndex(self.handlersPrimaryLanguageComboBox.findText(CONFIG_PRIMARY_LANG))
+        self.handlersSecondaryLanguageComboBox.setCurrentIndex(self.handlersSecondaryLanguageComboBox.findText(CONFIG_SECONDARY_LANG))
+        
+        self.handlersAdvancedCheckBox.setChecked(CONFIG_ADVANCED_SETTINGS)
 
     def onCancelClicked(self):
         self.close()
     
     def askForFirstRegistration(self):
+        sig = Communicate()
+        sig.objSignal.connect(self.slot_askForFirstRegistration)
+        sig.objSignal.emit(self)
+
+    @QtCore.Slot(QtGui.QDialog)
+    def slot_askForFirstRegistration(self):
         ret = QtGui.QMessageBox.question(self, 'Context menu registration',
                                self.tr("Whould you like SubiT to appear in the right-click context menu of movie files?\r\n\r\nDefault extensions are: \r\n%s" % 
                                        Config.SubiTConfig.Singleton().getStr('Registry', 'keys').replace('|', ', ')),
                                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
         if ret == QtGui.QMessageBox.Yes:
             Registry.register_all()
-               
 
+    def tellUserToRunAsAdministrator(self):
+        QtGui.QMessageBox.warning(self, 'Registration failure', "Registration for right-click context menu has failed using the current user privilages\r\n\r\nPlease run SubiT as Administrator, and try again.")
+               
     def onApplyClicked(self):
         self.onSaveClicked()
         ret = QtGui.QMessageBox.question(self, 'Restart',
@@ -200,18 +248,23 @@ class SettingsBoxDialog(QtGui.QDialog):
         #Set global values
         Config.SubiTConfig.Singleton().setValue('Global', 'close_on_finish', self.globalCheckBox_closeOnFinish.isChecked())
         Config.SubiTConfig.Singleton().setValue('Global', 'check_updates', self.globalCheckBox_checkForUpdates.isChecked())
-        Config.SubiTConfig.Singleton().setValue('Global', 'auto_update', self.globalCheckBox_autoUpdate.isChecked())
+        #Config.SubiTConfig.Singleton().setValue('Global', 'auto_update', self.globalCheckBox_autoUpdate.isChecked() and os.name == 'nt')
+        Config.SubiTConfig.Singleton().setValue('Global', 'auto_update', False)
         
         #Set handler values
+        primarylang     = str(self.handlersPrimaryLanguageComboBox.currentText())
+        secondarylang   = str(self.handlersSecondaryLanguageComboBox.currentText())
         selectedHandler = str(self.handlersComboBox.currentText())
         if selectedHandler in map(lambda x: x.HANDLER_NAME, SubHandlers.getHandlers()):
             SubHandlers.setSelectedHandler(str(self.handlersComboBox.currentText()))
         
-        Config.SubiTConfig.Singleton().setValue('Handlers', 'try_all_handlers', self.handlersCheckBox_useAllHandlers.isChecked())
         Config.SubiTConfig.Singleton().setValue('Handlers', 'selected_handler', selectedHandler)
+        Config.SubiTConfig.Singleton().setValue('Handlers', 'advanced_features', self.handlersAdvancedCheckBox.isChecked())
+        Config.SubiTConfig.Singleton().setValue('Handlers', 'primary_lang', primarylang)
+        Config.SubiTConfig.Singleton().setValue('Handlers', 'secondary_lang', secondarylang)
         
         #Set registry values
-        if os.name == 'nt':
+        if Utils.IsWindowPlatform():
             #First we unregister the current extensions from the registry, in order to start from fresh
             Registry.unregister_all()
             CONFIG_REGISTER_EXTENSIONS = self.extCheckBox_registerExtensions.isChecked()
@@ -262,3 +315,6 @@ class SettingsBoxDialog(QtGui.QDialog):
         item.setCheckState(QtCore.Qt.CheckState.Checked)
         self.extListWidget.addItem(item)
         return item
+
+class Communicate(QtCore.QObject):
+    objSignal = QtCore.Signal(QtCore.QObject)

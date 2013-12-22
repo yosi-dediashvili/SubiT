@@ -3,7 +3,6 @@ import time
 import urllib
 import os
 import shutil
-#import urllib.request
 import zipfile
 
 from Settings import Config
@@ -44,8 +43,21 @@ def handleUpdateZipFile(zip_location = os.path.join(Utils.PROGRAM_DIR_PATH, 'lat
         Config.SubiTConfig.Singleton().save() #Save and close the config file
         with zipfile.ZipFile(zip_location) as zfile:
             for fileInfo in zfile.filelist:
+                #If we handling the config file
+                if fileInfo.filename == '%s/%s' % ('Settings', Config.CONFIG_FILE_NAME):
+                    new_config_file_name = fileInfo.filename.replace(Config.CONFIG_FILE_NAME, 'new_config.ini')
+                    new_config_full_path = os.path.join(Utils.PROGRAM_DIR_PATH, new_config_file_name)
+                    #We rename the filename info, in order to do and upgrade to the config (Otherwise, we'll just overwrite it)
+                    fileInfo.filename = fileInfo.filename.replace(Config.CONFIG_FILE_NAME, 'new_config.ini')
+                    Utils.WriteDebug('Extracting new config file: %s' % new_config_file_name)
+                    zfile.extract(fileInfo, Utils.PROGRAM_DIR_PATH)
+                    Utils.WriteDebug('New config file extracted: %s' % new_config_file_name)
+                    #Perform the upgrade
+
+                    Config.SubiTConfig.Singleton().upgrade(new_config_full_path)
+                    os.remove(new_config_full_path)
                 #If the file is directory (we check for file size...), and the directory is first in the tree (we are not inside another directory)
-                if fileInfo.file_size == 0 and fileInfo.filename.index('/') == len(fileInfo.filename) -1:
+                elif fileInfo.file_size == 0 and fileInfo.filename.index('/') == len(fileInfo.filename) -1 and fileInfo.filename != 'Settings/':
                     dir_name = os.path.join(Utils.PROGRAM_DIR_PATH, fileInfo.filename.split('/')[0]) #dir name in SubiT's dir
                     if os.path.exists(dir_name):
                         #If the direcotry exists in SubiT we remove it in order to avoid problems after the 
@@ -55,10 +67,11 @@ def handleUpdateZipFile(zip_location = os.path.join(Utils.PROGRAM_DIR_PATH, 'lat
                             shutil.rmtree(dir_name)
                         except Exception as eX:
                             Utils.WriteDebug('Failed on deletion: %s->%s' % (dir_name, eX.message))
-                Utils.WriteDebug('Extracting: %s' % fileInfo.filename)
-                #after cleaning all, extract the item
-                zfile.extract(fileInfo, Utils.PROGRAM_DIR_PATH)
-                Utils.WriteDebug('Extracted: %s' % fileInfo.filename)
+                else:
+                    Utils.WriteDebug('Extracting: %s' % fileInfo.filename)
+                    #after cleaning all, extract the item
+                    zfile.extract(fileInfo, Utils.PROGRAM_DIR_PATH)
+                    Utils.WriteDebug('Extracted: %s' % fileInfo.filename)
         Utils.WriteDebug('Removing update file')
         os.remove(zip_location)
         Utils.WriteDebug('Restarting SubiT')
@@ -70,7 +83,7 @@ def isLatestVersion(force = False):
     """function to decide wether our version is the latest version or not"""
     
     #Default values
-    is_latest   = False
+    is_latest   = True
     latest_url  = ''
     latest_ver  = ''
 
@@ -127,7 +140,11 @@ def performUpdate(force = False, do_auto = True):
             Utils.GuiInstance.showUpdate()
             writeLog('Global.auto_update is %s' % str(SHOULD_AUTO_UPDATE))
             #If we should perform auto_update
-            if SHOULD_AUTO_UPDATE and do_auto:
+
+            #=====================================================================================
+            # TODO: Fix update mechanizm - for now, we only support notificaiton for new updates
+            #=====================================================================================
+            if SHOULD_AUTO_UPDATE and do_auto and os.name == 'nt' and False:
                 zip_location = os.path.join(Utils.PROGRAM_DIR_PATH, 'latest_version.zip')
                 writeLog('Downloading Update')
                 #Download the zip file
@@ -137,6 +154,9 @@ def performUpdate(force = False, do_auto = True):
                 writeLog('SubiT will now restart')
                 time.sleep(2)
                 Utils.restart()
+            #=====================================================================================
+            #=====================================================================================
+            #=====================================================================================
             else:
                 update_message = 'New version of SubiT is available!\r\nYour version is: %s, latest version is: %s.\r\n\r\nClick Yes for redirection to the download page.' % (CURRENT_VERSION, latest_version)
                 UpdateGui.Singleton().askUserForLink(update_message, LATEST_VERSION_LINK)
