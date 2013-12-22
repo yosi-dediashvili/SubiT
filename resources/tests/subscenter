@@ -1,0 +1,6 @@
+import httplib
+import re
+
+conn = httplib.HTTPConnection('www.subscenter.org')
+conn.request('GET', 'he/subtitle/search/?q=the+matrix')
+content = conn.getresponse().read()

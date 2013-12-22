@@ -1,0 +1,3 @@
+import heb_OpenSubtitlesHandler
+import eng_OpenSubtitlesHandler
+import rus_OpenSubtitlesHandler
