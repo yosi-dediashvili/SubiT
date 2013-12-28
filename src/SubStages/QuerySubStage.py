@@ -68,7 +68,7 @@ class QuerySubStage(ISubStage):
         WriteDebug('Checking query values: %s == %s' % (self.query, other.query))
         is_equal = is_equal and self.query == other.query
         WriteDebug('Checking full_path values: %s == %s' % (self.full_path, other.full_path))
-        is_equal = is_equal and self.full_path == otehr.full_path
+        is_equal = is_equal and self.full_path == other.full_path
 
         WriteDebug('is_equal? [%s]' % is_equal)
         return is_equal
