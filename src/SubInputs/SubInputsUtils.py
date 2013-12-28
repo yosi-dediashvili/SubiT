@@ -1,6 +1,6 @@
 import os
-from Utils import GetMoviesExtensions
-from Utils import GetSubtitlesExtensions
+from Settings.Config import GetMoviesExtensions
+from Settings.Config import GetSubtitlesExtensions
 from Utils import WriteDebug
 
 def IsMovieFile(file_full_path):
