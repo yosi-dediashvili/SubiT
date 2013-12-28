@@ -61,7 +61,10 @@ class SubiTConfig():
     LIST_DELIMITER = '|'
 
     _parser    = None
-    _singleton = None 
+    _singleton = None
+    # Cache Names
+    MOVIE_EXT_CACHE_NAME = "MovieExt"
+    SUBTITLE_EXT_CACHE_NAME = "SubtitleExt"
 
     def __init__(self, config_path = None):
         """ The constuctor of SubiTConfig will create a new config file if the
@@ -87,7 +90,48 @@ class SubiTConfig():
         self._parser.read(self.config_path)
         SubiTConfig._singleton = self
         WriteDebug('Config Singleton Created')
-    
+        #init new cache dictionary, this param will saved all the common values from the config file
+        self._cache = {}
+
+
+#==============================================================================#
+# fast access to common values                                                 #
+#==============================================================================#
+    def getMoviesExtensions(self, with_dot = True):
+        """Return all the extensions associated to movie files as it apear in
+        the config file. Extensions are in lower case."""
+
+        #check if something saved in cache
+        if self._cache.get(self.MOVIE_EXT_CACHE_NAME) is not None:
+            return self._cache.get(self.MOVIE_EXT_CACHE_NAME)
+
+        _ext = self.getList('Association', 'extensions_keys',
+                                           ['.mkv', '.avi', '.wmv', '.mp4'])
+        _ext =  list(map(str.lower, _ext))
+        if not with_dot:
+            _ext = list(map(lambda e: e.lstrip('.'), _ext))
+
+        #set cache value:
+        self._cache[self.MOVIE_EXT_CACHE_NAME] = _ext
+        return _ext
+
+    def getSubtitlesExtensions(self, with_dot = True):
+        """Return all the extensions associated to subtitle files as it apear in
+        the config file. Extensions are in lower case."""
+
+         #check if something saved in cache
+        if self._cache.get(self.SUBTITLE_EXT_CACHE_NAME) is not None:
+            return self._cache.get(self.SUBTITLE_EXT_CACHE_NAME)
+
+        _ext = self.getList('Global', 'subtitles_extensions',
+                                           ['.srt', '.sub', '.idx'])
+        _ext = list(map(str.lower, _ext))
+        if not with_dot:
+            _ext = list(map(lambda e: e.lstrip('.'), _ext))
+
+        #set cache value:
+        self._cache[self.SUBTITLE_EXT_CACHE_NAME] = _ext
+        return _ext
 #==============================================================================#
 # Functions to retrieve values from the config file                            #
 #==============================================================================#
@@ -237,3 +281,24 @@ class SubiTConfig():
         if SubiTConfig._singleton == None:
             SubiTConfig()
         return SubiTConfig._singleton
+
+
+#==============================================================================#
+#   Get the config singelton                                                     #
+#==============================================================================#
+def getConfig():
+    return SubiTConfig.Singleton()
+
+
+#==============================================================================#
+#   Folder functions from Utils , using cache now !                              #
+#==============================================================================#
+def GetSubtitlesExtensions(with_dot = True):
+    """Return all the extensions associated to subtitle files as it apear in
+    the config file. Extensions are in lower case."""
+    return getConfig().getSubtitlesExtensions()
+
+def GetMoviesExtensions(with_dot = True):
+    """Return all the extensions associated to movie files as it apear in
+    the config file. Extensions are in lower case."""
+    return getConfig().getMoviesExtensions()
