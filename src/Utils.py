@@ -222,8 +222,8 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
         WriteDebug('Sending request for: %s' % (domain + url))
         httpcon.request( type, url, str(data), headers )     
         got_response = httpcon.getresponse()
-        print got_response.getheaders()
         response = got_response.read()
+
         # In order to avoid decoding problems, we just convert the bytes to 
         # str. The problem is that when we do that, the str preserve the 
         # preceding 'b' of the bytes type, so we remove it, and the single 
