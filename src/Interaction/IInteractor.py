@@ -2,7 +2,7 @@ from Interaction import InteractionTypes
 
 class IInteractor(object):
     """ Interface that define the interaction between the flow code, and the ui. 
-        Ui can be anything from Console to Window.
+        UI can be anything from Console to Window.
     """
 
     InteractionType = InteractionTypes.NotSet
@@ -16,8 +16,8 @@ class IInteractor(object):
         """
         IInteractor.InteractionType = InteractionTypes.NotSet
     def load(self):
-        """ def:    Final stage before using the interactor. notifyLoaded should
-                    be called in here.
+        """ def:    Final stage before using the interactor. notifyLoaded 
+                    should be called in here.
             input:  None.
             return: None.
         """
@@ -56,8 +56,10 @@ class IInteractor(object):
         raise NotImplementedError('IInteractor.getSearchInput')
 
     def getDestinationDirectoryInput(self, default_directory, logMsg = None):
-        """ def:    Function to get the user input from the destination directory box.
-            input:  default_directory - directory to place by default in the input
+        """ def:    Function to get the user input from the destination 
+                    directory box.
+            input:  default_directory - directory to place by default in the 
+                    input 
                     optional - logMsg (will call writeLog).
             return: str containing the user input.
         """
@@ -72,9 +74,8 @@ class IInteractor(object):
 
     def getVersionChoice(self, subVersions, subMovies, logMsg = None):
         """ def:    Function to get the user choice from the versions list view. 
-                    Notice that we might allow the user to selected another movie
-                    in the lower levels of the call stack.
-
+                    Notice that we might allow the user to selected another 
+                    movie in the lower levels of the call stack.
             input:  list of SubVersion. list of SubMovies.
                     optional - logMsg (will call writeLog).
             return: the selected SubVersion/SubMovie
@@ -82,7 +83,8 @@ class IInteractor(object):
         raise NotImplementedError('IInteractor.getVersionChoice')
 
     def notifyNewVersion(self, current_version, new_version, new_version_link):
-        """ def:    Function to notify the user that there's new version of SubiT
+        """ def:    Function to notify the user that there's new version of 
+                    SubiT.
             input:  current_version - SubiT's current version
                     new_version - SubiT's latest_version
                     new_version_link - http link to the latest version page
