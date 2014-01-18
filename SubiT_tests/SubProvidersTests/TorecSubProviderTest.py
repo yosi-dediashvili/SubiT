@@ -22,30 +22,30 @@ class Test_TorecProviderTest(
             self, 
             TorecProvider.TorecProvider())
 
-    def test_downloadSubtitle(self):
+    def test_getSubtitleContent(self):
         """
         Perform the regular check, but also, verify the the file size is greater
         than 4KB. Torec's fake zip file is about 2KB in size, so it's engouh to
         check for this size in order for us to be sure that this is not a fake.
         """
-        file_size = super(Test_TorecProviderTest, self).test_downloadSubtitle()
+        file_size = super(Test_TorecProviderTest, self).test_getSubtitleContent()
         self.assertGreater(
             file_size, 
             4096, 
             "Received fake download file from Torec.")
 
-    def test_downloadSubtitlesMultiple(self):
+    def test_getSubtitleContentMultiple(self):
         """
-        This test will execute the base test_downloadSubtitle() several times, 
+        This test will execute the base test_getSubtitleContent() several times, 
         in order to gather statistics about are success rate agaisnt Torec's 
         defense.
         """
         success_count = 0
         failure_count = 0
-        for i in range(100):
+        for i in range(30):
             WriteTestLog("Checkig Torec's defense for the %s time." % i) 
             file_size = super(Test_TorecProviderTest, self)\
-                .test_downloadSubtitle()
+                .test_getSubtitleContent()
             succeeded = file_size > 4096
             if succeeded:
                 success_count += 1

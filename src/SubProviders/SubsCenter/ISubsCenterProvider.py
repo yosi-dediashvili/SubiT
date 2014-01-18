@@ -179,11 +179,15 @@ class ISubsCenterProvider(ISubProvider):
     
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
-    def getSubtitleUrl(cls, version_sub_stage):
-        return(SUBSCENTER_PAGES.DOMAIN,
-               SUBSCENTER_PAGES.DOWN_PAGE % (SUBSCENTER_PAGES.LANGUAGE, 
-                                             version_sub_stage.movie_code, 
-                                             version_sub_stage.version_sum.replace(' ', '%20'), #Replace spaces with their code
-                                             version_sub_stage.version_code),
-               SUBSCENTER_PAGES.DOMAIN,
-               None)
+    def getSubtitleContent(cls, version_sub_stage):
+        download_page = SUBSCENTER_PAGES.DOWN_PAGE % (
+            SUBSCENTER_PAGES.LANGUAGE, 
+            version_sub_stage.movie_code, 
+            # Replace spaces with their code
+            version_sub_stage.version_sum.replace(' ', '%20'), 
+            version_sub_stage.version_code)
+
+        return Utils.DownloadSubAsBytesIO(SUBSCENTER_PAGES.DOMAIN,
+                                          download_page,
+                                          SUBSCENTER_PAGES.DOMAIN,
+                                          None)

@@ -291,14 +291,14 @@ def DownloadSubAsBytesIO(domain, url, referer = None, cookies = None):
         return None
     return file_content
 
-def GetFile(domain, url, path, file_name, referer = None, cookies = None):
+def GetFile(subtitle_file_io, path, file_name):
     """ 
-        Downloand the file from the given url, and saves it at the given 
-        location. The url is relative to the domain arg. path specify the 
-        directory in whice the subtitle will be saved. The file_name specify 
-        the name for the subtitle. If the file is downloaded is a zip file, 
-        will extract all the subtitles under it, otherwise, will save the file 
-        in the given location.
+        Get subtitle file from BytesIO object. subtitle_file_io is file like
+        object that contains either a single subtitle file or a zip file. 
+        path specify the directory in whice the subtitle will be saved. The 
+        file_name specify the name for the subtitle. If the subtitle_file_io is 
+        a zip file, will extract all the subtitles under it, otherwise, will 
+        save the file in the given location.
 
         Note: will use the original name if: 
             a. file_name is empty 
@@ -320,14 +320,11 @@ def GetFile(domain, url, path, file_name, referer = None, cookies = None):
     writeLog(INFO_LOGS.STARTING_SUBTITLE_DOWNLOAD_PROCEDURE)
     writeLog(INFO_LOGS.DESTINATION_DIRECTORY_FOR_SUBTITLE % subtitle_directory)
     
-    downloaded_file = DownloadSubAsBytesIO(domain, url, referer, cookies)
-    file_is_zip     = False
-    if downloaded_file:
-        file_is_zip = zipfile.is_zipfile(downloaded_file)
+    file_is_zip = zipfile.is_zipfile(subtitle_file_io)
     
     if file_is_zip:
         try:
-            with zipfile.ZipFile(downloaded_file, 'r') as zfile:
+            with zipfile.ZipFile(subtitle_file_io, 'r') as zfile:
                 # Get the file names of the subtitles in the archive. 
                 # Filtering out any other file types
                 filter_func = lambda x: x.lower().endswith(
@@ -364,8 +361,8 @@ def GetFile(domain, url, path, file_name, referer = None, cookies = None):
     else:
         try:
             with open(subtitle_full_path, 'wb') as sub_file:
-                downloaded_file.seek(0)
-                content = downloaded_file.getvalue()
+                subtitle_file_io.seek(0)
+                content = subtitle_file_io.getvalue()
                 sub_file.write(content)
         except Exception as eX:
             WriteDebug('Failed saving subtitle as simple text file: %s' % eX)

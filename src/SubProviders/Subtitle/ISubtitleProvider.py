@@ -185,8 +185,9 @@ class ISubtitleProvider(ISubProvider):
 
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
-    def getSubtitleUrl(cls, version_sub_stage):
-        return (SUBTITLE_PAGES.DOMAIN, 
-                SUBTITLE_PAGES.DOWNLOAD % version_sub_stage.version_code,
-                SUBTITLE_PAGES.DOMAIN,
-                SUBTITLE_PAGES.CRED)
+    def getSubtitleContent(cls, version_sub_stage):
+        return Utils.DownloadSubAsBytesIO(
+            SUBTITLE_PAGES.DOMAIN, 
+            SUBTITLE_PAGES.DOWNLOAD % version_sub_stage.version_code,
+            SUBTITLE_PAGES.DOMAIN,
+            SUBTITLE_PAGES.CRED)

@@ -214,7 +214,7 @@ class IOpenSubtitlesProvider(ISubProvider):
     
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
-    def getSubtitleUrl(cls, version_sub_stage):
+    def getSubtitleContent(cls, version_sub_stage):
         IDSubtitleFile  = 'IDSubtitleFile'
         ZipDownloadLink = 'ZipDownloadLink'
         domain  = None
@@ -233,7 +233,7 @@ class IOpenSubtitlesProvider(ISubProvider):
                                      lambda f: f[ZipDownloadLink], True)
             domain  = OPENSUBTITLES_PAGES.DOMAIN
         
-        return (domain, url, domain, None)
+        return Utils.DownloadSubAsBytesIO(domain, url, domain, None)
         
 #===============================================================================
 # Class Helpers -> Session Handling

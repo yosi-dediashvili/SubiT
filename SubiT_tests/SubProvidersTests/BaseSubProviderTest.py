@@ -87,44 +87,25 @@ class BaseSubProviderTest(object):
                              movie.info())
         self.assertFalse(all_failed, "All movies failed to retrieve versions")
         
-    def test_getSubtitleUrl(self):
+    def test_getSubtitleContent(self):
         """
         The function retrieves a list of movies using test_findMovieSubStageLi-
         st() and takes the version of the first movie returned. After that, the
         function takes the first version in the list, and calls the getSubtitl-
-        eUrl() function of the provider.
+        eContent() function of the provider.
 
-        The function checks that the domain and url parameters that was returned
-        from getSubtitleUrl() is are not empty.
+        The size of the downloaded subtitle is checked. If it's smaller than 
+        1KB, the test will fail.
 
-        Additionnaly, the function returns all the parameters that was returned
-        from getSubtitleUrl().
+        Additionally, the function return the file size.
         """
         movies = self.test_findMovieSubStageList()
         versions = self.__get_version_results(movies[0])
         version = versions[0]
-
-        WriteTestLog("Testing provider getSubtitleUrl: %s" % self.provider_name)
-        (domain, url, referer, cookies) = self.provider.getSubtitleUrl(version)
-        self.assertTrue(domain, "Failed getting the domain.")
-        self.assertTrue(url, "Failed getting the url.")
-
-        return domain, url, referer, cookies
-
-    def test_downloadSubtitle(self):
-        """
-        The function retieves a URL for some subtitle using the test_getSubtit-
-        leUrl test. The url is then downloaded using the function DownloadSubA-
-        sBytesIO() and the file size is checked. If it's smaller than 1KB, the
-        test will fail.
-
-        Additionally, the function return the file size.
-        """
-        (domain, url, referer, cookies) = self.test_getSubtitleUrl()
-
-        WriteTestLog("Testing provider downloadSubtitle: %s" % 
+        
+        WriteTestLog("Testing provider getSubtitleContent: %s" % 
                      self.provider_name)
-        file_io = DownloadSubAsBytesIO(domain, url, referer, cookies)
+        file_io = self.provider.getSubtitleContent(version)
         file_content = file_io.getvalue()
         file_size = len(file_content)
         # Check if greater than 1KB.

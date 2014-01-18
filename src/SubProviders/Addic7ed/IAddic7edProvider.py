@@ -89,11 +89,16 @@ class IAddic7edProvider(ISubProvider):
     
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
-    def getSubtitleUrl(cls, version_sub_stage):
-        referer = '/'.join([ADDIC7ED_PAGES.DOMAIN, version_sub_stage.movie_code])
+    def getSubtitleContent(cls, version_sub_stage):
+        referer = '/'.join(
+            [ADDIC7ED_PAGES.DOMAIN, version_sub_stage.movie_code])
         referer = 'http://' + referer
+
         WriteDebug('Setting the referer to be: %s' % referer)
         # In order to download the subtitle we need to set the movie page to be
         # the referer. The site has a download limit of 20 subtitles per day. 
         # Currently, we're not trying to bypass this limit.
-        return (ADDIC7ED_PAGES.DOMAIN, version_sub_stage.version_code, referer, None)
+        return Utils.DownloadSubAsBytesIO(
+                                          ADDIC7ED_PAGES.DOMAIN, 
+                                          version_sub_stage.version_code,
+                                          referer)
