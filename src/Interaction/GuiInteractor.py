@@ -249,7 +249,7 @@ class GuiInteractor(IInteractor.IInteractor):
         self.subitMainWindow.movieNameLineEdit.setEnabled(True)
         self.subitMainWindow.movieNameLineEdit.setAcceptDrops(True)
         self.subitMainWindow.movieNameLineEdit.setFocus()
-        self.subitMainWindow.movieNameLineEdit.clear()
+        self.subitMainWindow.movieNameLineEdit.selectAll()
 
     def getDestinationDirectoryInput(self, default_directory, logMsg = None):
         if logMsg: 
