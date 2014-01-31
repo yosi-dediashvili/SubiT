@@ -15,7 +15,7 @@ class ADDIC7ED_LANGUAGES:
 class ADDIC7ED_PAGES:
     DOMAIN      = 'www.addic7ed.com'
     SEARCH      = '/search.php?search=%s&Submit=Search'
-    LANGUAGE    = ADDIC7ED_LANGUAGES.GLOBAL
+    LANGUAGE    = None
 
 class ADDIC7ED_REGEX:
     SEARCH_RESULTS_PARSER = ('(?<=<td><a href=\")(?P<MovieCode>.*?)(?:\" debug' +

@@ -23,7 +23,7 @@ class SUBTITLE_PAGES:
     SERIES_SEASON       = '/viewseries.php?id=%s&m=subtitles&s=%s'      # SeriesId & SeasonId
     SERIES_EPISODE      = '/viewseries.php?id=%s&m=subtitles&s=%s&e=%s' # SeriesId & SeasonId & EpisodeId
     DOWNLOAD            = '/downloadsubtitle.php?id=%s'
-    LANGUAGE            = SUBTITLE_LANGUAGES.HEBREW
+    LANGUAGE            = None
     USER                = "372162"
     PASS                = "CC5F66FBFD6915C140A61E910DCE873C"
     CRED                = "slcoo_user_id=%s; slcoo_user_pass=%s;" % (USER, PASS) # The credentials that should be sent with requests as cookies.

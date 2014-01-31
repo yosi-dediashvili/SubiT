@@ -21,7 +21,7 @@ class SUBSCENTER_PAGES:
     MOVIE       = r'/he/subtitle/movie/%s/'
     SERIES      = r'/he/subtitle/series/%s/'
     DOWN_PAGE   = r'/he/subtitle/download/%s/%s/?v=%s&key=%s' #lang, code, version, key
-    LANGUAGE    = SUBSCENTER_LANGUAGES.HEBREW
+    LANGUAGE    = None
 
 class SUBSCENTER_REGEX:
     NAME_IN_SITE_PARSER     = r'<h3>(.*?)\s*?</h3>'
