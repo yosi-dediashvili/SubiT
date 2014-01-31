@@ -27,6 +27,7 @@ from SubProviders import SubsCenter
 from SubProviders import Torec
 from SubProviders import OpenSubtitles
 from SubProviders import Addic7ed
+from SubProviders import Subscene
 #============================================================================= #
 
 SUBPROVIDERS_DIR_LOCATION = os.path.join(GetProgramDir(), 'SubProviders')

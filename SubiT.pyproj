@@ -47,6 +47,9 @@
     <Folder Include="src\Interaction" />
     <Folder Include="src\Settings\Associators\WinAssociator\" />
     <Folder Include="src\SubInputs\" />
+    <Folder Include="src\SubProviders\Subscene\" />
+    <Folder Include="src\SubProviders\Subscene\heb_SubsceneProvider\" />
+    <Folder Include="src\SubProviders\Subscene\eng_SubsceneProvider\" />
     <Folder Include="src\SubStages" />
     <Folder Include="src\SubChoosers" />
     <Folder Include="src\Settings\Associators\" />
@@ -142,6 +145,12 @@
     <Compile Include="src\SubProviders\OpenSubtitles\rus_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\rus_OpenSubtitlesProvider\__init__.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\__init__.py" />
+    <Compile Include="src\SubProviders\Subscene\eng_SubsceneProvider\SubsceneProvider.py" />
+    <Compile Include="src\SubProviders\Subscene\eng_SubsceneProvider\__init__.py" />
+    <Compile Include="src\SubProviders\Subscene\heb_SubsceneProvider\SubsceneProvider.py" />
+    <Compile Include="src\SubProviders\Subscene\heb_SubsceneProvider\__init__.py" />
+    <Compile Include="src\SubProviders\Subscene\ISubsceneProvider.py" />
+    <Compile Include="src\SubProviders\Subscene\__init__.py" />
     <Compile Include="src\SubProviders\Subtitle\eng_SubtitleProvider\SubtitleProvider.py" />
     <Compile Include="src\SubProviders\Subtitle\eng_SubtitleProvider\__init__.py" />
     <Compile Include="src\SubProviders\Subtitle\heb_SubtitleProvider\SubtitleProvider.py" />
@@ -181,6 +190,7 @@
     <Content Include="build\setup\win32\_helpers\subit-logo-setup.bmp" />
     <Content Include="build\setup\win32\_helpers\subit-template-setup-debug.iss" />
     <Content Include="build\setup\win32\_helpers\subit-template-setup-release.iss" />
+    <Content Include="resources\gui\images.qrc" />
     <Content Include="src\Settings\Config.ini" />
   </ItemGroup>
   <ItemGroup>

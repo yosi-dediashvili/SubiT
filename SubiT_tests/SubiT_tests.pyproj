@@ -27,6 +27,7 @@
     <Compile Include="SubProvidersTests\Addic7edSubProviderTest.py" />
     <Compile Include="SubProvidersTests\BaseSubProviderTest.py" />
     <Compile Include="SubProvidersTests\OpenSubtitlesSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\SubsceneSubProviderTest.py" />
     <Compile Include="SubProvidersTests\SubsCenterSubProviderTest.py" />
     <Compile Include="SubProvidersTests\SubtitleSubProviderTest.py" />
     <Compile Include="SubProvidersTests\TorecSubProviderTest.py" />

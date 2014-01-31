@@ -38,6 +38,7 @@
     <file>icon-subprovider-subscenter.png</file>
     <file>icon-subprovider-subtitle.png</file>
     <file>icon-subprovider-torec.png</file>
+    <file>icon-subprovider-subscene.png</file>
     <file>icon-subprovider-unknown.png</file>
   </qresource>
 </RCC>

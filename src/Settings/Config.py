@@ -16,8 +16,8 @@ CONFIG_FILE_PATH = os.path.join(GetProgramDir(), 'Settings', CONFIG_FILE_NAME)
 def CreateDefaultConfigFile(config_path):
     configs = """
 [Global]
-version = 2.1.2
-close_on_finish = True
+version = 2.2.0
+close_on_finish = False
 default_directory = $DEFAULTDIR$
 always_use_default_directory = False
 subtitles_saving_extension = .srt
