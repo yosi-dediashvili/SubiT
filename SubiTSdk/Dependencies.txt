@@ -5,8 +5,9 @@
 	http://qt-project.org/wiki/PySideDownloads
 
 * 	And Finally, in order to create an executable version of SubiT, PyInstaller 
-	is needed:
+	is needed (Version 2.0 exactly):
 	http://www.pyinstaller.org
+	http://sourceforge.net/projects/pyinstaller/files/2.0/
 
 *	SubiT was developed using "Python Tools for Visual Studio": 
 	http://pytools.codeplex.com/

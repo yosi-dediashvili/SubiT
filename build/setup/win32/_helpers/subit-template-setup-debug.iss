@@ -17,7 +17,7 @@ ChangesAssociations=yes
 CloseApplications=yes
 RestartApplications=yes
 ChangesEnvironment=yes
-SetupIconFile=D:\dev\SubiT\|$#VERSION#$|\build\setup\win32\_helpers\subit-icon-setup.ico
+SetupIconFile=|$#ROOTDIR#$|\build\setup\win32\_helpers\subit-icon-setup.ico
 SolidCompression=True
 ShowLanguageDialog=no
 VersionInfoVersion=|$#VERSION#$|
@@ -29,8 +29,8 @@ VersionInfoProductVersion=|$#VERSION#$|
 VersionInfoProductTextVersion=|$#VERSION#$|
 InternalCompressLevel=ultra
 CompressionThreads=2
-WizardSmallImageFile=D:\dev\SubiT\|$#VERSION#$|\build\setup\win32\_helpers\subit-logo-setup.bmp
-WizardImageFile=D:\dev\SubiT\|$#VERSION#$|\build\setup\win32\_helpers\subit-image-setup.bmp
+WizardSmallImageFile=|$#ROOTDIR#$|\build\setup\win32\_helpers\subit-logo-setup.bmp
+WizardImageFile=|$#ROOTDIR#$|\build\setup\win32\_helpers\subit-image-setup.bmp
 WizardImageStretch=False
 UninstallDisplayName=SubiT
 UninstallDisplayIcon={app}\SubiT.exe
@@ -52,7 +52,7 @@ Type: files; Name: "{uninstallexe}"
 
 
 [Files]
-Source: "D:\dev\SubiT\|$#VERSION#$|\build\bin\win32\|$#VERSION#$|\debug\*"; DestDir: "{userappdata}\SubiT"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "|$#ROOTDIR#$|\build\bin\win32\|$#VERSION#$|\debug\*"; DestDir: "{userappdata}\SubiT"; Flags: ignoreversion createallsubdirs recursesubdirs
 ; NOTE Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
