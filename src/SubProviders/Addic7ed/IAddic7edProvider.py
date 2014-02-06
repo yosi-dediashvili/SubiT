@@ -10,6 +10,10 @@ class ADDIC7ED_LANGUAGES:
     ENGLISH     = '1'
     NORWEGIAN   = '29'
     RUSSIAN     = '19'
+    SPANISH     = '4'
+    TURKISH     = '16'
+    SLOVAK      = '25'
+    CZECH       = '14'
     GLOBAL      = '0'
 
 class ADDIC7ED_PAGES:

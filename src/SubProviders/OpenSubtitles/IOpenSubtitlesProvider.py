@@ -24,6 +24,10 @@ class OPENSUBTITLES_LANGUAGES:
     ENGLISH     = 'eng'
     RUSSIAN     = 'rus'
     NORWEGIAN   = 'nor'
+    SPANISH     = 'spa'
+    TURKISH     = 'tur'
+    SLOVAK      = 'slo'
+    CZECH       = 'cze'
     GLOBAL      = 'all'
 
 class OPENSUBTITLES_PAGES:

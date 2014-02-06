@@ -9,6 +9,10 @@ WriteDebug = Utils.WriteDebug
 class SUBSCENE_LANGUAGES:
     HEBREW  = '22'
     ENGLISH = '23'
+    SPANISH = '38'
+    TURKISH = '41'
+    SLOVAK  = '36'
+    CZECH   = '9'
 
 class SUBSCENE_PAGES:
     DOMAIN = 'www.subscene.com'

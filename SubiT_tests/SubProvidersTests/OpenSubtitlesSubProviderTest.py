@@ -52,3 +52,39 @@ class Test_rus_OpenSubtitlesProviderTest(
         BaseSubProviderTest.BaseSubProviderTest.__init__(
             self, 
             OpenSubtitlesProvider.OpenSubtitlesProvider())
+
+class Test_spa_OpenSubtitlesProviderTest(
+    unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
+    def setUp(self):
+        from SubProviders.OpenSubtitles.spa_OpenSubtitlesProvider import \
+            OpenSubtitlesProvider
+        BaseSubProviderTest.BaseSubProviderTest.__init__(
+            self, 
+            OpenSubtitlesProvider.OpenSubtitlesProvider())
+
+class Test_tur_OpenSubtitlesProviderTest(
+    unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
+    def setUp(self):
+        from SubProviders.OpenSubtitles.tur_OpenSubtitlesProvider import \
+            OpenSubtitlesProvider
+        BaseSubProviderTest.BaseSubProviderTest.__init__(
+            self, 
+            OpenSubtitlesProvider.OpenSubtitlesProvider())
+
+class Test_slo_OpenSubtitlesProviderTest(
+    unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
+    def setUp(self):
+        from SubProviders.OpenSubtitles.slo_OpenSubtitlesProvider import \
+            OpenSubtitlesProvider
+        BaseSubProviderTest.BaseSubProviderTest.__init__(
+            self, 
+            OpenSubtitlesProvider.OpenSubtitlesProvider())
+
+class Test_cze_OpenSubtitlesProviderTest(
+    unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
+    def setUp(self):
+        from SubProviders.OpenSubtitles.cze_OpenSubtitlesProvider import \
+            OpenSubtitlesProvider
+        BaseSubProviderTest.BaseSubProviderTest.__init__(
+            self, 
+            OpenSubtitlesProvider.OpenSubtitlesProvider())
