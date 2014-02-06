@@ -29,17 +29,22 @@ class BaseSubProviderTest(object):
             BaseSubProviderTest.__init__(self, SomeSubProvider())
     """
 
-    def __init__(self, provider):
-        self.provider = provider
+    def __init__(self, provider, query = "The Matrix"):
+        """
+        Init with an instance of a provider, and an optional query. If no query
+        is passed, "The Matrix" is used.
+        """
+        self.provider   = provider
+        self.query      = query
         
     @property
     def provider_name(self):
         return self.provider.PROVIDER_NAME
 
-    def __get_movie_results(self, query):
-        query = QuerySubStage.QuerySubStage(
-            self.provider_name, query, "")
-        return self.provider.findMovieSubStageList(query)
+    def __get_movie_results(self):
+        query_stage = QuerySubStage.QuerySubStage(
+            self.provider_name, self.query, "")
+        return self.provider.findMovieSubStageList(query_stage)
 
     def __get_version_results(self, movie_result):
         return self.provider.findVersionSubStageList(movie_result)
@@ -57,7 +62,7 @@ class BaseSubProviderTest(object):
         """
         WriteTestLog("Testing provider findMovieSubStageList: %s" % 
                      self.provider_name)
-        movies = self.__get_movie_results("The Matrix")
+        movies = self.__get_movie_results()
         WriteTestLog("Received total of %s movies." % len(movies))
         for movie in movies:
             WriteTestLog(movie.info())
