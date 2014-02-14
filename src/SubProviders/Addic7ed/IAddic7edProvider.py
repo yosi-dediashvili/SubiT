@@ -36,8 +36,11 @@ class IAddic7edProvider(ISubProvider):
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
     def findMovieSubStageList(cls, query_sub_stage):
+
+        is_series = Utils.IsSeries(query_sub_stage.query)
         query = query_sub_stage.query.replace(' ', '+')
-        WriteDebug('Sending query for: %s' % query)
+
+        WriteDebug('Sending query for [%s]: %s' % (is_series, query))
         query_data = Utils.PerformRequest(ADDIC7ED_PAGES.DOMAIN, 
                                           ADDIC7ED_PAGES.SEARCH % query)
         re_results = Utils.getregexresults(ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, 
@@ -48,11 +51,29 @@ class IAddic7edProvider(ISubProvider):
         check_lang_in_stage = (len(re_results) <= 10)
 
         for result in re_results:
-            movie_sub_stage = MovieSubStage\
-                (cls.PROVIDER_NAME, result['MovieName'], result['MovieCode'], '')
+            # Take the type of the result (either movie or serie)
+
+            result_type = result['MovieCode'].split('/', 1)
+            # Make sure we're not crashing (because of invalid index).
+            result_type = result_type[0] if result_type else 'unknown'
+
+            # If the type does not match, skip the result.
+            if result_type == 'movie' and is_series:
+                continue
+            elif result_type == 'serie' and not is_series:
+                continue
+            elif result_type == 'unknown':
+                continue
+            
+            movie_sub_stage = MovieSubStage(
+                cls.PROVIDER_NAME, 
+                result['MovieName'], 
+                result['MovieCode'], 
+                '')
+
             WriteDebug('Adding MovieSubStage. Details: %s' % movie_sub_stage.info())
 
-            # Because addi7ed doesnt says anything about the language if it's
+            # Because addi7ed doesnt say anything about the language if it's
             # missing, we need to check for each movie_sub_stage we get.
             # We also check if we should check the language, because we might
             # end up checking it for 1000 resuls, which might take some time...
