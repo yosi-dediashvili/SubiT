@@ -29,11 +29,9 @@ class SUBTITLE_PAGES:
     CRED                = "slcoo_user_id=%s; slcoo_user_pass=%s;" % (USER, PASS) # The credentials that should be sent with requests as cookies.
 
 class SUBTITLE_REGEX:
-    #TV_SERIES_RESULTS_PARSER    = '<div style=\"\"><a href=\"viewseries.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     TV_SERIES_RESULTS_PARSER    = '<div class=\"browse_title_name\" itemprop=\"name\"><a href=\"viewseries.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     TV_SEASON_PATTERN           = 'seasonlink_(?P<SeasonCode>\d+).*?>(?P<SeasonNum>\d+)</a>'
     TV_EPISODE_PATTERN          = 'episodelink_(?P<EpisodeCode>\d+).*?>(?P<EpisodeNum>\d+)</a>'
-    #MOVIE_RESULTS_PARSER        = '<div style=\"\"><a href=\"view.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     MOVIE_RESULTS_PARSER        = '<div class=\"browse_title_name\" itemprop=\"name\"><a href=\"view.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     SUBTITLE_LIST_PARSER        = 'downloadsubtitle\.php\?id=(?P<VerCode>\d*).*?subt_lang.*?title=\"(?P<Language>.*?)\".*?subtitle_title.*?title=\"(?P<VerSum>.*?)\"'
     VER_SUM_PARSER              = '<td class=\"FamilySubtitlesVerisons\"><a name="f\d"></a>(.*?)</td>'
