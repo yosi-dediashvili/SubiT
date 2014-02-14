@@ -22,13 +22,14 @@ class Test_TorecProviderTest(
             self, 
             TorecProvider.TorecProvider())
 
-    def test_getSubtitleContent(self):
+    def getSubtitleContent(self, query):
         """
         Perform the regular check, but also, verify the the file size is greater
         than 4KB. Torec's fake zip file is about 2KB in size, so it's engouh to
         check for this size in order for us to be sure that this is not a fake.
         """
-        file_size = super(Test_TorecProviderTest, self).test_getSubtitleContent()
+        file_size = \
+            super(Test_TorecProviderTest, self).getSubtitleContent(query)
         self.assertGreater(
             file_size, 
             4096, 
