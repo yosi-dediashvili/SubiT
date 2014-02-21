@@ -1,10 +1,7 @@
 
 import Utils
 
-if Utils.IsPython3():
-    from queue import Queue
-else:
-    from Queue import Queue
+from Queue import Queue
 
 import threading
 import time

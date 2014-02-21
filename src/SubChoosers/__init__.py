@@ -1,10 +1,6 @@
 from Utils import WriteDebug
-from Utils import IsPython3
 
-if IsPython3():
-    from queue import Queue
-else:
-    from Queue import Queue
+from Queue import Queue
 
 # The name of all the Choosers avaliable. The order of the Choosers in the list
 # is such that the first chooser is the one we whould like to use the first and 

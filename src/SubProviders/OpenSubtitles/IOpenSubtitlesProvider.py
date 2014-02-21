@@ -1,9 +1,6 @@
 import Utils
 
-if Utils.IsPython3():
-    from xmlrpc.client import Server as XmlRpcServer
-else:
-    from xmlrpclib import Server as XmlRpcServer
+from xmlrpclib import Server as XmlRpcServer
 
 import os
 import struct

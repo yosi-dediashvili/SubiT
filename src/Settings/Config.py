@@ -2,12 +2,8 @@ import os
 
 from Utils import WriteDebug
 from Utils import GetProgramDir
-from Utils import IsPython3
 
-if IsPython3():
-    import configparser
-else:
-    import ConfigParser as configparser
+import ConfigParser as configparser
 
 
 CONFIG_FILE_NAME = 'config.ini'
@@ -30,7 +26,7 @@ last_update_check = 0
 
 [Providers]
 languages_order =
-providers_order = www.torec.net|www.subscenter.org|www.subtitle.co.il|www.opensubtitles.org|www.addic7ed.com
+providers_order = www.torec.net|www.subscenter.org|www.subtitle.co.il|www.opensubtitles.org|www.subscene.com|www.addic7ed.com
 
 [Flow]
 in_depth_search = True

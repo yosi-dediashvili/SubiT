@@ -1,10 +1,7 @@
 import Utils
 WriteDebug = Utils.WriteDebug
 
-if Utils.IsPython3():
-    from urllib.parse import urlencode
-else:
-    from urllib import urlencode
+from urllib import urlencode
 
 import time
 
