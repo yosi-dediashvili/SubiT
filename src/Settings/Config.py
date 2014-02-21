@@ -21,7 +21,7 @@ subtitles_extensions = .srt|.sub|.idx
 
 [Updates]
 check_updates = True
-auto_update = True
+auto_update = False
 last_update_check = 0
 
 [Providers]
