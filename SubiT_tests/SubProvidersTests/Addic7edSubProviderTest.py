@@ -86,3 +86,4 @@ class Test_cze_Addic7edProviderTest(
 			Addic7edProvider.Addic7edProvider(),
 			'The Dark Knight',
 			"The Big Bang Theory S04E12")
+		

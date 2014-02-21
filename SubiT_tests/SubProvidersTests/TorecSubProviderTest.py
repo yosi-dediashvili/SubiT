@@ -45,8 +45,8 @@ class Test_TorecProviderTest(
         failure_count = 0
         for i in range(30):
             WriteTestLog("Checkig Torec's defense for the %s time." % i) 
-            file_size = super(Test_TorecProviderTest, self)\
-                .test_getSubtitleContent()
+            file_size = super(Test_TorecProviderTest, self).\
+                getSubtitleContent(self.movie_query)
             succeeded = file_size > 4096
             if succeeded:
                 success_count += 1
