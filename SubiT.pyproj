@@ -91,6 +91,7 @@
     <Folder Include="src\SubProviders\Torec\TorecProvider" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="build\create_useragents.py" />
     <Compile Include="build\minifier.py" />
     <Compile Include="build\setup.py" />
     <Compile Include="src\Interaction\ConsoleSilentInteractor.py" />
