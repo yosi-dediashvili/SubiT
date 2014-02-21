@@ -4,6 +4,7 @@ import sys
 import time
 from subprocess import check_output
 from subprocess import call
+from distutils.sysconfig import get_python_lib
 
 import platform
 
@@ -14,42 +15,32 @@ def IsWindowsPlatform():
 # For some reason, python wont try to load modules from that 
 # directory under my linux
 if not IsWindowsPlatform():
-    sys.path.append(r'/usr/lib/python2.7/site-packages')
-
-#from cx_Freeze import setup, Executable
-dropbox_src_path = r'D:\Dropbox\SubiT\src'
+    sys.path.append(get_python_lib())
 
 
-if IsWindowsPlatform():
-    pyinstaller_utils_path = \
-        r'C:\Program Files (x86)\Python\Python27\Lib\site-packages\pyinstaller\utils'
-else:
-    pyinstaller_utils_path = \
-        r'/usr/lib/python2.7/site-packages/pyinstaller/utils'
-
-pyinstaller_make_spec_path = os.path.join\
-    (pyinstaller_utils_path, 'Makespec.py')
-pyinstaller_build_path = os.path.join\
-    (pyinstaller_utils_path, 'Build.py')
-
-# We get the path of SubiT dynamically
-base_path = os.path.dirname(os.path.dirname(__file__))
+# We get the path of SubiT dynamically. This file (setup.py) is located inside
+# the build directory, so calling dirname() twice, will give us SubiT's root
+# directory.
+base_path           = os.path.dirname(os.path.dirname(__file__))
 
 src_dir_path        = os.path.join(base_path, 'src')
+build_dir_path      = os.path.join(base_path, 'build')
 
-build_path          = os.path.join(base_path, 'build')
-bin_path_base       = os.path.join(build_path, 'bin')
+bin_path_base       = os.path.join(build_dir_path, 'bin')
 helpers_path        = os.path.join(bin_path_base, '_helpers')
 
-setup_path          = os.path.join(build_path, 'setup')
-build_src_dir_path  = os.path.join(build_path, '__src')
+setup_path          = os.path.join(build_dir_path, 'setup')
+build_src_dir_path  = os.path.join(build_dir_path, '__src')
 subit_proxy_py_path = os.path.join(build_src_dir_path, 'SubiTProxy.py')
 providers_path      = os.path.join(build_src_dir_path, 'SubProviders')
+
+pyinstaller_build_path = os.path.join\
+    (get_python_lib(), r'PyInstaller\utils\Build.py')
 
 # Append the src folder the sys.path in 
 # order to get access to the modules
 sys.path.append(src_dir_path)
-sys.path.append(build_path)
+sys.path.append(build_dir_path)
 
 # ============================================================================ #
 # Subit distribution defenitions                                               #
@@ -60,7 +51,8 @@ subit_author        = 'subit-app'
 subit_author_mail   = 'SubiT.app@mail.com'
 subit_url           = r'http://www.subit-app.sf.net'
 from Settings.Config import SubiTConfig
-subit_version       = SubiTConfig.Singleton().getStr('Global', 'version', '0.0.0')
+subit_version       = \
+    SubiTConfig.Singleton().getStr('Global', 'version', '0.0.0')
 # Unload the module right away to avoid problems
 del SubiTConfig
 sys.path.remove(src_dir_path)
@@ -105,28 +97,24 @@ def copySrcDir(destination):
         log(eX)
         return False
 
-def copySrcDirToDropbox():
-    """ Create replication of the src folder in the dropbox directory """
-    return copySrcDir(dropbox_src_path)
-
 def copySrcDirToBuildDir():
     """ Create replication of the src folder in the build directory in 
         order to run the minifier on it.
     """
     return copySrcDir(build_src_dir_path)
 
-def compileSubProvidersFiles(path_of_subproviders):
+def compileSubProvidersFiles(providers_path):
     """ Replace the .py files in the SubProviders directory with .pyc files. We
         do so in order to keep the secret of the SubProviders from the users.
     """
     log('Starting compilation of SubProviders files')
-    if os.path.exists(path_of_subproviders):
+    if os.path.exists(providers_path):
         import py_compile
         def _isPyFile(f):
             return f.endswith('.py')
         def _getPycFullPath(path, f):
             return os.path.join(path, f + 'c')
-        for current_dir, dirs_in_dir, files_in_dir in os.walk(path_of_subproviders):
+        for current_dir, dirs_in_dir, files_in_dir in os.walk(providers_path):
             for f in files_in_dir:
                 if _isPyFile(f):
                     py_file_path = os.path.join(current_dir, f)
@@ -136,7 +124,7 @@ def compileSubProvidersFiles(path_of_subproviders):
                     log('Removing py file: %s' % py_file_path)
                     os.remove(py_file_path)
     else:
-        log('Path is missing: %s' % path_of_subproviders)
+        log('Path is missing: %s' % providers_path)
     log('Finished compilation of SubProviders files!')
        
 def minifyPyFilesInSrc(debug):
@@ -149,10 +137,12 @@ def minifyPyFilesInSrc(debug):
         import minifier
 
         for dir_path, dir_names, file_names in os.walk(build_src_dir_path):
-            for py_file in list(filter(lambda f: f.endswith('.py'), file_names)):
+            # Locate the python files in the folder.
+            py_files = list(filter(lambda f: f.endswith('.py'), file_names))
+            for py_file in py_files:
                 py_file_full_path = os.path.join(dir_path, py_file)
 
-                # We're not touching the gui files, because the mifier remove 
+                # We're not touching the gui files. The minifier might remove 
                 # text lines from there...
                 if py_file_full_path.endswith('Gui.py'):
                     log('Skipping GUI file: %s' % py_file_full_path)
@@ -197,23 +187,30 @@ def executeInPythonInterpreter(command):
 # Win32 building functions                                                     #
 # ============================================================================ #
 
-bin_path_win32                  = os.path.join(bin_path_base, 'win32')
-helpers_path_win32              = os.path.join(bin_path_win32, '_helpers')
-spec_file_base_win32            = os.path.join(helpers_path_win32, 'SubiT.spec')
-icon_file_win32                 = os.path.join(helpers_path_win32, 'icon.ico')
-win_associator_win32            = os.path.join(helpers_path_win32, 'WinAssociator')
-manifest_file_base_win32        = os.path.join(helpers_path_win32, 'SubiT.exe.manifest')
-bin_path_win32_and_version      = os.path.join(bin_path_win32, subit_version)
+bin_path_win32              = os.path.join(bin_path_base, 'win32')
+helpers_path_win32          = os.path.join(bin_path_win32, '_helpers')
+spec_file_base_win32        = os.path.join(helpers_path_win32, 'SubiT.spec')
+icon_file_win32             = os.path.join(helpers_path_win32, 'icon.ico')
+win_associator_win32        = os.path.join(helpers_path_win32, 'WinAssociator')
+bin_path_win32_and_version  = os.path.join(bin_path_win32, subit_version)
+manifest_file_base_win32    = \
+    os.path.join(helpers_path_win32, 'SubiT.exe.manifest')
+
 
 setup_path_win32                = os.path.join(setup_path, 'win32')
 setup_helpers_path_win32        = os.path.join(setup_path_win32, '_helpers')
 setup_path_win32_and_version    = os.path.join(setup_path_win32, subit_version)
 
+# The full path to the ISCC compiler. 
+iscc_compiler_path = r'%programfiles%\Inno Setup 5\ISCC.exe'
+iscc_compiler_path = os.path.expandvars(iscc_compiler_path)
+
 def copyWinAssociatorDir(dest_dir):
     """ Will copy the files win32._helpers.WinAssociator to 
         dest_dir\Settings\Associators\WinAssociator.
     """
-    log('Copying WinAssociator from [%s] to [%s]' % (win_associator_win32, dest_dir))
+    log('Copying WinAssociator from [%s] to [%s]' % 
+        (win_associator_win32, dest_dir))
     shutil.copytree(win_associator_win32, dest_dir)
 
 def getWin32ApplicationManifets():
@@ -229,26 +226,18 @@ def getWin32SpecFile(tmp_path_for_build, build_path, manifest_path):
     """
     _base_spec_content = open(spec_file_base_win32, 'r').read()
     # The spec file has 6 items to format:
-    #   {0} - SubiTProxy.py path
-    #   {1} - __src path
-    #   {2} - exe full path and name (gui mode)
-    #   {3} - exe full path and name (console mode)
-    #   {4} - exe full path and name (update exe)
-    #   {5} - full path to the icon file
-    #   {6} - full path to the manifest file
-    #   {7} - Name of the destination directory for the build
+    #   {0} - __src path
+    #   {1} - Path of the temporary destination directory for the build
+    #   {2} - Path of the final destination directory for the build
+    #   {3} - _helpers dir path
+    #   {4} - full path to the manifest file
+    
     return _base_spec_content.format(
-        subit_proxy_py_path, 
         build_src_dir_path, 
-        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, 
-                     subit_name + '.exe'),
-        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, 
-                     subit_name + '-cli.exe'),
-        os.path.join(tmp_path_for_build, 'build\\pyi.win32\\' + subit_name, 
-                     'Settings', 'Updaters', subit_name + '-updater.exe'),
-        icon_file_win32, 
-        manifest_path,
-        build_path)
+        tmp_path_for_build,
+        build_path,
+        helpers_path_win32,
+        manifest_path)
                                    
 def buildWin32Dir(debug):
     """ Build procedure for Windows. """
@@ -278,11 +267,10 @@ def buildWin32Dir(debug):
     _spec_path = os.path.join(_tmp_bin_path, subit_name + '.spec')
     _spec_content= getWin32SpecFile(_tmp_bin_path, _bin_path, _manifest_path)
     open(_spec_path, 'w').write(_spec_content)
-    
-    
+
     build_command = '"%s" "%s"' % (pyinstaller_build_path, _spec_path)
     build_output = executeInPythonInterpreter(build_command)
-    for line in build_output.split('\r\n'):
+    for line in build_output.split("\n"):
         log('[Build.py] => %s' % line)
 
     log('Exe building finished: %s' % _bin_path)
@@ -292,8 +280,13 @@ def buildWin32Dir(debug):
     compileSubProvidersFiles(os.path.join(_bin_path, 'SubProviders'))
 
 def buildWin32Setup(debug):
-    """ Creates the setup file of SubiT  for win32 platform. """
-    _version_placeholder = '|$#VERSION#$|'
+    """ Creates the setup file of SubiT for win32 platform. """
+
+    # This value keys are the placeholders in the iss files. 
+    replacment_dict = {
+        '|$#VERSION#$|' : subit_version,
+        '|$#ROOTDIR#$|' : base_path
+    }
 
     if not os.path.exists(setup_path_win32_and_version):
         log('Setup path for current version is missing, creating it: %s' % 
@@ -311,22 +304,31 @@ def buildWin32Setup(debug):
     iss_for_version_path = os.path.join\
         (_setup_path, 'subit-%s-setup.iss' % subit_version)
 
+    # Make sure the the iscc compiler is in place.
+    if not os.path.exists(iscc_compiler_path):
+        raise AttributeError(
+            "The ISCC compiler is missing from: %s" % iscc_compiler_path)
+
     log('Creating new win32 setup folder: %s' % _setup_path)
     os.mkdir(_setup_path)
     shutil.copyfile(iss_template_path, iss_for_version_path)
+
+    # Read the iss file content.
     iss_content = open(iss_for_version_path, 'r').read()
-    iss_content_new = iss_content.replace(_version_placeholder, subit_version)
-    open(iss_for_version_path, 'w').write(iss_content_new)
+    # Replace the placeholders.
+    for placeholder, value in replacment_dict.iteritems():
+        iss_content = iss_content.replace(placeholder, value)
+
+    open(iss_for_version_path, 'w').write(iss_content)
     log('Inno Setup script created for current version: %s' % 
         iss_for_version_path)
 
     setup_file_name = 'subit-%s-setup' % subit_version
     setup_file_name += '-release-win32' if not debug else '-debug-win32'
 
-    compiler_path = '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe"'
     compiler_args = '"%s" /O"%s" /F%s' % \
         (iss_for_version_path, _setup_path, setup_file_name)
-    compiler_full_command = '%s %s' % (compiler_path, compiler_args)
+    compiler_full_command = '"%s" %s' % (iscc_compiler_path, compiler_args)
     log('Compiler params: %s' % compiler_full_command)
 
     for line in check_output(compiler_full_command).decode().split('\r\n'):
@@ -419,7 +421,7 @@ def buildLinuxDir(debug):
     
     build_command = '"%s" "%s"' % (pyinstaller_build_path, _spec_path)
     build_output = executeInPythonInterpreter(build_command)
-    for line in build_output.split('\r\n'):
+    for line in build_output.split("\r\n"):
         log('[Build.py] => %s' % line)
 
     log('Bin building finished: %s' % _bin_path)
@@ -460,6 +462,5 @@ if __name__ == '__main__':
         buildWin32()
     else:
         buildLinux()
-    copySrcDirToDropbox()
     log('================================FINISHED=============================')
     raw_input('Press any key to exit . . .')

@@ -1,30 +1,21 @@
+# Set the debug flag to true in order to receive WriteDebug messages. When 
+# building SubiT, this value should be true. It will not effect the Release
+# version, because the minifier will remove the WriteDebug lines from the 
+# source, but if it will be set to False, the Debug version will not display
+# the WriteDebug messages.
 _DEBUG = True
-_IS_RUNNING_FROM_SOURCE = True
 
 import sys
-
-def IsPython3():
-    """ Check if the major version of python is 3, return True if so, otherwise
-        will return False 
-    """
-    return sys.version_info[0] == 3
-
-if IsPython3():
-    import http.client
-else:
-    import httplib
-
+import httplib
 import os
 import platform
 import re
 import zipfile
 from io import BytesIO
-import time
+import time    
+from urllib2 import Request, urlopen
 
-# reduce function moved to functools in python3, while in python2 the 
-# function is avaliable directlt
-if IsPython3():
-    from functools import reduce
+import UserAgents
 
 class HttpRequestTypes:
     GET  = 'GET'  #Retrieve only
@@ -195,11 +186,7 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
 
     response = ''
     try:
-        httpcon = None
-        if IsPython3():
-            httpcon = http.client.HTTPConnection( domain, timeout=10 )
-        else:
-            httpcon = httplib.HTTPConnection(domain, timeout = 10)
+        httpcon = httplib.HTTPConnection(domain, timeout = 10)
 
         headers = {}
         # Each packet we send will have this params (good for hiding)
@@ -223,6 +210,7 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
         httpcon.request( type, url, str(data), headers )     
         got_response = httpcon.getresponse()
         response = got_response.read()
+
         # In order to avoid decoding problems, we just convert the bytes to 
         # str. The problem is that when we do that, the str preserve the 
         # preceding 'b' of the bytes type, so we remove it, and the single 
@@ -250,17 +238,13 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
 
     return response
 
-def DownloadSubAsBytesIO(domain, url, referer = None):
+def DownloadSubAsBytesIO(domain, url, referer = None, cookies = None):
     """ Download a url, and return as file-like object (Bytes). Use the referer
         parameter if the site require such parameter in the header in order to
         download the file
     """
-    import UserAgents
 
-    if IsPython3():
-        from urllib.request import Request, urlopen
-    else:
-        from urllib2 import Request, urlopen
+
     # urlopen accepts only a url, so we need to join the domain and url
     # into a one string. Also, the type is needed, therefor the "http://"
     full_url = ''
@@ -278,6 +262,9 @@ def DownloadSubAsBytesIO(domain, url, referer = None):
     request_headers = {'User-Agent' : UserAgents.getAgent(),
                        # Set the referer to be the domain if None passed
                        'Referer' : referer or domain}
+    if cookies:
+        request_headers.update({"Cookie" : cookies})
+
     file_request = Request(full_url, headers = request_headers)
     try:
         url_opened = urlopen(file_request)
@@ -287,14 +274,14 @@ def DownloadSubAsBytesIO(domain, url, referer = None):
         return None
     return file_content
 
-def GetFile(domain, url, path, file_name, referer = None):
+def GetFile(subtitle_file_io, path, file_name):
     """ 
-        Downloand the file from the given url, and saves it at the given 
-        location. The url is relative to the domain arg. path specify the 
-        directory in whice the subtitle will be saved. The file_name specify 
-        the name for the subtitle. If the file is downloaded is a zip file, 
-        will extract all the subtitles under it, otherwise, will save the file 
-        in the given location.
+        Get subtitle file from BytesIO object. subtitle_file_io is file like
+        object that contains either a single subtitle file or a zip file. 
+        path specify the directory in whice the subtitle will be saved. The 
+        file_name specify the name for the subtitle. If the subtitle_file_io is 
+        a zip file, will extract all the subtitles under it, otherwise, will 
+        save the file in the given location.
 
         Note: will use the original name if: 
             a. file_name is empty 
@@ -316,14 +303,11 @@ def GetFile(domain, url, path, file_name, referer = None):
     writeLog(INFO_LOGS.STARTING_SUBTITLE_DOWNLOAD_PROCEDURE)
     writeLog(INFO_LOGS.DESTINATION_DIRECTORY_FOR_SUBTITLE % subtitle_directory)
     
-    downloaded_file = DownloadSubAsBytesIO(domain, url, referer)
-    file_is_zip     = False
-    if downloaded_file:
-        file_is_zip = zipfile.is_zipfile(downloaded_file)
+    file_is_zip = zipfile.is_zipfile(subtitle_file_io)
     
     if file_is_zip:
         try:
-            with zipfile.ZipFile(downloaded_file, 'r') as zfile:
+            with zipfile.ZipFile(subtitle_file_io, 'r') as zfile:
                 # Get the file names of the subtitles in the archive. 
                 # Filtering out any other file types
                 filter_func = lambda x: x.lower().endswith(
@@ -360,8 +344,8 @@ def GetFile(domain, url, path, file_name, referer = None):
     else:
         try:
             with open(subtitle_full_path, 'wb') as sub_file:
-                downloaded_file.seek(0)
-                content = downloaded_file.getvalue()
+                subtitle_file_io.seek(0)
+                content = subtitle_file_io.getvalue()
                 sub_file.write(content)
         except Exception as eX:
             WriteDebug('Failed saving subtitle as simple text file: %s' % eX)
@@ -614,9 +598,7 @@ def GetProgramDir():
 def DEBUG():
     """ Return True if we are in debug mode, else False """
     global _DEBUG
-    global _IS_RUNNING_FROM_SOURCE
-
-    return _DEBUG or _IS_RUNNING_FROM_SOURCE
+    return _DEBUG
 
 import inspect
 def WriteDebug( message ):
@@ -624,8 +606,8 @@ def WriteDebug( message ):
         
         KEEP IN MIND: Calling the function must be made in a one line style,
         the reason for this is that we use the minifier to remove some code 
-        when we're not in DEBUG mode, and i looks for lines starting with 
-        [WriteDebug(] and remove them, so if you spread the call on several 
+        when we're not in DEBUG mode, and it looks for lines starting with 
+        "WriteDebug(" and remove them, so if you spread the call on several 
         lines, the result will be unpredicted.
     """
     # The Python optimizer will make sure that the function won't be compiled 

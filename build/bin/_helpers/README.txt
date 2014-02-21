@@ -55,13 +55,25 @@ Using SubiT in Command Line mode (CLI):
 ===========================================================================
 Changelog:
 ===========================================================================
+* Version 2.2.0 -
+Added support for www.subscene.com
+Added fake subtitle check to Torec's provider (we'll no longer download the fake subtitles)
+Fixed SubsCenter's provdier
+Improved the logic in Addic7ed's provider (Distinguish between serieses and movies results)
+Added more languages (Spanish, Turkish, Slovak and Czech)
+Added Unit Testing for the SubProviders
+Fixed compilation scripts so they do not contain staic paths
+Search line is kept after the subtitle is downloaded
+Close on finish is set to False by default
+
+* Version 2.1.2 -
+Fixed Torec's and Subtitle's providers.
+
 * Version 2.1.1 -
 Fixed major bug occured when the user input is needed in order to determine the right subtitle version
 Fixed major bug when trying to download a subtitle file from a free-query
 Fixed ContextMenuHandler registration under 64bit versions of windows
 Fixed www.Torec.net's provider in to bypass the new blocking system
-
-
 
 * Version 2.1.0 -
 Use argparse to parse the arugments

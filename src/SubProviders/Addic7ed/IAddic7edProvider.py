@@ -10,12 +10,16 @@ class ADDIC7ED_LANGUAGES:
     ENGLISH     = '1'
     NORWEGIAN   = '29'
     RUSSIAN     = '19'
+    SPANISH     = '4'
+    TURKISH     = '16'
+    SLOVAK      = '25'
+    CZECH       = '14'
     GLOBAL      = '0'
 
 class ADDIC7ED_PAGES:
     DOMAIN      = 'www.addic7ed.com'
     SEARCH      = '/search.php?search=%s&Submit=Search'
-    LANGUAGE    = ADDIC7ED_LANGUAGES.GLOBAL
+    LANGUAGE    = None
 
 class ADDIC7ED_REGEX:
     SEARCH_RESULTS_PARSER = ('(?<=<td><a href=\")(?P<MovieCode>.*?)(?:\" debug' +
@@ -32,8 +36,11 @@ class IAddic7edProvider(ISubProvider):
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
     def findMovieSubStageList(cls, query_sub_stage):
+
+        is_series = Utils.IsSeries(query_sub_stage.query)
         query = query_sub_stage.query.replace(' ', '+')
-        WriteDebug('Sending query for: %s' % query)
+
+        WriteDebug('Sending query for [%s]: %s' % (is_series, query))
         query_data = Utils.PerformRequest(ADDIC7ED_PAGES.DOMAIN, 
                                           ADDIC7ED_PAGES.SEARCH % query)
         re_results = Utils.getregexresults(ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, 
@@ -44,11 +51,29 @@ class IAddic7edProvider(ISubProvider):
         check_lang_in_stage = (len(re_results) <= 10)
 
         for result in re_results:
-            movie_sub_stage = MovieSubStage\
-                (cls.PROVIDER_NAME, result['MovieName'], result['MovieCode'], '')
+            # Take the type of the result (either movie or serie)
+
+            result_type = result['MovieCode'].split('/', 1)
+            # Make sure we're not crashing (because of invalid index).
+            result_type = result_type[0] if result_type else 'unknown'
+
+            # If the type does not match, skip the result.
+            if result_type == 'movie' and is_series:
+                continue
+            elif result_type == 'serie' and not is_series:
+                continue
+            elif result_type == 'unknown':
+                continue
+            
+            movie_sub_stage = MovieSubStage(
+                cls.PROVIDER_NAME, 
+                result['MovieName'], 
+                result['MovieCode'], 
+                '')
+
             WriteDebug('Adding MovieSubStage. Details: %s' % movie_sub_stage.info())
 
-            # Because addi7ed doesnt says anything about the language if it's
+            # Because addi7ed doesnt say anything about the language if it's
             # missing, we need to check for each movie_sub_stage we get.
             # We also check if we should check the language, because we might
             # end up checking it for 1000 resuls, which might take some time...
@@ -89,11 +114,16 @@ class IAddic7edProvider(ISubProvider):
     
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
-    def getSubtitleUrl(cls, version_sub_stage):
-        referer = '/'.join([ADDIC7ED_PAGES.DOMAIN, version_sub_stage.movie_code])
+    def getSubtitleContent(cls, version_sub_stage):
+        referer = '/'.join(
+            [ADDIC7ED_PAGES.DOMAIN, version_sub_stage.movie_code])
         referer = 'http://' + referer
+
         WriteDebug('Setting the referer to be: %s' % referer)
         # In order to download the subtitle we need to set the movie page to be
         # the referer. The site has a download limit of 20 subtitles per day. 
         # Currently, we're not trying to bypass this limit.
-        return (ADDIC7ED_PAGES.DOMAIN, version_sub_stage.version_code, referer)
+        return Utils.DownloadSubAsBytesIO(
+                                          ADDIC7ED_PAGES.DOMAIN, 
+                                          version_sub_stage.version_code,
+                                          referer)

@@ -5,13 +5,8 @@ import sys
 from Utils import GetProgramDir
 from Utils import myfilter
 from Utils import WriteDebug
-from Utils import IsPython3
 
-if IsPython3():
-    from queue import Queue
-else:
-    from Queue import Queue
-
+from Queue import Queue
 from itertools import groupby
 
 import SubiT
@@ -27,6 +22,7 @@ from SubProviders import SubsCenter
 from SubProviders import Torec
 from SubProviders import OpenSubtitles
 from SubProviders import Addic7ed
+from SubProviders import Subscene
 #============================================================================= #
 
 SUBPROVIDERS_DIR_LOCATION = os.path.join(GetProgramDir(), 'SubProviders')

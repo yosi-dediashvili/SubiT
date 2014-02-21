@@ -2,4 +2,8 @@ from . import heb_OpenSubtitlesProvider
 from . import eng_OpenSubtitlesProvider
 from . import rus_OpenSubtitlesProvider
 from . import nor_OpenSubtitlesProvider
+from . import spa_OpenSubtitlesProvider
+from . import tur_OpenSubtitlesProvider
+from . import slo_OpenSubtitlesProvider
+from . import cze_OpenSubtitlesProvider
 from . import all_OpenSubtitlesProvider

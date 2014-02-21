@@ -23,14 +23,15 @@ class SUBTITLE_PAGES:
     SERIES_SEASON       = '/viewseries.php?id=%s&m=subtitles&s=%s'      # SeriesId & SeasonId
     SERIES_EPISODE      = '/viewseries.php?id=%s&m=subtitles&s=%s&e=%s' # SeriesId & SeasonId & EpisodeId
     DOWNLOAD            = '/downloadsubtitle.php?id=%s'
-    LANGUAGE            = SUBTITLE_LANGUAGES.HEBREW
+    LANGUAGE            = None
+    USER                = "372162"
+    PASS                = "CC5F66FBFD6915C140A61E910DCE873C"
+    CRED                = "slcoo_user_id=%s; slcoo_user_pass=%s;" % (USER, PASS) # The credentials that should be sent with requests as cookies.
 
 class SUBTITLE_REGEX:
-    #TV_SERIES_RESULTS_PARSER    = '<div style=\"\"><a href=\"viewseries.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     TV_SERIES_RESULTS_PARSER    = '<div class=\"browse_title_name\" itemprop=\"name\"><a href=\"viewseries.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     TV_SEASON_PATTERN           = 'seasonlink_(?P<SeasonCode>\d+).*?>(?P<SeasonNum>\d+)</a>'
     TV_EPISODE_PATTERN          = 'episodelink_(?P<EpisodeCode>\d+).*?>(?P<EpisodeNum>\d+)</a>'
-    #MOVIE_RESULTS_PARSER        = '<div style=\"\"><a href=\"view.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     MOVIE_RESULTS_PARSER        = '<div class=\"browse_title_name\" itemprop=\"name\"><a href=\"view.php\?id=(?P<MovieCode>\d+).*?class=\"smtext">(?P<MovieName>.*?)</div>'
     SUBTITLE_LIST_PARSER        = 'downloadsubtitle\.php\?id=(?P<VerCode>\d*).*?subt_lang.*?title=\"(?P<Language>.*?)\".*?subtitle_title.*?title=\"(?P<VerSum>.*?)\"'
     VER_SUM_PARSER              = '<td class=\"FamilySubtitlesVerisons\"><a name="f\d"></a>(.*?)</td>'
@@ -49,7 +50,8 @@ class ISubtitleProvider(ISubProvider):
     def getSeasonsList(series_code):
         WriteDebug('Working on series: %s' % series_code)
         series_page = Utils.PerformRequest( SUBTITLE_PAGES.DOMAIN,
-                                            SUBTITLE_PAGES.SERIES_SUBTITLES % series_code)
+                                            SUBTITLE_PAGES.SERIES_SUBTITLES % series_code,
+                                            more_headers = {"Cookie" : SUBTITLE_PAGES.CRED})
         WriteDebug('Got series page')
         total_seasons = Utils.getregexresults(SUBTITLE_REGEX.TV_SEASON_PATTERN, series_page, True)
         WriteDebug('Got total of %s seasons' % len(total_seasons))
@@ -59,7 +61,8 @@ class ISubtitleProvider(ISubProvider):
     def getEpisodesList(series_code, season_code):
         WriteDebug('Working on season: %s' % season_code)
         season_page = Utils.PerformRequest( SUBTITLE_PAGES.DOMAIN,
-                                            SUBTITLE_PAGES.SERIES_SEASON % (series_code, season_code))
+                                            SUBTITLE_PAGES.SERIES_SEASON % (series_code, season_code),
+                                            more_headers = {"Cookie" : SUBTITLE_PAGES.CRED})
         WriteDebug('Got season page')
         total_episodes = Utils.getregexresults(SUBTITLE_REGEX.TV_EPISODE_PATTERN, season_page, True)
         WriteDebug('Got total of %s episodes' % len(total_episodes))
@@ -78,7 +81,10 @@ class ISubtitleProvider(ISubProvider):
     @ISubProvider.SubProviderMethodWrapper
     def findMovieSubStageList(cls, query_sub_stage):
         moviename       = query_sub_stage.query
-        searchresult    = Utils.PerformRequest(SUBTITLE_PAGES.DOMAIN, SUBTITLE_PAGES.SEARCH % moviename.replace(' ', '+'))
+        searchresult    = Utils.PerformRequest(
+                                               SUBTITLE_PAGES.DOMAIN, 
+                                               SUBTITLE_PAGES.SEARCH % moviename.replace(' ', '+'),
+                                               more_headers = {"Cookies" : SUBTITLE_PAGES.CRED})
 
         #extract movies from the page
         movie_results = list(map(lambda r: {'content': r, 'type': 'movie'}, Utils.getregexresults(SUBTITLE_REGEX.MOVIE_RESULTS_PARSER, 
@@ -101,7 +107,10 @@ class ISubtitleProvider(ISubProvider):
                     moviename = result['content']['MovieName']
 
                     WriteDebug('Working on movie: %s' % moviename)
-                    page_content = Utils.PerformRequest(SUBTITLE_PAGES.DOMAIN, SUBTITLE_PAGES.MOVIE_SUBTITLES % moviecode)
+                    page_content = Utils.PerformRequest(
+                                                        SUBTITLE_PAGES.DOMAIN, 
+                                                        SUBTITLE_PAGES.MOVIE_SUBTITLES % moviecode,
+                                                        more_headers = {"Cookie" : SUBTITLE_PAGES.CRED})
                     versum = ' / '.join(Utils.getregexresults(SUBTITLE_REGEX.VER_SUM_PARSER, page_content))
                     all_vers = ISubtitleProvider.getVersionsList(page_content)
 
@@ -158,7 +167,8 @@ class ISubtitleProvider(ISubProvider):
                         
             WriteDebug('Working on episode: %s' % episode_code)
             episode_page = Utils.PerformRequest(SUBTITLE_PAGES.DOMAIN,
-                                                SUBTITLE_PAGES.SERIES_EPISODE % (series_code, season_code, episode_code))
+                                                SUBTITLE_PAGES.SERIES_EPISODE % (series_code, season_code, episode_code),
+                                                more_headers = {"Cookie" : SUBTITLE_PAGES.CRED})
             WriteDebug('Got episode page')
             versions_list = ISubtitleProvider.getVersionsList(episode_page)
             filter_func = lambda v: (v['Language'] == 
@@ -173,7 +183,9 @@ class ISubtitleProvider(ISubProvider):
 
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
-    def getSubtitleUrl(cls, version_sub_stage):
-        return (SUBTITLE_PAGES.DOMAIN, 
-                SUBTITLE_PAGES.DOWNLOAD % version_sub_stage.version_code,
-                SUBTITLE_PAGES.DOMAIN)
+    def getSubtitleContent(cls, version_sub_stage):
+        return Utils.DownloadSubAsBytesIO(
+            SUBTITLE_PAGES.DOMAIN, 
+            SUBTITLE_PAGES.DOWNLOAD % version_sub_stage.version_code,
+            SUBTITLE_PAGES.DOMAIN,
+            SUBTITLE_PAGES.CRED)

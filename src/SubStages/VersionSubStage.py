@@ -41,10 +41,13 @@ class VersionSubStage(ISubStage):
         writeLog(INFO_LOGS.SENDING_SUBTITLE_FILE_REQUEST_FOR_SUBTITLE % 
                  self.info())
         WriteDebug('Sending subtitle file request for: %s' % self.info())
-        (domain, url, referer) = \
-            getSubProviderByName(self.provider_name).getSubtitleUrl(self)
-        WriteDebug('Got subtitle url. domain: [%s], url: [%s], referer: [%s]' % (domain, url, referer))
-        return GetFile(domain, url, directory_path, file_name, referer)
+        file_io = getSubProviderByName(self.provider_name)\
+            .getSubtitleContent(self)
+        if not file_io:
+            WriteDebug('Failed getting BytesIO object from the provider.')
+            return False
+
+        return GetFile(file_io, directory_path, file_name)
 
     def info(self):
         return ('provider_name: [%s], version_sum: [%s], version_code: [%s], '

@@ -40,15 +40,15 @@ class ISubProvider(object):
         raise NotImplementedError('ISubProvider.findVersionSubStageList')
 
     @classmethod
-    def getSubtitleUrl(cls, version_sub_stage):
-        """ def:    Function to retrieve the direct url of the subtitle file. 
-                    Any special procedures to retrieve the subtitle's url should 
-                    be made in here.
-            input:  version_sub_stage - instace of VersionSubStage returned by 
+    def getSubtitleContent(cls, version_sub_stage):
+        """ def:    Function to retrieve the subtitle content that the given 
+                    verion_sub_stage represent.
+            input:  version_sub_stage - Instace of VersionSubStage returned by 
                     findVersionSubStageList.
-            return: tuple<str(domain), str(url)>
+            return: BytesIO object containg the the content that was downloaded
+                    from the Site. On failure, the function returns None.
         """
-        raise NotImplementedError('ISubProvider.getSubtitleUrl')
+        raise NotImplementedError('ISubProvider.getSubtitleContent')
 
     @classmethod
     def SubProviderMethodWrapper(cls, func):

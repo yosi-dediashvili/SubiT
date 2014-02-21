@@ -1,10 +1,7 @@
 
 import Utils
 
-if Utils.IsPython3():
-    from queue import Queue
-else:
-    from Queue import Queue
+from Queue import Queue
 
 import threading
 import time
@@ -13,12 +10,13 @@ from SubProviders.Torec.TorecProvider.TorecProvider \
     import HttpRequestTypes, TOREC_PAGES
 
 class Hamster:
-    """ Purpose is simple - Decrease the waiting time in the procedure.
-    Instead of waiting ~8 secs  in the middle of the flow, we collect hash
-    codes in a different thread, outside the flow, and when it's time to send
-    the hash code back, we check to see if enough time was passed, and if so,
-    we send the request immediately, and if not, we wait the secs left, either
-    way, it a WinWin situation.
+    """ 
+    Purpose is simple - Decrease the waiting time in the procedure. Instead of 
+    waiting ~8 secs  in the middle of the flow, we collect hash codes in a 
+    different thread, outside the flow, and when it's time to send the hash 
+    code back, we check to see if enough time was passed, and if so, we send 
+    the request immediately, and if not, we wait the secs left, either way, it
+    is a WinWin situation.
     """
 
     MAX_TIME_TO_WAIT = 12 # Maximum time to wait after code request.
@@ -38,9 +36,17 @@ class Hamster:
         hamsterRunner.daemon = True
         hamsterRunner.start()
 
+    def __del__(self):
+        """ 
+        On destruction, we call the stop method in order to stop the worker 
+        thread.
+        """
+        self.stop()
+
     def runner(self):
-        """ The worker in this class. each 5 secs send request for hash code,
-        and stores it in the queue, the queue is built from tuple -> (time of
+        """ 
+        The worker in this class. each 5 secs send request for hash code, and 
+        stores it in the queue, the queue is built from tuple -> (time of 
         request, hash code). After 10 items, the queue is blocked.
         """
         sleep_time = 5 # 5 secs between each request.
@@ -66,8 +72,9 @@ class Hamster:
         self.should_stop = True
 
     def getCode(self):
-        """ This function pops one code from the queue, and wait the time left
-        (if there is such).
+        """ 
+        This function pops one code from the queue, and wait the time left (if 
+        there is such).
         """
         (time_got, guest_code) = self.hash_codes.get(block=True)
         time_past = int(time.time()) - time_got

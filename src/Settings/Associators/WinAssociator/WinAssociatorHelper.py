@@ -1,8 +1,6 @@
 import Utils
-if Utils.IsPython3():
-    import winreg
-else:
-    import _winreg as winreg
+
+import _winreg as winreg
 import ctypes
 from ctypes import byref, wintypes
 import os
@@ -156,10 +154,7 @@ def ExecuteWithHigherPrivilages(param):
 def _as_unicode(str_content):
     """ Return the string in unicode format """
     if str_content is not None and type(str_content) is str:
-        if Utils.IsPython3():
-            return bytes(str_content, 'utf-8').decode('utf-8')
-        else:
-            return str_content.decode('utf-8')
+        return str_content.decode('utf-8')
     else:
         return str_content
 

@@ -1,9 +1,6 @@
 import Utils
 
-if Utils.IsPython3():
-    from xmlrpc.client import Server as XmlRpcServer
-else:
-    from xmlrpclib import Server as XmlRpcServer
+from xmlrpclib import Server as XmlRpcServer
 
 import os
 import struct
@@ -24,6 +21,10 @@ class OPENSUBTITLES_LANGUAGES:
     ENGLISH     = 'eng'
     RUSSIAN     = 'rus'
     NORWEGIAN   = 'nor'
+    SPANISH     = 'spa'
+    TURKISH     = 'tur'
+    SLOVAK      = 'slo'
+    CZECH       = 'cze'
     GLOBAL      = 'all'
 
 class OPENSUBTITLES_PAGES:
@@ -214,7 +215,7 @@ class IOpenSubtitlesProvider(ISubProvider):
     
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
-    def getSubtitleUrl(cls, version_sub_stage):
+    def getSubtitleContent(cls, version_sub_stage):
         IDSubtitleFile  = 'IDSubtitleFile'
         ZipDownloadLink = 'ZipDownloadLink'
         domain  = None
@@ -233,7 +234,7 @@ class IOpenSubtitlesProvider(ISubProvider):
                                      lambda f: f[ZipDownloadLink], True)
             domain  = OPENSUBTITLES_PAGES.DOMAIN
         
-        return (domain, url, domain)
+        return Utils.DownloadSubAsBytesIO(domain, url, domain, None)
         
 #===============================================================================
 # Class Helpers -> Session Handling

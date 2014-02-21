@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>13bf253a-8314-42f4-bfa9-ef78d9db9b16</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>ProvidersTests\BaseProviderTest.py</StartupFile>
+    <SearchPath>..\src</SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>SubiT_tests</Name>
+    <RootNamespace>SubiT_tests</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <InterpreterId>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="SubProvidersTests\Addic7edSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\BaseSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\OpenSubtitlesSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\SubsceneSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\SubsCenterSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\SubtitleSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\TorecSubProviderTest.py" />
+    <Compile Include="SubProvidersTests\__init__.py" />
+    <Compile Include="TestUtils.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SubiT.pyproj">
+      <Name>SubiT</Name>
+      <Project>{ca7e4620-e7e0-4188-9a18-3c8c75bb06e3}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SubProvidersTests\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+</Project>

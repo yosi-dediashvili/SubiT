@@ -2,12 +2,8 @@ import os
 
 from Utils import WriteDebug
 from Utils import GetProgramDir
-from Utils import IsPython3
 
-if IsPython3():
-    import configparser
-else:
-    import ConfigParser as configparser
+import ConfigParser as configparser
 
 
 CONFIG_FILE_NAME = 'config.ini'
@@ -16,8 +12,8 @@ CONFIG_FILE_PATH = os.path.join(GetProgramDir(), 'Settings', CONFIG_FILE_NAME)
 def CreateDefaultConfigFile(config_path):
     configs = """
 [Global]
-version = 2.1.1
-close_on_finish = True
+version = 2.2.0
+close_on_finish = False
 default_directory = $DEFAULTDIR$
 always_use_default_directory = False
 subtitles_saving_extension = .srt
@@ -25,12 +21,12 @@ subtitles_extensions = .srt|.sub|.idx
 
 [Updates]
 check_updates = True
-auto_update = True
+auto_update = False
 last_update_check = 0
 
 [Providers]
 languages_order =
-providers_order = www.torec.net|www.subscenter.org|www.subtitle.co.il|www.opensubtitles.org|www.addic7ed.com
+providers_order = www.torec.net|www.subscenter.org|www.subtitle.co.il|www.opensubtitles.org|www.subscene.com|www.addic7ed.com
 
 [Flow]
 in_depth_search = True
@@ -61,7 +57,10 @@ class SubiTConfig():
     LIST_DELIMITER = '|'
 
     _parser    = None
-    _singleton = None 
+    _singleton = None
+    # Cache Names
+    MOVIE_EXT_CACHE_NAME = "MovieExt"
+    SUBTITLE_EXT_CACHE_NAME = "SubtitleExt"
 
     def __init__(self, config_path = None):
         """ The constuctor of SubiTConfig will create a new config file if the
@@ -87,7 +86,48 @@ class SubiTConfig():
         self._parser.read(self.config_path)
         SubiTConfig._singleton = self
         WriteDebug('Config Singleton Created')
-    
+        #init new cache dictionary, this param will saved all the common values from the config file
+        self._cache = {}
+
+
+#==============================================================================#
+# fast access to common values                                                 #
+#==============================================================================#
+    def getMoviesExtensions(self, with_dot = True):
+        """Return all the extensions associated to movie files as it apear in
+        the config file. Extensions are in lower case."""
+
+        #check if something saved in cache
+        if self._cache.get(self.MOVIE_EXT_CACHE_NAME) is not None:
+            return self._cache.get(self.MOVIE_EXT_CACHE_NAME)
+
+        _ext = self.getList('Association', 'extensions_keys',
+                                           ['.mkv', '.avi', '.wmv', '.mp4'])
+        _ext =  list(map(str.lower, _ext))
+        if not with_dot:
+            _ext = list(map(lambda e: e.lstrip('.'), _ext))
+
+        #set cache value:
+        self._cache[self.MOVIE_EXT_CACHE_NAME] = _ext
+        return _ext
+
+    def getSubtitlesExtensions(self, with_dot = True):
+        """Return all the extensions associated to subtitle files as it apear in
+        the config file. Extensions are in lower case."""
+
+         #check if something saved in cache
+        if self._cache.get(self.SUBTITLE_EXT_CACHE_NAME) is not None:
+            return self._cache.get(self.SUBTITLE_EXT_CACHE_NAME)
+
+        _ext = self.getList('Global', 'subtitles_extensions',
+                                           ['.srt', '.sub', '.idx'])
+        _ext = list(map(str.lower, _ext))
+        if not with_dot:
+            _ext = list(map(lambda e: e.lstrip('.'), _ext))
+
+        #set cache value:
+        self._cache[self.SUBTITLE_EXT_CACHE_NAME] = _ext
+        return _ext
 #==============================================================================#
 # Functions to retrieve values from the config file                            #
 #==============================================================================#
@@ -237,3 +277,24 @@ class SubiTConfig():
         if SubiTConfig._singleton == None:
             SubiTConfig()
         return SubiTConfig._singleton
+
+
+#==============================================================================#
+#   Get the config singelton                                                     #
+#==============================================================================#
+def getConfig():
+    return SubiTConfig.Singleton()
+
+
+#==============================================================================#
+#   Folder functions from Utils , using cache now !                              #
+#==============================================================================#
+def GetSubtitlesExtensions(with_dot = True):
+    """Return all the extensions associated to subtitle files as it apear in
+    the config file. Extensions are in lower case."""
+    return getConfig().getSubtitlesExtensions()
+
+def GetMoviesExtensions(with_dot = True):
+    """Return all the extensions associated to movie files as it apear in
+    the config file. Extensions are in lower case."""
+    return getConfig().getMoviesExtensions()

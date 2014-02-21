@@ -47,7 +47,7 @@ class SingleInputsQueue(Queue):
             if not single_input:
                 break
             single_inputs.append(single_input)
-            max_count -= 1
+            max_items -= 1
 
         WriteDebug('Returning %s items from the SingleInputsQueue.' % len(single_inputs))
         return single_inputs
