@@ -84,7 +84,7 @@ http://www.subit-app.sf.net/contact.html
   * Put movie name in the textbox when it's past as a parameter to SubiT
 
 * Version 2.0.2 (Linux only) - 
-* Major bug fix in SubiT's console mode
+  * Major bug fix in SubiT's console mode
 
 * Version 2.0.1 - 
   * Critical Bug fix in the ranking functions
