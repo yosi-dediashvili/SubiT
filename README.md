@@ -1,4 +1,4 @@
-# Oursite: http://subit-app.sf.net
+# Our site: http://subit-app.sf.net
 
 First of all, feel free to contact us with any problem at:
 http://www.subit-app.sf.net/contact.html
@@ -54,6 +54,17 @@ http://www.subit-app.sf.net/contact.html
 ===========================================================================
 ##Changelog:
 ===========================================================================
+* Version 2.2.0 -
+Added support for www.subscene.com
+Added fake subtitle check to Torec's provider (we'll no longer download the fake subtitles)
+Fixed SubsCenter's provdier
+Improved the logic in Addic7ed's provider (Distinguish between serieses and movies results)
+Added more languages (Spanish, Turkish, Slovak and Czech)
+Added Unit Testing for the SubProviders
+Fixed compilation scripts so they do not contain staic paths
+Search line is kept after the subtitle is downloaded
+Close on finish is set to False by default
+
 * Version 2.1.2 -
 Fixed Torec's and Subtitle's providers.
 
