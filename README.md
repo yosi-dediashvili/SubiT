@@ -55,88 +55,88 @@ http://www.subit-app.sf.net/contact.html
 ##Changelog:
 ===========================================================================
 * Version 2.2.0 -
-Added support for www.subscene.com
-Added fake subtitle check to Torec's provider (we'll no longer download the fake subtitles)
-Fixed SubsCenter's provdier
-Improved the logic in Addic7ed's provider (Distinguish between serieses and movies results)
-Added more languages (Spanish, Turkish, Slovak and Czech)
-Added Unit Testing for the SubProviders
-Fixed compilation scripts so they do not contain staic paths
-Search line is kept after the subtitle is downloaded
-Close on finish is set to False by default
+** Added support for www.subscene.com
+** Added fake subtitle check to Torec's provider (we'll no longer download the fake subtitles)
+** Fixed SubsCenter's provdier
+** Improved the logic in Addic7ed's provider (Distinguish between serieses and movies results)
+** Added more languages (Spanish, Turkish, Slovak and Czech)
+** Added Unit Testing for the SubProviders
+** Fixed compilation scripts so they do not contain staic paths
+** Search line is kept after the subtitle is downloaded
+** Close on finish is set to False by default
 
 * Version 2.1.2 -
-Fixed Torec's and Subtitle's providers.
+** Fixed Torec's and Subtitle's providers.
 
 * Version 2.1.0 -
-Use argparse to parse the arugments
-Save the last window size (when the program closes) for the next program startup
-Remember the visibility of the log window
-Add option to select between startup point of center screen or mouse position
-Add option (in config) to simply use all the providers (instead of choosing them all)
-Fix empty result returned by Addic7ed's provider
-Return Win32_Error to notify failure in download
-Distribute SubiT with no language selected
-Create new Context Menu for windows platform
-Adjust latin numbering for the ranking functions
-Fix TorecProvider blocking
-Create a new SubFlow.
-Put movie name in the textbox when it's past as a parameter to SubiT
+** Use argparse to parse the arugments
+** Save the last window size (when the program closes) for the next program startup
+** Remember the visibility of the log window
+** Add option to select between startup point of center screen or mouse position
+** Add option (in config) to simply use all the providers (instead of choosing them all)
+** Fix empty result returned by Addic7ed's provider
+** Return Win32_Error to notify failure in download
+** Distribute SubiT with no language selected
+** Create new Context Menu for windows platform
+** Adjust latin numbering for the ranking functions
+** Fix TorecProvider blocking
+** Create a new SubFlow.
+** Put movie name in the textbox when it's past as a parameter to SubiT
 
 * Version 2.0.2 (Linux only) - 
-Major bug fix in SubiT's console mode
+* Major bug fix in SubiT's console mode
 
 * Version 2.0.1 - 
-Critical Bug fix in the ranking functions
-Edge case Bug fix in movie name formatting function
-Bug fix in the update notification
+** Critical Bug fix in the ranking functions
+** Edge case Bug fix in movie name formatting function
+** Bug fix in the update notification
 
 * Version 2.0.0 - 
-New head version!
-Major GUI improvments and changes
-Added support for www.addic7ed.com
-Movie file drop to SubiT's main window is now supported
-Added support for default download location
-Improved log messages
-Subtitles selection flow improved
-Subtitles Ranking function improved
-Improved provider selection (both language and site)
-Fixed update mechanizm
-Privilage elevation is requested when performing right-click association in none Admin account (under Windows)
-Crashing fixed completely
+** New head version!
+** Major GUI improvments and changes
+** Added support for www.addic7ed.com
+** Movie file drop to SubiT's main window is now supported
+** Added support for default download location
+** Improved log messages
+** Subtitles selection flow improved
+** Subtitles Ranking function improved
+** Improved provider selection (both language and site)
+** Fixed update mechanizm
+** Privilage elevation is requested when performing right-click association in none Admin account (under Windows)
+** Crashing fixed completely
 
 * Version 1.3.1 - 
-Added support for primary and secondary language subtitles search
-Removed auto-update feature (the feature will return on later version)
-Improved function for subtitles versions ranking
-Added support for Linux (Checked under ununtu)
-Right-click registration problem - Fixed (still need to run as administrator for registration)
-Changed www.sratim.co.il handler to work with the latest changes on the site
-Changed www.torec.net handler to work with the latest changes on the site
-Fixed several minor bugs
+** Added support for primary and secondary language subtitles search
+** Removed auto-update feature (the feature will return on later version)
+** Improved function for subtitles versions ranking
+** Added support for Linux (Checked under ununtu)
+** Right-click registration problem - Fixed (still need to run as administrator for registration)
+** Changed www.sratim.co.il handler to work with the latest changes on the site
+** Changed www.torec.net handler to work with the latest changes on the site
+** Fixed several minor bugs
 
 * Version 1.3.0 - 
-Added full support for www.sratim.co.il
-Added full support for www.subscenter.org
-Added upate mechanizm (AutoUpdate&Update notification)
-Using www.OpenSubtitles.org's file hash&name data to identify movies (and serieses) 
-Moved to unified configuration file and better settings window
-Enabled auto-close on finish
+** Added full support for www.sratim.co.il
+** Added full support for www.subscenter.org
+** Added upate mechanizm (AutoUpdate&Update notification)
+** Using www.OpenSubtitles.org's file hash&name data to identify movies (and serieses) 
+** Moved to unified configuration file and better settings window
+** Enabled auto-close on finish
 
 * Version 1.2.0 - 
-Added support to www.subscenter.org subtitles (Movies only)
-Added restart options in settings windows
-Fixed crashing problems
+** Added support to www.subscenter.org subtitles (Movies only)
+** Added restart options in settings windows
+** Fixed crashing problems
 
 * Version 1.1.0 - 
-Added support to www.OpenSubtitles.org subtitle services Added support for selecting different subtitle handler 
-Gui Improvments 
+** Added support to www.OpenSubtitles.org subtitle services Added support for selecting different subtitle handler 
+** Gui Improvments 
 
 * Version 1.0.0 - 
-Bug fix and new features 
+** Bug fix and new features 
 
 * Version 0.9.9 - 
-Initial release
+** Initial release
 
 
 --==Special thanks to www.OpenSubtitles.org for delivering their API==--
