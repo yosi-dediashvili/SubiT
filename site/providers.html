@@ -34,34 +34,40 @@ function remove_postfix(str) {
 	return str.split("_")[0];
 }
 
-$(document).ready(function() {
-	$(".language").mouseover(function() {
-		$(this).addClass("selected_language");
-		$(".language").not(this).removeClass("selected_language");
-		$(".provider").removeClass("selected_provider");
+function select_language(language) {
+	language.addClass("selected_language");
+	$(".language").not(language).removeClass("selected_language");
+	$(".provider").removeClass("selected_provider");
 
-		var selected_language = remove_postfix($(this)[0].id);
-
-		for (var provider_name in providers) {
-			var languages = providers[provider_name];
-			var got_language = languages.some(function(language) {
-				return language == selected_language;
-			});
-			if (got_language == true) {
-				$("#" + provider_name + "_provider").addClass("selected_provider");
-			}
-		}
-	});
-
-	$(".provider").mouseover(function() {
-		$(this).addClass("selected_provider");
-		$(".provider").not(this).removeClass("selected_provider");
-		$(".language").removeClass("selected_language");
-
-		providers[$(this)[0].id.split("_")[0]].forEach(function(language) {
-			$("#" + language + "_lang").addClass("selected_language");
+	var selected_language = remove_postfix(language[0].id);
+	for (var provider_name in providers) {
+		var languages = providers[provider_name];
+		var got_language = languages.some(function(language) {
+			return language == selected_language;
 		});
+		if (got_language == true) {
+			$("#" + provider_name + "_provider").addClass("selected_provider");
+		}
+	}		
+}
+
+function select_provider(provider) {
+	provider.addClass("selected_provider");
+	$(".provider").not(provider).removeClass("selected_provider");
+	$(".language").removeClass("selected_language");
+
+	providers[provider[0].id.split("_")[0]].forEach(function(language) {
+		$("#" + language + "_lang").addClass("selected_language");
 	});
+}
+
+$(document).ready(function() {
+	// First, select the Hebrew language.
+	select_language($("#heb_lang"));
+
+	// Set the event handlers.
+	$(".language").mouseover(function() {select_language($(this));});
+	$(".provider").mouseover(function() {select_provider($(this))});
 	
 	// Click on the link whenever the provider is clicked.
 	$(".provider").click(function() {
