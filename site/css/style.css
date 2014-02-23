@@ -29,6 +29,27 @@ a:hover {text-decoration:none;}
 	margin: 20px;
 }
 
+.col-2 {
+	float: left;
+	width: 200px; 
+	margin: 5px;
+}
+
+.provider {
+	cursor: pointer;
+	opacity: 0.3;
+}
+.selected_provider {
+	opacity: 1;
+}
+.language {
+	cursor: pointer;
+	opacity: 0.3;
+}
+.selected_language {
+	opacity: 1;
+}
+
 .wrapper {width:1024px; overflow:hidden}
 .extra-wrap {overflow:hidden;}
  
@@ -68,6 +89,11 @@ p {margin-bottom:18px;}
 	padding:4px;
 	border:1px solid #e5e5e5;
 	background:#fff;
+	float:left;
+}
+
+.img-border-nobg-ng-noborder {
+	padding:4px;
 	float:left;
 }
 
