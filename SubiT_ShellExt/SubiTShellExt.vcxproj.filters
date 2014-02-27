@@ -13,11 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="icons">
+      <UniqueIdentifier>{28dad1fa-4a5b-4d68-b309-eb9a58e06b84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\subit-contextmenu-icon.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="GlobalExportFunctions.def">
       <Filter>Source Files</Filter>
     </None>
@@ -48,7 +48,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SubiTShellExt.rc">
+    <Image Include="icons\subit-contextmenu-icon.bmp">
+      <Filter>icons</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SubiT_ShellExt.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
