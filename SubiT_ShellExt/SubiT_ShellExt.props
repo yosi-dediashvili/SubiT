@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)build\bin\win32\_helpers\WinAssociator\$(PlatformArchitecture)</OutDir>
+    <TargetName>SubiT.ShellExt.$(PlatformArchitecture)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <DebugInformationFormat>None</DebugInformationFormat>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>echo Deleting: $(TargetDir)$(TargetName).lib
+del $(TargetDir)$(TargetName).lib
+
+echo Deleting: $(TargetDir)$(TargetName).exp
+del $(TargetDir)$(TargetName).exp
+
+echo Deleting: $(TargetDir)$(TargetName).pdb
+del $(TargetDir)$(TargetName).pdb
+
+if $(PlatformArchitecture) == 32 (
+
+echo Copying: $(SystemRoot)\SysWOW64\msvcp120.dll
+copy $(SystemRoot)\SysWOW64\msvcp120.dll $(TargetDir)
+
+echo Copying: $(SystemRoot)\SysWOW64\msvcr120.dll
+copy $(SystemRoot)\SysWOW64\msvcr120.dll $(TargetDir)
+) else (
+
+echo Copying: $(SystemRoot)\System32\msvcp120.dll
+copy $(SystemRoot)\System32\msvcp120.dll $(TargetDir)
+
+echo Copying: $(SystemRoot)\System32\msvcr120.dll
+copy $(SystemRoot)\System32\msvcr120.dll $(TargetDir)
+)
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>
