@@ -30,10 +30,10 @@ copy $(SystemRoot)\SysWOW64\msvcr120.dll $(TargetDir)
 ) else (
 
 echo Copying: $(SystemRoot)\System32\msvcp120.dll
-copy $(SystemRoot)\System32\msvcp120.dll $(TargetDir)
+copy $(SystemRoot)\Sysnative\msvcp120.dll $(TargetDir)
 
 echo Copying: $(SystemRoot)\System32\msvcr120.dll
-copy $(SystemRoot)\System32\msvcr120.dll $(TargetDir)
+copy $(SystemRoot)\Sysnative\msvcr120.dll $(TargetDir)
 )
 </Command>
     </PostBuildEvent>

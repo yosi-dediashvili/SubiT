@@ -29,10 +29,10 @@
     <ClInclude Include="ClassFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileContextMenuExt.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="SubiTContextMenuExt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -43,7 +43,7 @@
     <ClCompile Include="ClassFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileContextMenuExt.cpp">
+    <ClCompile Include="SubiTContextMenuExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
