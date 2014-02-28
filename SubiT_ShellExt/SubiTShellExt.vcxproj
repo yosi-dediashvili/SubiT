@@ -88,7 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClassFactory.h" />
-    <ClInclude Include="FileContextMenuExt.h" />
+    <ClInclude Include="SubiTContextMenuExt.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -102,7 +102,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="FileContextMenuExt.cpp" />
+    <ClCompile Include="SubiTContextMenuExt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="icons\subit-contextmenu-icon.bmp" />

@@ -1,21 +1,21 @@
 #include "ClassFactory.h"
-#include "FileContextMenuExt.h"
+#include "SubiTContextMenuExt.h"
 #include <new>
 #include <Shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
 
 
-extern long g_cDllRef;
+extern long g_DllRefCount;
 
 
 ClassFactory::ClassFactory() : m_cRef(1)
 {
-    InterlockedIncrement(&g_cDllRef);
+    InterlockedIncrement(&g_DllRefCount);
 }
 
 ClassFactory::~ClassFactory()
 {
-    InterlockedDecrement(&g_cDllRef);
+    InterlockedDecrement(&g_DllRefCount);
 }
 
 
@@ -63,7 +63,7 @@ IFACEMETHODIMP ClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, vo
         hr = E_OUTOFMEMORY;
 
         // Create the COM component.
-        FileContextMenuExt *pExt = new (std::nothrow) FileContextMenuExt();
+        SubiTContextMenuExt *pExt = new (std::nothrow) SubiTContextMenuExt();
         if (pExt)
         {
             // Query the specified interface.
@@ -79,11 +79,11 @@ IFACEMETHODIMP ClassFactory::LockServer(BOOL fLock)
 {
     if (fLock)
     {
-        InterlockedIncrement(&g_cDllRef);
+        InterlockedIncrement(&g_DllRefCount);
     }
     else
     {
-        InterlockedDecrement(&g_cDllRef);
+        InterlockedDecrement(&g_DllRefCount);
     }
     return S_OK;
 }
