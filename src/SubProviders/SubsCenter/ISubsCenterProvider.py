@@ -101,8 +101,8 @@ class ISubsCenterProvider(ISubProvider):
                         total_qualities.append(quality)        
 
                     for version in versions.values():
-                        # Normalize the version sum.
-                        version_sum = version['subtitle_version'].lower()
+                        # Use the version as version sum.
+                        version_sum = version['subtitle_version']
                         downloads = int(version['downloaded'])
                         
                         version_in_dict = all_versions.get(version_sum)
