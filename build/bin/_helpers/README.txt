@@ -55,6 +55,9 @@ Using SubiT in Command Line mode (CLI):
 ===========================================================================
 Changelog:
 ===========================================================================
+* Version 2.2.1 - 
+Fixed Subscenter's provider
+
 * Version 2.2.0 -
 Added support for www.subscene.com
 Added fake subtitle check to Torec's provider (we'll no longer download the fake subtitles)
