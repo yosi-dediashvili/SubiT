@@ -14,7 +14,10 @@ class Test_eng_SubtitleProviderTest(
         from SubProviders.Subtitle.eng_SubtitleProvider import SubtitleProvider
         BaseSubProviderTest.BaseSubProviderTest.__init__(
             self, 
-            SubtitleProvider.SubtitleProvider())
+            SubtitleProvider.SubtitleProvider(),
+            "The Matrix Reloaded",
+            # The IMDB's id for Lost series.
+            "tt0411008")
 
 class Test_heb_SubtitleProviderTest(
     unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):

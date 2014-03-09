@@ -14,8 +14,8 @@ class Test_heb_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
-			"The Big Bang Theory S04E12")
+			"A Little Bit of Heaven",
+			"Lost S06E16")
 
 class Test_eng_Addic7edProviderTest(
 	unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
@@ -24,7 +24,7 @@ class Test_eng_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
+			"The Dark Knight",
 			"The Big Bang Theory S04E12")
 
 class Test_nor_Addic7edProviderTest(
@@ -34,8 +34,8 @@ class Test_nor_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
-			"The Big Bang Theory S04E12")
+			"24: Redemption",
+			"24 S08E17")
 
 class Test_rus_Addic7edProviderTest(
 	unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
@@ -44,8 +44,8 @@ class Test_rus_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
-			"The Big Bang Theory S04E12")
+			"A Scanner Darkly",
+			"Gossip Girl S02E05")
 
 class Test_spa_Addic7edProviderTest(
 	unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
@@ -54,8 +54,8 @@ class Test_spa_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
-			"The Big Bang Theory S04E12")
+			"The Dark Knight",
+			"How I Met Your Mother S08E02")
 
 class Test_tur_Addic7edProviderTest(
 	unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
@@ -64,8 +64,8 @@ class Test_tur_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
-			"The Big Bang Theory S04E12")
+			"The Dark Knight",
+			"Heroes S03E09")
 
 class Test_slo_Addic7edProviderTest(
 	unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
@@ -74,8 +74,8 @@ class Test_slo_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
-			"The Big Bang Theory S04E12")
+			"Barbie as Rapunzel",
+			"Lost S04E05")
 
 class Test_cze_Addic7edProviderTest(
 	unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
@@ -84,6 +84,6 @@ class Test_cze_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			'The Dark Knight',
-			"The Big Bang Theory S04E12")
+			"Barbie of Swan Lake",
+			"The Big Bang Theory S03E04")
 		
