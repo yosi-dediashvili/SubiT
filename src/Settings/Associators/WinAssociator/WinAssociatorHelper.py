@@ -154,7 +154,7 @@ def ExecuteWithHigherPrivilages(param):
 def _as_unicode(str_content):
     """ Return the string in unicode format """
     if str_content is not None and type(str_content) is str:
-        return str_content.decode('utf-8')
+        return str_content.decode(sys.getfilesystemencoding())
     else:
         return str_content
 

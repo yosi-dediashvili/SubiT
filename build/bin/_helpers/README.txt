@@ -55,6 +55,9 @@ Using SubiT in Command Line mode (CLI):
 ===========================================================================
 Changelog:
 ===========================================================================
+* Version 2.2.2 - 
+Fixed minor bug when associating SubiT with ContextMenu when SubiT is placed in a None-English path.
+
 * Version 2.2.1 - 
 Fixed Subscenter's provider
 
