@@ -121,14 +121,14 @@ class GuiInteractor(IInteractor.IInteractor):
         if SubiTConfig.Singleton().getBoolean\
             ('Gui', 'remember_last_window_size', True):
             current_window_size = \
-                [str(self.mainWindow.width()), str(self.mainWindow.height())]
+                [self.mainWindow.width(), self.mainWindow.height()]
             SubiTConfig.Singleton().setList\
                 ('Gui', 'last_window_size', current_window_size)
 
         if SubiTConfig.Singleton().getBoolean\
             ('Gui', 'remember_last_window_position', False):
             current_window_position = \
-                [str(self.mainWindow.x()), str(self.mainWindow.y())]
+                [self.mainWindow.x(), self.mainWindow.y()]
             SubiTConfig.Singleton().setList\
                 ('Gui', 'last_window_position', current_window_position)
 

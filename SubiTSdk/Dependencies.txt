@@ -1,6 +1,9 @@
 * 	In order to use & develop the source, Python 2.7.x is required:
 	http://www.python.org/download/releases/
 
+*	EasyConfig module for python is required:
+	https://github.com/yosi-dediashvili/EasyConfig
+
 * 	Additionally, in order to use the GUI, PySide (Qt) is required:
 	http://qt-project.org/wiki/PySideDownloads
 

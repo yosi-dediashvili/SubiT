@@ -157,9 +157,7 @@ def GetSubtitlesExtensions(with_dot = True):
     """Return all the extensions associated to subtitle files as it apear in 
     the config file. Extensions are in lower case."""
     from Settings.Config import SubiTConfig
-    _ext = SubiTConfig.Singleton().getList('Global', 'subtitles_extensions', 
-                                           ['.srt', '.sub', '.idx'])
-    _ext = list(map(str.lower, _ext))
+    _ext = SubiTConfig.Singleton().Global.subtitles_extensions
     if not with_dot:
         _ext = list(map(lambda e: e.lstrip('.'), _ext))
     return _ext
@@ -168,12 +166,11 @@ def GetMoviesExtensions(with_dot = True):
     """Return all the extensions associated to movie files as it apear in 
     the config file. Extensions are in lower case."""
     from Settings.Config import SubiTConfig
-    _ext = SubiTConfig.Singleton().getList('Association', 'extensions_keys', 
-                                           ['.mkv', '.avi', '.wmv', '.mp4'])
-    _ext =  list(map(str.lower, _ext))
+    _ext = SubiTConfig.Singleton().Association.extensions_keys
     if not with_dot:
         _ext = list(map(lambda e: e.lstrip('.'), _ext))
     return _ext
+
         
 def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET, 
                    more_headers = '', retry = False, is_redirection = False):
