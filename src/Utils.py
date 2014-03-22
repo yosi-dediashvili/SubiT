@@ -620,25 +620,26 @@ def DEBUG():
     return _DEBUG
 
 import inspect
-def WriteDebug( message ):
-    """ Write debug log - will only be written if the DEBUG flag is True. 
-        
-        KEEP IN MIND: Calling the function must be made in a one line style,
-        the reason for this is that we use the minifier to remove some code 
-        when we're not in DEBUG mode, and it looks for lines starting with 
-        "WriteDebug(" and remove them, so if you spread the call on several 
-        lines, the result will be unpredicted.
+def WriteDebug( message, calling_file = None ):
+    """ 
+        Write debug log - will only be written if the DEBUG flag is True. 
+        The message format is: [time] => [file] => [message].
+
+        If calling_file is present, it will be placed in the [file] location, 
+        otherwise, the name will be extracted using the inspect module (By 
+        going backwards in the calling stack).
     """
     # The Python optimizer will make sure that the function won't be compiled 
     # if _DEBUG is set to False.
     if DEBUG():
-        # The message format is: [time] => [file] => [message]
-        frame = inspect.stack()[1]
-        file_name = inspect.getsourcefile(frame[0])
-        message = '[%s] => %s => %s' % (time.strftime('%I:%M:%S'), file_name, message)
+        if not calling_file:
+            frame = inspect.stack()[1]
+            calling_file = inspect.getsourcefile(frame[0])
+        
+        message = '[%s] => [%s] => [%s]' % \
+            (time.strftime('%I:%M:%S'), calling_file, message)
         try:
             print(message)
-            #open(os.path.join('d:\\', 'subit.log'), 'a').write(message + '\r\n')
         except:
             try:
                 print(message.encode('utf-8', 'ignore').decode('ascii', 'ignore'))
