@@ -5,8 +5,11 @@ import time
 from subprocess import check_output
 from subprocess import call
 from distutils.sysconfig import get_python_lib
-
+import astor
+import ast
+import inspect
 import platform
+
 
 def IsWindowsPlatform():
     """Return True if the system's OS is Windows, else False."""
@@ -21,8 +24,8 @@ if not IsWindowsPlatform():
 # We get the path of SubiT dynamically. This file (setup.py) is located inside
 # the build directory, so calling dirname() twice, will give us SubiT's root
 # directory.
-base_path           = os.path.dirname(os.path.dirname(__file__))
-
+current_path        = os.path.abspath(__file__)
+base_path           = os.path.dirname(os.path.dirname(current_path))
 src_dir_path        = os.path.join(base_path, 'src')
 build_dir_path      = os.path.join(base_path, 'build')
 
@@ -31,6 +34,7 @@ helpers_path        = os.path.join(bin_path_base, '_helpers')
 
 setup_path          = os.path.join(build_dir_path, 'setup')
 build_src_dir_path  = os.path.join(build_dir_path, '__src')
+build_tmp_dir_path  = os.path.join(build_dir_path, '__tmp')
 subit_proxy_py_path = os.path.join(build_src_dir_path, 'SubiTProxy.py')
 providers_path      = os.path.join(build_src_dir_path, 'SubProviders')
 
@@ -83,6 +87,12 @@ def removeTreeAndWaitForFinish(dir, wait_time = 0.10, wait_after = 3):
     log('Removed: %s' % dir)
     time.sleep(wait_after)
 
+def createAndMoveToTempBuildDir():
+    removeTreeAndWaitForFinish(build_tmp_dir_path)
+    log("Moving to temp dir: %s" % build_tmp_dir_path)
+    os.mkdir(build_tmp_dir_path)
+    os.chdir(build_tmp_dir_path)
+
 def copySrcDir(destination):
     try:
         removeTreeAndWaitForFinish(destination)
@@ -103,62 +113,134 @@ def copySrcDirToBuildDir():
     """
     return copySrcDir(build_src_dir_path)
 
-def compileSubProvidersFiles(providers_path):
-    """ Replace the .py files in the SubProviders directory with .pyc files. We
-        do so in order to keep the secret of the SubProviders from the users.
+def getAstFromSourceFile(file_path):
+    """ 
+        Convert the given source inside the file_path to an AST instance. 
     """
-    log('Starting compilation of SubProviders files')
-    if os.path.exists(providers_path):
-        import py_compile
+    return astor.parsefile(file_path)
+
+def getSourceFileFromAst(ast_tree, file_path):
+    """
+        Convert the AST back to python source, and saves it under file_path.
+    """
+    source = astor.to_source(ast_tree)
+    open(file_path, "w").write(source)
+
+
+class WriteDebugRemover(ast.NodeTransformer):
+    def visit_Expr(self, node):
+        # If it's a function call.
+        if hasattr(node, "value") and isinstance(node.value, ast.Call):
+            call = node.value
+            # If it's a call to WriteDebug
+            if isinstance(call.func, ast.Name) and call.func.id == "WriteDebug":
+                log("Removing WriteDebug call from line: %s,%s" % 
+                    (call.lineno, call.col_offset))
+                node.value = ast.Pass()
+                return node
+        # In any other case, return the node.
+        return node
+def removeWriteDebugCalls(ast_tree):
+    """ Replaces any call to WriteDebug in the ast tree with pass. """
+    WriteDebugRemover().visit(ast_tree)
+    
+
+class WriteDebugFilePathAdder(ast.NodeTransformer):
+    def __init__(self, py_file_path):
+        """ 
+            Init with the path to the file that should be added to the 
+            WriteDebug calls.
+        """
+        self.py_file_path = py_file_path
+    def visit_Expr(self, node):
+        # If it's a function call.
+        if hasattr(node, "value") and isinstance(node.value, ast.Call):
+            call = node.value
+            # If it's a call to WriteDebug
+            if isinstance(call.func, ast.Name) and call.func.id == "WriteDebug":
+                # If the argument count to the function is 1 (meaning that the
+                # calling_file was not passed by the caller).
+                if len(call.args) == 1:
+                    call.args.append(ast.Str(self.py_file_path))
+                    log("Adding calling_file to WriteDebug in line: %s,%s" %
+                        (call.lineno, call.col_offset))
+                    node.value = call
+                    return node
+        # In any other case, return the node.
+        return node
+def addFilePathToWriteDebug(ast_tree, file_path):
+    """
+        Adds the file_path as the second argument to the WriteDebug calls in 
+        the ast tree.
+    """
+    WriteDebugFilePathAdder(file_path).visit(ast_tree)
+
+def reformatPythonFile(py_file_path, debug):
+    """ 
+        Perform changes to the python file content. Currently, the calls to 
+        WriteDebug are removed from the source.
+    """
+    log('Starting formation of py file: %s' % py_file_path)
+    ast_tree = getAstFromSourceFile(py_file_path)
+    if debug:
+        addFilePathToWriteDebug(ast_tree, py_file_path)
+    else:
+        removeWriteDebugCalls(ast_tree)
+
+    getSourceFileFromAst(ast_tree, py_file_path)
+    log('Finished formation of py file: %s' % py_file_path)
+
+def reformatPythonFiles(debug):
+    """ 
+        Reformats all the python files under build_src_dir_path. The reformat 
+        is defined in the reformatPythonFile function. 
+    """
+    log('Starting formation of files')
+    if os.path.exists(build_src_dir_path):
         def _isPyFile(f):
             return f.endswith('.py')
-        def _getPycFullPath(path, f):
-            return os.path.join(path, f + 'c')
-        for current_dir, dirs_in_dir, files_in_dir in os.walk(providers_path):
+        for current_dir, dirs_in_dir, files_in_dir \
+            in os.walk(build_src_dir_path):
+
             for f in files_in_dir:
                 if _isPyFile(f):
                     py_file_path = os.path.join(current_dir, f)
-                    pyc_file_path = _getPycFullPath(current_dir, f)
-                    log('Compiling py file: %s' % py_file_path)
-                    py_compile.compile(py_file_path, pyc_file_path)
-                    log('Removing py file: %s' % py_file_path)
-                    os.remove(py_file_path)
+                    reformatPythonFile(py_file_path, debug)
     else:
-        log('Path is missing: %s' % providers_path)
-    log('Finished compilation of SubProviders files!')
+        log('Path is missing: %s' % build_src_dir_path)
+    log('Finished formation of files!')
        
-def minifyPyFilesInSrc(debug):
+def minifyPyFilesInSrc():
     """ Produce a minified version of the src folder. The minified folder will
         be located in build_src_dir_path.
     """
-    log('Starting minification of: %s' % src_dir_path)
-    # We minify only in non-debug mode
-    if copySrcDirToBuildDir() and not debug:
-        import minifier
+    log('Starting minification of: %s' % build_src_dir_path)
+    import minifier
 
-        for dir_path, dir_names, file_names in os.walk(build_src_dir_path):
-            # Locate the python files in the folder.
-            py_files = list(filter(lambda f: f.endswith('.py'), file_names))
-            for py_file in py_files:
-                py_file_full_path = os.path.join(dir_path, py_file)
+    for dir_path, dir_names, file_names in os.walk(build_src_dir_path):
+        # Locate the python files in the folder.
+        py_files = list(filter(lambda f: f.endswith('.py'), file_names))
+        for py_file in py_files:
+            py_file_full_path = os.path.join(dir_path, py_file)
 
-                # We're not touching the gui files. The minifier might remove 
-                # text lines from there...
-                if py_file_full_path.endswith('Gui.py'):
-                    log('Skipping GUI file: %s' % py_file_full_path)
-                    continue
+            # We're not touching the gui files. The minifier might remove 
+            # text lines from there...
+            if py_file_full_path.endswith('Gui.py'):
+                log('Skipping GUI file: %s' % py_file_full_path)
+                continue
 
-                log('Minifying file: %s [%sKB]' % 
-                      (py_file_full_path, 
-                       round(os.stat(py_file_full_path).st_size / 1024, 2)))
+            log('Minifying file: %s [%sKB]' % 
+                    (py_file_full_path, 
+                    round(os.stat(py_file_full_path).st_size / 1024, 2)))
 
-                py_file_content = open(py_file_full_path, 'r').read()
-                py_file_content_minified = minifier.minify(py_file_content)
-                open(py_file_full_path, 'w').write(py_file_content_minified)
-                log('File minified: %s [%sKB]' % 
-                      (py_file_full_path, 
-                       round(os.stat(py_file_full_path).st_size / 1024, 2)))
-                log('-------------------------------------------------------')
+            py_file_content = open(py_file_full_path, 'r').read()
+            py_file_content_minified = minifier.minify(py_file_content)
+            open(py_file_full_path, 'w').write(py_file_content_minified)
+            log('File minified: %s [%sKB]' % 
+                    (py_file_full_path, 
+                    round(os.stat(py_file_full_path).st_size / 1024, 2)))
+            log('-------------------------------------------------------')
+    log('Finished minification of: %s' % build_src_dir_path)
 
 def copySubProvidersFilesToDir(dest_dir):
     """ Will copy the files inside __src.SubProviders to dest_dir.SubProviders.
@@ -188,6 +270,7 @@ def executeInPythonInterpreter(command):
 # ============================================================================ #
 
 bin_path_win32              = os.path.join(bin_path_base, 'win32')
+zip_name_format_win32       = "subit-%s-{build}-win32.zip" % subit_version
 helpers_path_win32          = os.path.join(bin_path_win32, '_helpers')
 spec_file_base_win32        = os.path.join(helpers_path_win32, 'SubiT.spec')
 icon_file_win32             = os.path.join(helpers_path_win32, 'icon.ico')
@@ -195,7 +278,6 @@ win_associator_win32        = os.path.join(helpers_path_win32, 'WinAssociator')
 bin_path_win32_and_version  = os.path.join(bin_path_win32, subit_version)
 manifest_file_base_win32    = \
     os.path.join(helpers_path_win32, 'SubiT.exe.manifest')
-
 
 setup_path_win32                = os.path.join(setup_path, 'win32')
 setup_helpers_path_win32        = os.path.join(setup_path_win32, '_helpers')
@@ -238,7 +320,25 @@ def getWin32SpecFile(tmp_path_for_build, build_path, manifest_path):
         build_path,
         helpers_path_win32,
         manifest_path)
-                                   
+                     
+def zipWin32Dir(debug):
+    """ 
+        Zips the bin dir (debug or release). The archive's root will be the 
+        bin dir.
+    """
+    import zipfile
+    build_type = "debug" if debug else "release"
+    zip_name = zip_name_format_win32.format(build = build_type)
+    zip_path = os.path.join(bin_path_win32_and_version, zip_name)
+    bin_path = os.path.join(bin_path_win32_and_version, build_type)
+    zip_file = zipfile.ZipFile(zip_path, "w")
+    for root, dirs, files in os.walk(bin_path):
+        for file in files:
+            archive_name = root.replace(bin_path, "")
+            archive_name = os.path.join(archive_name, file)
+            zip_file.write(os.path.join(root, file), archive_name)
+    zip_file.close()
+
 def buildWin32Dir(debug):
     """ Build procedure for Windows. """
     if not os.path.exists(bin_path_win32_and_version):
@@ -277,7 +377,6 @@ def buildWin32Dir(debug):
     copySubProvidersFilesToDir(os.path.join(_bin_path, 'SubProviders'))
     copyWinAssociatorDir\
         (os.path.join(_bin_path, 'Settings', 'Associators', 'WinAssociator'))
-    compileSubProvidersFiles(os.path.join(_bin_path, 'SubProviders'))
 
 def buildWin32Setup(debug):
     """ Creates the setup file of SubiT for win32 platform. """
@@ -346,14 +445,19 @@ def buildWin32():
     log('Starting build for SubiT %s for Win32 platform' % subit_version)
     def _build_release():
         log('Building release version')
-        minifyPyFilesInSrc(False)
+        copySrcDirToBuildDir()
+        minifyPyFilesInSrc()
+        reformatPythonFiles(False)
         buildWin32Dir(False)
+        zipWin32Dir(False)
         buildWin32Setup(False)
         log('Finished building release version')
     def _build_debug():
         log('Building debug version')
-        minifyPyFilesInSrc(True)
+        copySrcDirToBuildDir()
+        reformatPythonFiles(True)
         buildWin32Dir(True)
+        zipWin32Dir(True)
         buildWin32Setup(True)
         log('Finished building debug version')
     _build_release()
@@ -441,13 +545,16 @@ def buildLinux():
     log('Starting build for SubiT %s for Linux platform' % subit_version)
     def _build_release():
         log('Building release version')
-        minifyPyFilesInSrc(False)
+        copySrcDirToBuildDir()
+        minifyPyFilesInSrc()
+        reformatPythonFiles(False)
         buildLinuxDir(False)
         buildLinuxDeb(False)
         log('Finished building release version')
     def _build_debug():
         log('Building debug version')
-        minifyPyFilesInSrc(True)
+        copySrcDirToBuildDir()
+        reformatPythonFiles(True)
         buildLinuxDir(True)
         buildLinuxDeb(True)
         log('Finished building debug version')
@@ -458,6 +565,7 @@ def buildLinux():
 # ============================================================================ #
 
 if __name__ == '__main__':
+    createAndMoveToTempBuildDir()
     if IsWindowsPlatform():
         buildWin32()
     else:

@@ -525,33 +525,6 @@ def remove_blank_lines(source):
     source = [a for a in io_obj.readlines() if a.strip()]
     return "".join(source)
 
-def remove_writedebug_calls(source):
-    """ Remove any call to WriteDebug in the Utils module. We're removing the 
-        whole line from the source.
-
-        Example:
-            if a == 1:
-                WriteDebug("a is equal to 1")
-        
-        Will become:
-            if a == 1:
-                pass
-    """
-    output = ''
-
-    for line in source.split('\n'):
-        # We need to check for the bracket also, because otherwise we might 
-        # remove importing of the function. We use the strip to remove and 
-        # leading spaces and check if after that we start with WriteDebug
-        if line.strip().startswith('WriteDebug('):
-            # We need to keep the indentation, so we check for the position of 
-            # WriteDebug, and put spaces until we get to that position
-            num_of_spaces = line.find('WriteDebug(')
-            output += ('%spass\n' % (' ' * num_of_spaces))
-        else:
-            output += ('%s\n' % line)
-
-    return output
 
 def minify(source):
     """
@@ -571,9 +544,6 @@ def minify(source):
         # Save the encoding string (must be first or second line in file)
         if encoding.match(line):
             preserved_encoding = line
-
-    # Remove any call to WriteDebug and write "pass" instead
-    source = remove_writedebug_calls(source)
 
     # Remove multilines (e.g. lines that end with '\' followed by a newline)
     source = multiline_indicator.sub('', source)

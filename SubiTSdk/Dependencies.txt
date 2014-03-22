@@ -1,21 +1,12 @@
-* 	In order to use & develop the source, Python 2.7.x is required:
-	http://www.python.org/download/releases/
+* In order to use & develop the source
+    Python 2.7.x:   http://www.python.org/download/releases/
+    EasyConfig:     https://github.com/yosi-dediashvili/EasyConfig
+    PyInside:       http://qt-project.org/wiki/PySideDownloads
 
-*	EasyConfig module for python is required:
-	https://github.com/yosi-dediashvili/EasyConfig
+* In order to build the binaries & setup:
+    PyInstaller (version 2.0 exactly): http://sourceforge.net/projects/pyinstaller/files/2.0/
+    astor:      https://pypi.python.org/pypi/astor
+    Inno Setup: http://www.jrsoftware.org/isinfo.php
 
-* 	Additionally, in order to use the GUI, PySide (Qt) is required:
-	http://qt-project.org/wiki/PySideDownloads
-
-* 	And Finally, in order to create an executable version of SubiT, PyInstaller 
-	is needed (Version 2.0 exactly):
-	http://www.pyinstaller.org
-	http://sourceforge.net/projects/pyinstaller/files/2.0/
-
-*	SubiT was developed using "Python Tools for Visual Studio": 
+* SubiT was developed using "Python Tools for Visual Studio": 
 	http://pytools.codeplex.com/
-
-* 	In order to create the installation file of SubiT, "Inno Setup" is required:
-	http://www.jrsoftware.org/isinfo.php
-
-**	Building the ContextMenu handler for windows, requires Visual Studio 2010.
