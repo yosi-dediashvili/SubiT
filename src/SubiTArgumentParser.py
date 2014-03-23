@@ -142,7 +142,6 @@ def Parse():
     
     
     args = MainArgumentParser.parse_args()
-    print args
     # If for some reason, we are missing the mode attribute, we will use the 
     # GUI.
     handleLoadingModeAction(args.mode[0])
