@@ -13,6 +13,7 @@ class SUBSCENE_LANGUAGES:
     TURKISH = '41'
     SLOVAK  = '36'
     CZECH   = '9'
+    ARABIC  = '2'
 
 class SUBSCENE_PAGES:
     DOMAIN = 'www.subscene.com'

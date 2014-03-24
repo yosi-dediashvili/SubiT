@@ -59,6 +59,7 @@
     <Folder Include="src\SubProviders\Subscene\heb_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\eng_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\cze_SubsceneProvider\" />
+    <Folder Include="src\SubProviders\Subscene\ara_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\slo_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\tur_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\spa_SubsceneProvider\" />
@@ -174,6 +175,8 @@
     <Compile Include="src\SubProviders\OpenSubtitles\tur_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\tur_OpenSubtitlesProvider\__init__.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\__init__.py" />
+    <Compile Include="src\SubProviders\Subscene\ara_SubsceneProvider\SubsceneProvider.py" />
+    <Compile Include="src\SubProviders\Subscene\ara_SubsceneProvider\__init__.py" />
     <Compile Include="src\SubProviders\Subscene\cze_SubsceneProvider\SubsceneProvider.py" />
     <Compile Include="src\SubProviders\Subscene\cze_SubsceneProvider\__init__.py" />
     <Compile Include="src\SubProviders\Subscene\eng_SubsceneProvider\SubsceneProvider.py" />
