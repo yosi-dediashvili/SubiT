@@ -24,6 +24,15 @@ class ADDIC7ED_PAGES:
 class ADDIC7ED_REGEX:
     SEARCH_RESULTS_PARSER = ('(?<=<td><a href=\")(?P<MovieCode>.*?)(?:\" debug' +
                              '=\"\d+\">)(?P<MovieName>.*?)(?=</a>)')
+    REDIRECT_PAGE_PARSER = (
+        '(?<=\<span class\=\"titulo\"\>)' +
+        '(?P<MovieName>.*?)(?: \<small\>Subtitle\<\/small\>.*?)' +
+        # Catches http://www.addic7ed.com
+        '(?<=http\:\/\/www\.addic7ed\.com)' +
+        # Catches /serie/The_Big_Bang_Theory/3/4/The_Pirate_Solution
+        '(?P<MovieCode>\/serie\/[^\/]*\/\d*\/\d*\/[^\/]*?)' +
+        # Catched "
+        '(?=\" layout\=\"standard\")')
     RESULT_PAGE_PARSER    = ('(?<=Version )(?P<VerSum>.*?)(?:, .*?javascript\:' +
                              'saveFavorite\(\d+,)(?P<Language>\d+)(?:,\d+\).*?' +
                              '<a class=\"buttonDownload\" href=\")(?P<VerCode>' +
@@ -41,18 +50,43 @@ class IAddic7edProvider(ISubProvider):
         query = query_sub_stage.query.replace(' ', '+')
 
         WriteDebug('Sending query for [%s]: %s' % (is_series, query))
+        # Send the query to the server. Notice that Addic7ed may redirect us to
+        # the episode's page (in case of a series query) if it find an exact 
+        # match to our query.
         query_data = Utils.PerformRequest(ADDIC7ED_PAGES.DOMAIN, 
                                           ADDIC7ED_PAGES.SEARCH % query)
         re_results = Utils.getregexresults(ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, 
                                            query_data, True)
+        
         WriteDebug('Query for %s returned %s results' % (query, len(re_results)))
         _movie_sub_stages = []
+
+        # If we didn't find any result, and this is a series, it might be a 
+        # redirection, so we'll try to extract the episode info.
+        if not re_results and is_series:
+            WriteDebug("Suspecting it's a redirection, checking series.")
+            re_results = Utils.getregexresults(
+                ADDIC7ED_REGEX.REDIRECT_PAGE_PARSER, query_data, True)
+            if re_results:
+                WriteDebug("It's indeed a redirection.")
+                movie_name = re_results[0]['MovieName']
+                movie_name = movie_name.strip()
+                movie_sub_stage = MovieSubStage(
+                    cls.PROVIDER_NAME,
+                    movie_name,
+                    re_results[0]['MovieCode'],
+                    '')
+                _movie_sub_stages.append(movie_sub_stage)
+                return _movie_sub_stages
+            else:
+                WriteDebug("Series check returned no results.")
+
+
         # The upper limit for the language check
         check_lang_in_stage = (len(re_results) <= 10)
 
         for result in re_results:
             # Take the type of the result (either movie or serie)
-
             result_type = result['MovieCode'].split('/', 1)
             # Make sure we're not crashing (because of invalid index).
             result_type = result_type[0] if result_type else 'unknown'
