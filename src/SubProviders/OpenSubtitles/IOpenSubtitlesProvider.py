@@ -42,71 +42,79 @@ class IOpenSubtitlesProvider(ISubProvider):
 
     def __init__(self):
         IOpenSubtitlesProvider.USER_AGENT = 'SubiTApp %s' % SubiT.VERSION
-        IOpenSubtitlesProvider.MovieSearchDict = {   'sublanguageid'  : OPENSUBTITLES_PAGES.LANGUAGE,
-                                                    'moviehash'      : 0,
-                                                    'moviebytesize'  : 0,
-                                                    'imdbid '        : 0,
-                                                    'query'          : 0 }
+        IOpenSubtitlesProvider.MovieSearchDict = {   
+            'sublanguageid'  : OPENSUBTITLES_PAGES.LANGUAGE,
+            'moviehash'      : 0,
+            'moviebytesize'  : 0,
+            'imdbid '        : 0,
+            'query'          : 0 
+        }
 
 
     @staticmethod
     def findByHash(path, get_movie_name_only = False):
-        """Find results using the hash value of the file"""
+        """ Find results using the hash value of the file. """
         MovieName   = 'MovieName'
         queryresult = None
-        #is_episode  = False
-
 
         if os.path.exists(path):
-            filesize = os.path.getsize(path)                #calculated file size
-            filehash = IOpenSubtitlesProvider.HashFile(path)  #calculated file hash
-            #format the query for exact match only
-            movienamequery = IOpenSubtitlesProvider.FormatQuery({'moviehash'      : filehash,
-                                                               'moviebytesize'  : str(filesize)})
+            filesize = os.path.getsize(path)                
+            filehash = IOpenSubtitlesProvider.HashFile(path)
+
+            # Format the query for exact match only
+            movienamequery = IOpenSubtitlesProvider.FormatQuery(
+                {'moviehash'      : filehash,
+                 'moviebytesize'  : str(filesize)})
+
             try:
-                #send the query
-                queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(IOpenSubtitlesProvider.GetToken(), 
-                                                                               [movienamequery])['data']
+                queryresult = \
+                    IOpenSubtitlesProvider.GetServer().SearchSubtitles(
+                        IOpenSubtitlesProvider.GetToken(), 
+                        [movienamequery])
+                queryresult =  queryresult['data']
             except Exception as eX:
                 WriteDebug(eX)
 
-            if queryresult is not False:
+            if queryresult:
                 is_episode = queryresult[0]['MovieKind'] == 'episode'
                 if get_movie_name_only: 
                     if is_episode:
                         res = queryresult[0][MovieName]
                         queryresult = Utils.getregexresults('"(.*?)"', res)[0]
                     else:
-                        queryresult = queryresult[0][MovieName] #set only the moviename
-                else: queryresult = queryresult #set the whole result
+                        queryresult = queryresult[0][MovieName]
+                else: queryresult = queryresult
             else:
                 queryresult = None
 
-        return queryresult#, is_episode
+        return queryresult
 
     @staticmethod
     def findByFileName(fileName, get_movie_name_only = False):
-        """find results using the file name"""
+        """ Find results using the file name. """
         MovieName   = 'MovieName'
-        #is_episode  = False
+        queryresult = None
 
-        movienamequery = IOpenSubtitlesProvider.FormatQuery({ 'query' : fileName })
+        movienamequery = IOpenSubtitlesProvider.FormatQuery(
+            {'query' : fileName})
         try:
             #send the query
-            queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(IOpenSubtitlesProvider.GetToken(), 
-                                                                           [movienamequery])['data']
+            queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(
+                IOpenSubtitlesProvider.GetToken(), 
+                [movienamequery])
+            queryresult = queryresult['data']
         except Exception as eX:
             WriteDebug(eX)
 
-        if queryresult is not False:
+        if queryresult:
             is_episode = queryresult[0]['MovieKind'] == 'episode'
             if get_movie_name_only: 
                 if is_episode:
                     res = queryresult[0][MovieName]
                     queryresult = Utils.getregexresults('"(.*?)"', res)[0]
                 else:
-                    queryresult = queryresult[0][MovieName] #set only the moviename
-            else: queryresult = queryresult #set the whole result
+                    queryresult = queryresult[0][MovieName]
+            else: queryresult = queryresult
         else:
             queryresult = None
 
@@ -135,51 +143,77 @@ class IOpenSubtitlesProvider(ISubProvider):
         queryresult    = None
         _movie_sub_stages = []
 
-        #If it's a real file, we calculate relevant values
+        # If it's a real file, we calculate relevant values
         if os.path.exists(query_sub_stage.full_path): 
             filesize = os.path.getsize(query_sub_stage.full_path)
-            filehash = IOpenSubtitlesProvider.HashFile(query_sub_stage.full_path)
-            #format the query for exact match only
-            movienamequery = IOpenSubtitlesProvider.FormatQuery({'moviehash'      : filehash,
-                                                               'moviebytesize'  : str(filesize)})
+            filehash = IOpenSubtitlesProvider.HashFile(
+                query_sub_stage.full_path)
+            # Format the query for exact match only
+            movienamequery = IOpenSubtitlesProvider.FormatQuery(
+                {'moviehash'      : filehash,
+                 'moviebytesize'  : str(filesize)}
+            )
 
             try:
-                queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(IOpenSubtitlesProvider.GetToken(), 
-                                                                                [movienamequery])['data']
+                queryresult = \
+                    IOpenSubtitlesProvider.GetServer().SearchSubtitles(
+                        IOpenSubtitlesProvider.GetToken(), 
+                        [movienamequery])
+                queryresult = queryresult['data']
             except Exception as eX:
                 WriteDebug(eX)
 
             queryresult = queryresult if queryresult is not False else None
         #==================================================
         
-        #If we got NoneFile query, or Hash query returned nothing
-        if queryresult is None:
-            movienamequery = IOpenSubtitlesProvider.FormatQuery({ 'query' : query_sub_stage.query })
+        # If we got NoneFile query, or Hash query returned nothing
+        if not queryresult:
+            movienamequery = IOpenSubtitlesProvider.FormatQuery(
+                {'query' : query_sub_stage.query})
 
             try:
-                queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(IOpenSubtitlesProvider.GetToken(), 
-                                                                                [movienamequery])['data']
+                queryresult = \
+                    IOpenSubtitlesProvider.GetServer().SearchSubtitles(
+                        IOpenSubtitlesProvider.GetToken(), 
+                        [movienamequery])
+                queryresult = queryresult['data']
             except Exception as eX:
                 WriteDebug(eX)
             queryresult = queryresult if queryresult is not False else None
         #==================================================   
         
-        #At Last, If we got results
-        if queryresult is not None:
-                imdbids      = list(set(map(lambda x: (x[IDMovieImdb], x[MovieName]), 
-                                            queryresult)).difference()) #Create array of [ImdbId,MovieName]
-                for id in imdbids:
-                    movienameset = set(id[1].replace('.', ' ').lower().split()) #Set of moviename
-                    #No need to go deep on this, simply concatination of all the 
-                    #keywords from the releases (without the movie name itsetlf)
-                    _versions_sum = ' / '.join(reduce(lambda t, c: t.union(c).difference(movienameset),
-                                                map(lambda y: set(y[MovieReleaseName].lower().lstrip(':').replace('.', ' ').split()), 
-                                                    filter(lambda x: x[IDMovieImdb] == id[0], queryresult))))
-
-                    _movie_name = id[1]
-                    _movie_code = id[0]
-                    _movie_sub_stages.append(MovieSubStage\
-                        (cls.PROVIDER_NAME, _movie_name, _movie_code, _versions_sum))
+        # At Last, If we got results
+        if queryresult:
+            # Create list of (ImdbId, MovieName)
+            imdbids = map(lambda x: (x[IDMovieImdb], x[MovieName]), queryresult)
+            # Filter duplications.
+            imdbids = list(set(imdbids).difference()) 
+            for id in imdbids:
+                # A set of all the words in the movie name.
+                movienameset = set(id[1].replace('.', ' ').lower().split())
+                # No need to go deep on this, simply concatination of all the 
+                # keywords from the releases (without the movie name itsetlf)
+                matching_movies = \
+                    filter(lambda x: x[IDMovieImdb] == id[0], queryresult)
+                # Create a set of all the words in the release name for each 
+                # mactching movie.
+                release_names = map(
+                    lambda y: set(y[MovieReleaseName]\
+                        .lower().lstrip(':').replace('.', ' ').split()), 
+                    matching_movies)
+                # Each unique name in the list will be stored.
+                unique_names = reduce(
+                    lambda t, c: t.union(c).difference(movienameset), 
+                    release_names)
+                _versions_sum = ' / '.join(unique_names)
+                                            
+                _movie_name = id[1]
+                _movie_code = id[0]
+                _movie_sub_stages.append(MovieSubStage(
+                    cls.PROVIDER_NAME, 
+                    _movie_name, 
+                    _movie_code, 
+                    _versions_sum))
         return _movie_sub_stages
 
 
@@ -194,22 +228,31 @@ class IOpenSubtitlesProvider(ISubProvider):
     @classmethod
     @ISubProvider.SubProviderMethodWrapper
     def findVersionSubStageList(cls, movie_sub_stage):
-        IDSubtitleFile   = 'IDSubtitleFile'
-        MovieReleaseName = 'MovieReleaseName'
-        IDMovieImdb      = 'IDMovieImdb'
+        IDSubtitleFile      = 'IDSubtitleFile'
+        MovieReleaseName    = 'MovieReleaseName'
+        IDMovieImdb         = 'IDMovieImdb'
+        queryresult         = None
         _version_sub_stages = []
         
-        versionsquery = IOpenSubtitlesProvider.FormatQuery({'imdbid' : movie_sub_stage.movie_code})
+
+        versionsquery = IOpenSubtitlesProvider.FormatQuery(
+            {'imdbid' : movie_sub_stage.movie_code})
 
         try:
-            queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(IOpenSubtitlesProvider.GetToken(),
-                                                                            [versionsquery])['data']
+            queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(
+                IOpenSubtitlesProvider.GetToken(),
+                [versionsquery])
+            queryresult = queryresult['data']
         except Exception as eX:
             WriteDebug(eX)
 
-        if queryresult is not False:
-            _version_sub_stages = map(lambda x: VersionSubStage(cls.PROVIDER_NAME, 
-                x[MovieReleaseName],  x[IDSubtitleFile], x[IDMovieImdb]), queryresult)
+        if queryresult:
+            _version_sub_stages = map(
+                lambda x: VersionSubStage(cls.PROVIDER_NAME, 
+                                          x[MovieReleaseName],  
+                                          x[IDSubtitleFile], 
+                                          x[IDMovieImdb]), 
+                queryresult)
 
         return list(_version_sub_stages)
     
@@ -218,21 +261,28 @@ class IOpenSubtitlesProvider(ISubProvider):
     def getSubtitleContent(cls, version_sub_stage):
         IDSubtitleFile  = 'IDSubtitleFile'
         ZipDownloadLink = 'ZipDownloadLink'
-        domain  = None
-        url     = None
+        queryresult     = None
+        domain          = None
+        url             = None
         
-        subpathquery = IOpenSubtitlesProvider.FormatQuery({'imdbid' : version_sub_stage.movie_code})
+        subpathquery = IOpenSubtitlesProvider.FormatQuery(
+            {'imdbid' : version_sub_stage.movie_code})
 
         try:
-            queryresult  = IOpenSubtitlesProvider.GetServer().SearchSubtitles(IOpenSubtitlesProvider.GetToken(),
-                                                                            [subpathquery])['data']
+            queryresult = IOpenSubtitlesProvider.GetServer().SearchSubtitles(
+                IOpenSubtitlesProvider.GetToken(),
+                [subpathquery])
+            queryresult = queryresult['data']
         except Exception as eX:
-                WriteDebug(eX)
+            WriteDebug(eX)
 
-        if queryresult is not False:
-            url     = Utils.myfilter(lambda x: x[IDSubtitleFile] == version_sub_stage.version_code, queryresult,
-                                     lambda f: f[ZipDownloadLink], True)
-            domain  = OPENSUBTITLES_PAGES.DOMAIN
+        if queryresult:
+            url = Utils.myfilter(
+                lambda x: x[IDSubtitleFile] == version_sub_stage.version_code, 
+                queryresult,
+                lambda f: f[ZipDownloadLink], 
+                True)
+            domain = OPENSUBTITLES_PAGES.DOMAIN
         
         return Utils.DownloadSubAsBytesIO(domain, url, domain, None)
         
@@ -242,8 +292,9 @@ class IOpenSubtitlesProvider(ISubProvider):
     @staticmethod
     def GetToken():
         if not IOpenSubtitlesProvider.TOKEN:
-            IOpenSubtitlesProvider.TOKEN = IOpenSubtitlesProvider.GetServer().LogIn(0, 0, 0, 
-                                                   IOpenSubtitlesProvider.USER_AGENT)['token']
+            IOpenSubtitlesProvider.TOKEN = \
+                IOpenSubtitlesProvider.GetServer().LogIn(
+                    0, 0, 0, IOpenSubtitlesProvider.USER_AGENT)['token']
         return IOpenSubtitlesProvider.TOKEN
     
     @staticmethod        

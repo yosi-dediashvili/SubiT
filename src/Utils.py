@@ -7,6 +7,7 @@ _DEBUG = True
 
 import sys
 import httplib
+from socket import error as SocketError
 import os
 import platform
 import re
@@ -181,10 +182,14 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
         Performs http requests. We are using fake user-agents. Use the data arg
         in case you send a "POST" request. Also, you can specify more headers 
         by supplying a dict in the more_headers arg
+
+        Url should start with "/". If not, the function adds it.
     """
     import UserAgents
 
     response = ''
+    if not url.startswith("/"):
+        url = "/" + url
     try:
         httpcon = httplib.HTTPConnection(domain, timeout = 10)
 
@@ -207,9 +212,19 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
             headers.update(more_headers)
         
         WriteDebug('Sending request for: %s' % (domain + url))
-        httpcon.request( type, url, str(data), headers )     
-        got_response = httpcon.getresponse()
-        response = got_response.read()
+        # Try 3 times.
+        for error_count in range(1, 4):
+            try:
+                httpcon.request( type, url, str(data), headers )     
+                got_response = httpcon.getresponse()
+                response = got_response.read()
+                # If we got the response, break the loop.
+                break
+            except SocketError as error:
+                WriteDebug("Failed sending the request for the %d time." % error_count)
+                # Sleep some time before we request it again.
+                sleep(2)
+
 
         # In order to avoid decoding problems, we just convert the bytes to 
         # str. The problem is that when we do that, the str preserve the 
