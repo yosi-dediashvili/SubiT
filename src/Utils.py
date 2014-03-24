@@ -7,7 +7,6 @@ _DEBUG = True
 
 import sys
 import httplib
-from socket import error as SocketError
 import os
 import platform
 import re
@@ -212,16 +211,22 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
             headers.update(more_headers)
         
         WriteDebug('Sending request for: %s' % (domain + url))
+        got_respone = None
+        response    = None
         # Try 3 times.
         for error_count in range(1, 4):
             try:
+                # Before each request, we need to try and connect, because 
+                # we're probably not connected (that's way the exception that
+                # we're catching was raised).
+                httpcon.connect()
                 httpcon.request( type, url, str(data), headers )     
                 got_response = httpcon.getresponse()
                 response = got_response.read()
                 # If we got the response, break the loop.
                 break
-            except SocketError as error:
-                WriteDebug("Failed sending the request for the %d time." % error_count)
+            except Exception as error:
+                WriteDebug("Failed sending the request for the %d time: %s" % (error_count, error))
                 # Sleep some time before we request it again.
                 sleep(2)
 
