@@ -229,6 +229,8 @@ def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET,
                 WriteDebug("Failed sending the request for the %d time: %s" % (error_count, error))
                 # Sleep some time before we request it again.
                 sleep(2)
+                # Close it (we're calling connect() again inside the try).
+                httpcon.close()
 
 
         # In order to avoid decoding problems, we just convert the bytes to 
