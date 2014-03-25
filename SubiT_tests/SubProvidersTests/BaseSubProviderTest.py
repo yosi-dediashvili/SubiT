@@ -73,12 +73,14 @@ class BaseSubProviderTest(object):
         self.assertTrue(movies, "Failed getting results from the provider.")
         return movies
 
-    def findVersionSubStageList(self, query):
+    def findVersionSubStageList(self, query, num_movies = 0):
         """
         The function retrive a list of movie sub stages from the test_findMovi-
-        eSubStageList() test, and for each movie, it tests whether it returns
-        a list of versions using the findVersionSubStageList(). If all the movie
-        stages failed to retrieve results, the function is declares failure.
+        eSubStageList() test. Afterthat, the function selects num_movies (if 0
+        is passed, then all the movies that was returned) randomly, and for each 
+        movie, it tests whether it returns a list of versions using the 
+        findVersionSubStageList(). If all the movie stages failed to retrieve 
+        results, the function declares failure.
 
         The function does not return a value.
         """
@@ -88,7 +90,19 @@ class BaseSubProviderTest(object):
                    self.provider_name)
 
         all_failed = True
-        for movie in movies:
+        # Take all of them if num_movies is 0
+        num_movies = num_movies if num_movies > 0 else len(movies)
+
+        def yield_movie(num_movies):
+            if num_movies == len(movies):
+                for movie in movies:
+                    yield movie
+            else:
+                while num_movies:
+                    yield RandomItemFromList(movies)
+                    num_movies -= 1
+
+        for movie in yield_movie(num_movies):
             versions = self.__get_version_results(movie)
             current_failed = not versions
             all_failed = all_failed and current_failed
@@ -145,7 +159,7 @@ class BaseSubProviderTest(object):
         return self.findVersionSubStageList(self.movie_query)
 
     def test_series_findVersionSubStageList(self):
-        return self.findVersionSubStageList(self.series_query)
+        return self.findVersionSubStageList(self.series_query, 10)
 
     def test_movie_getSubtitleContent(self):
         return self.getSubtitleContent(self.movie_query)
