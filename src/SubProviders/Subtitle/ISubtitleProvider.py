@@ -25,7 +25,7 @@ class SUBTITLE_PAGES:
     DOWNLOAD            = '/downloadsubtitle.php?id=%s'
     LANGUAGE            = None
     USER                = "372162"
-    PASS                = "CC5F66FBFD6915C140A61E910DCE873C"
+    PASS                = "CC4F66x00DFB69tt15C150amAC1391xeFDCE875nE6"
     CRED                = "slcoo_user_id=%s; slcoo_user_pass=%s;" % (USER, PASS) # The credentials that should be sent with requests as cookies.
 
 class SUBTITLE_REGEX:
