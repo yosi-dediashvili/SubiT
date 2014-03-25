@@ -26,4 +26,6 @@ class Test_heb_SubtitleProviderTest(
         from SubProviders.Subtitle.heb_SubtitleProvider import SubtitleProvider
         BaseSubProviderTest.BaseSubProviderTest.__init__(
             self, 
-            SubtitleProvider.SubtitleProvider())
+            SubtitleProvider.SubtitleProvider(),
+            # IMDB's id for The Matrix Reloaded
+            "tt0234215")
