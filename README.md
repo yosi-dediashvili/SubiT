@@ -1,4 +1,4 @@
-# Our site: http://subit-app.sf.net
+#Our site: http://subit-app.sf.net
 
 First of all, feel free to contact us with any problem at:
 http://www.subit-app.sf.net/contact.html
@@ -51,9 +51,13 @@ http://www.subit-app.sf.net/contact.html
 
 	Launch SubiT as usual.
 
-===========================================================================
+
 ##Changelog:
-===========================================================================
+* Version 2.2.3 -
+  * Added Arabic support for www.subscene.com
+  * Fixed www.subtitle.co.il provider
+  * Fixed www.addic7ed.com provider
+
 * Version 2.2.2 - 
   * Fixed minor bug when associating SubiT with ContextMenu when SubiT is placed in a None-English path
 
