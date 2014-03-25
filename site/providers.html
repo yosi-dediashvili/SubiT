@@ -3,7 +3,7 @@
 	<head>
 		<title>SubiT - Supported sites and languages</title>
 		<meta charset="utf-8">
-		<meta name="description" content="SubiT currently supports 8 langauges: Hebrew, English, Spanish, Slovak, Turkish, Czech, Russian and Norwegian">
+		<meta name="description" content="SubiT currently supports 8 langauges: Hebrew, English, Spanish, Arabic, Slovak, Turkish, Czech, Russian and Norwegian">
 		<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen">
 		<link rel="stylesheet" href="css/style.css" type="text/css" media="screen">
 		<link rel="stylesheet" href="css/grid.css" type="text/css" media="screen">
@@ -28,7 +28,7 @@ var providers = {
 	"subscenter" 	: ["heb", "eng"],
 	"opensubtitles" : ["heb", "eng", "spa", "slo", "tur", "cze", "rus", "nor"],
 	"addic7ed"		: ["heb", "eng", "spa", "slo", "tur", "cze", "rus", "nor"],
-	"subscene"		: ["heb", "eng", "spa", "slo", "tur", "cze"]
+	"subscene"		: ["heb", "eng", "spa", "slo", "tur", "cze", "ara"]
 }
 
 function remove_postfix(str) {
@@ -108,7 +108,7 @@ $(document).ready(function() {
 						<article class="grid_8">
 							<h3>Subtitles Providers</h3>
 							<p>
-								Keeping things simple, a provider is a site in which subit searchs for movie and series subtitles to download. Each site supports various languages.
+								Keeping things simple, a provider is a site in which SubiT searches for movie and series subtitles to download. Each site supports various languages.
 								<br><br>
 								SubiT currently supports the following languages and sites:
 							</p>
@@ -144,6 +144,15 @@ $(document).ready(function() {
 										</div>
 									</article>
 								
+									<article class="col-2 language" id="ara_lang">
+										<div class="align-left">
+											<img width="50" src="images/languages/ara.gif">
+										</div>
+										<div class="align-left">
+											<h6>Arabic</h6>
+										</div>
+									</article>
+
 									<article class="col-2 language" id="slo_lang">
 										<div class="align-left">
 											<img width="50" src="images/languages/slo.gif">
