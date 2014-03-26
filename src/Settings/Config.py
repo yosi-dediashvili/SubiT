@@ -19,6 +19,7 @@ always_use_default_directory = False
 subtitles_saving_extension = .srt
 subtitles_extensions = ['.srt', '.sub', '.idx']
 
+
 [Updates]
 check_updates = True
 auto_update = False
@@ -36,6 +37,7 @@ do_properties_based_rank = True
 associate_extensions = False
 interaction_type = 0
 extensions_keys = ['.mkv', '.avi', '.wmv', '.mp4', 'Directory']
+
 
 [Gui]
 show_log = True
