@@ -30,7 +30,6 @@ src_dir_path        = os.path.join(base_path, 'src')
 build_dir_path      = os.path.join(base_path, 'build')
 
 bin_path_base       = os.path.join(build_dir_path, 'bin')
-helpers_path        = os.path.join(bin_path_base, '_helpers')
 
 setup_path          = os.path.join(build_dir_path, 'setup')
 build_src_dir_path  = os.path.join(build_dir_path, '__src')

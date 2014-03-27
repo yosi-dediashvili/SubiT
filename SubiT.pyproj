@@ -30,17 +30,14 @@
   <ItemGroup>
     <Folder Include="build\" />
     <Folder Include="build\bin\" />
-    <Folder Include="build\bin\_helpers" />
     <Folder Include="build\bin\win32" />
     <Folder Include="build\bin\win32\_helpers" />
     <Folder Include="build\bin\linux" />
-    <Folder Include="build\bin\mac" />
     <Folder Include="build\setup\" />
     <Folder Include="build\setup\_helpers" />
     <Folder Include="build\setup\win32" />
     <Folder Include="build\setup\win32\_helpers" />
     <Folder Include="build\setup\linux" />
-    <Folder Include="build\setup\mac" />
     <Folder Include="resources\" />
     <Folder Include="resources\gui\" />
     <Folder Include="src\" />
