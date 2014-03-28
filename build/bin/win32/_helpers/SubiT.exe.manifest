@@ -4,6 +4,6 @@
         name="SubiT" 
         processorArchitecture="x86" 
         type="win32" 
-        version="{0}.0"
+        version="{subit_version}.0"
     />
 </assembly>

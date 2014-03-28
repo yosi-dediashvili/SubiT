@@ -1,33 +1,32 @@
 from distutils.sysconfig import get_python_lib
 
-src_dir_path    = r'{0}'
-subitproxy_path = os.path.join(src_dir_path, "SubitProxy.py")
-updater_path    = os.path.join(src_dir_path, 
-							   r"Settings\Updaters\WinUpdaterHelper.py")
+src_dir_path    		= r'{src_dir_path}'
+subitproxy_file_path 	= os.path.join(src_dir_path, "SubitProxy.py")
+updater_file_path    	= os.path.join(src_dir_path, 
+									   r"Settings\Updaters\WinUpdaterHelper.py")
 
-temp_build_path = r'{1}'
-gui_exe_path    = os.path.join(temp_build_path, "SubiT.exe")
-cli_exe_path    = os.path.join(temp_build_path, "SubiT-cli.exe")
-update_exe_path = os.path.join(temp_build_path, 
-							   r"Settings\Updaters\SubiT-updater.exe")
+temp_dir_path 			= r'{temp_dir_path}'
+gui_exe_file_path    	= os.path.join(temp_dir_path, "SubiT.exe")
+cli_exe_file_path    	= os.path.join(temp_dir_path, "SubiT-cli.exe")
+update_exe_file_path 	= os.path.join(temp_dir_path, 
+									   r"Settings\Updaters\SubiT-updater.exe")
 
-final_build_path = r'{2}'
+final_build_dir_path 	= r'{final_build_dir_path}'
+helpers_dir_path    	= r'{helpers_dir_path}'
+icon_file_path       	= os.path.join(helpers_dir_path, "icon.ico")
 
-helpers_path    = r'{3}'
-icon_path       = os.path.join(helpers_path, "icon.ico")
-
-manifest_path   = r'{4}'
+manifest_file_path 		= r'{manifest_file_path}'
 
 subit_analysis = Analysis(
-	[subitproxy_path],          # SubitProxy.py path
-	pathex=[src_dir_path],   # __src path
+	[subitproxy_file_path],          
+	pathex=[src_dir_path],
 	hiddenimports=[],
 	hookspath=None)
 subit_pyz = PYZ(subit_analysis.pure)
 
 update_analysis = Analysis(
-	[updater_path],          
-	pathex=[src_dir_path],   # __src path
+	[updater_file_path],          
+	pathex=[src_dir_path],
 	hiddenimports=[],
 	excludes =['PySide'],
 	hookspath=None)
@@ -37,44 +36,36 @@ exe_windowed = EXE(
 	subit_pyz,
 	subit_analysis.scripts,
 	exclude_binaries = 1,
-	# full path to the new binary file (the .exe file in windows...)
-	name=gui_exe_path,
+	name=gui_exe_file_path,
 	debug = False,
 	strip = None,
 	upx = True,
 	console = False,
-	# Path to the icon file
-	icon=icon_path,
-	# Path to the manifest file
-	manifest=manifest_path)
+	icon=icon_file_path,
+	manifest=manifest_file_path)
 
 exe_console =  EXE(
 	subit_pyz,
 	subit_analysis.scripts,
 	exclude_binaries = 1,
-	# full path to the new binary file (the .exe file in windows...)
-	name=cli_exe_path,
+	name=cli_exe_file_path,
 	debug = False,
 	strip = None,
 	upx = True,
 	console = True,
-	# Path to the icon file
-	icon=icon_path,
-	# Path to the manifest file
-	manifest=manifest_path)
+	icon=icon_file_path,
+	manifest=manifest_file_path)
 
 exe_update = EXE(
 	update_pyz,
 	update_analysis.scripts,
 	exclude_binaries = 1,
-	# full path to the new binary file (the .exe file in windows...)
-	name=update_exe_path,
+	name=update_exe_file_path,
 	debug = False,
 	strip = None,
 	upx = True,
 	console = True,
-	# Path to the icon file
-	icon=icon_path)
+	icon=icon_file_path)
 
 coll_base = COLLECT(
 	exe_windowed,
@@ -84,8 +75,7 @@ coll_base = COLLECT(
 	subit_analysis.datas,
 	strip=None,
 	upx=True,
-	# The destination directory for the final build
-	name=final_build_path)
+	name=final_build_dir_path)
 
 coll_updater = COLLECT(
 	exe_update, 
@@ -94,8 +84,7 @@ coll_updater = COLLECT(
 	update_analysis.datas,
 	strip=None,
 	upx=True,
-	# The destination directory for the final build
-	name=os.path.join(final_build_path, 'Settings', 'Updaters'))
+	name=os.path.join(final_build_dir_path, 'Settings', 'Updaters'))
 
 
 coll_gif = COLLECT(
@@ -107,4 +96,4 @@ coll_gif = COLLECT(
 		'BINARY')],
 	upx = False,
 	strip = None,
-	name = os.path.join(final_build_path, 'imageformats'))
+	name = os.path.join(final_build_dir_path, 'imageformats'))

@@ -299,26 +299,19 @@ def getWin32ApplicationManifets():
         string to the caller.
     """
     _base_manifest = open(manifest_file_base_win32, 'r').read()
-    return _base_manifest.format(subit_version)
+    return _base_manifest.format(subit_version = subit_version)
 
 def getWin32SpecFile(tmp_path_for_build, build_path, manifest_path):
     """ Get the win32 .spec file for the current version of SubiT. The return
         value is a string containig the content.
     """
     _base_spec_content = open(spec_file_base_win32, 'r').read()
-    # The spec file has 6 items to format:
-    #   {0} - __src path
-    #   {1} - Path of the temporary destination directory for the build
-    #   {2} - Path of the final destination directory for the build
-    #   {3} - _helpers dir path
-    #   {4} - full path to the manifest file
-    
     return _base_spec_content.format(
-        build_src_dir_path, 
-        tmp_path_for_build,
-        build_path,
-        helpers_path_win32,
-        manifest_path)
+        src_dir_path            = build_src_dir_path, 
+        temp_dir_path           = tmp_path_for_build,
+        final_build_dir_path    = build_path,
+        helpers_dir_path        = helpers_path_win32,
+        manifest_file_path      = manifest_path)
                      
 def zipWin32Dir(debug):
     """ 
