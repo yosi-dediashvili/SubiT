@@ -467,108 +467,11 @@ def buildWin32():
 # ============================================================================ #
 
 
-
-# ============================================================================ #
-# Linux(deb) building functions                                                #
-# ============================================================================ #
-
-bin_path_linux                = os.path.join(bin_path_base, 'linux')
-helpers_path_linux            = os.path.join(bin_path_linux, '_helpers')
-spec_file_base_linux          = os.path.join(helpers_path_linux, 'SubiT.spec')
-bin_path_linux_and_version    = os.path.join(bin_path_linux, subit_version)
-
-setup_path_linux              = os.path.join(setup_path, 'linux')
-setup_path_linux_and_version  = os.path.join(setup_path_linux, subit_version)
-
-def getLinuxSpecFile(tmp_path_for_build, build_path):
-    """ Get the win32 .spec file for the current version of SubiT. The return
-        value is a string containig the content.
-    """
-    _base_spec_content = open(spec_file_base_linux, 'r').read()
-    # The spec file has 4 items to format:
-    #   {0} - SubiTProxy.py path
-    #   {1} - __src path
-    #   {2} - binary full path and name
-    #   {3} - Name of the destination directory for the build
-    return _base_spec_content.format(
-        subit_proxy_py_path, 
-        build_src_dir_path, 
-        os.path.join(tmp_path_for_build, 'build', 'pyi.%s' % sys.platform,
-                     subit_name, subit_name),
-        build_path)
-
-def buildLinuxDir(debug):
-    """ Build procedure for Linux. """
-    if not os.path.exists(bin_path_linux_and_version):
-        log('bin_path_linux_and_version [%s] is missing, creating it' %
-            bin_path_linux_and_version)
-        os.mkdir(bin_path_linux_and_version)
-    else:
-        log('bin_path_linux_and_version [%s] exists' %
-            bin_path_linux_and_version)
-
-    _dir_prefix = 'debug' if debug else 'release'
-    _bin_path = os.path.join\
-        (bin_path_linux_and_version, _dir_prefix)
-    _tmp_bin_path = os.path.join\
-        (bin_path_linux_and_version, '__tmp_' + _dir_prefix)
-
-    removeTreeAndWaitForFinish(_bin_path)
-    removeTreeAndWaitForFinish(_tmp_bin_path)
-
-    log('Creating _tmp_bin_path: %s' % _tmp_bin_path)
-    os.mkdir(_tmp_bin_path)
-
-    _spec_path = os.path.join(_tmp_bin_path, subit_name + '.spec')
-    _spec_content= getLinuxSpecFile(_tmp_bin_path, _bin_path)
-    open(_spec_path, 'w').write(_spec_content)
-    
-    build_command = '"%s" "%s"' % (pyinstaller_build_path, _spec_path)
-    build_output = executeInPythonInterpreter(build_command)
-    for line in build_output.split("\r\n"):
-        log('[Build.py] => %s' % line)
-
-    log('Bin building finished: %s' % _bin_path)
-    copySubProvidersFilesToDir(os.path.join(_bin_path, 'SubProviders'))
-    compileSubProvidersFiles(os.path.join(_bin_path, 'SubProviders'))
-    
-def buildLinuxDeb(debug):
-    """ Build procedure for linux .deb format """
-    pass
-
-def buildLinux():
-    """ Build the current version of SubiT out of the source code. Will create
-        the freezed version of SubiT.
-
-        After calling this method, SubiT is ready to publish.
-    """
-    log('Starting build for SubiT %s for Linux platform' % subit_version)
-    def _build_release():
-        log('Building release version')
-        copySrcDirToBuildDir()
-        minifyPyFilesInSrc()
-        reformatPythonFiles(False)
-        buildLinuxDir(False)
-        buildLinuxDeb(False)
-        log('Finished building release version')
-    def _build_debug():
-        log('Building debug version')
-        copySrcDirToBuildDir()
-        reformatPythonFiles(True)
-        buildLinuxDir(True)
-        buildLinuxDeb(True)
-        log('Finished building debug version')
-    _build_release()
-    _build_debug()
-    log('Builing SubiT %s for Linux platform finished!' % subit_version)
-# ============================================================================ #
-# ============================================================================ #
-
 if __name__ == '__main__':
     createAndMoveToTempBuildDir()
     if IsWindowsPlatform():
         buildWin32()
     else:
-        buildLinux()
+        raise NotImplementedError("Only Win32 compilation is supported!")
     log('================================FINISHED=============================')
     raw_input('Press any key to exit . . .')
