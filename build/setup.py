@@ -275,16 +275,24 @@ spec_file_base_win32        = os.path.join(helpers_path_win32, 'SubiT.spec')
 icon_file_win32             = os.path.join(helpers_path_win32, 'icon.ico')
 win_associator_win32        = os.path.join(helpers_path_win32, 'WinAssociator')
 bin_path_win32_and_version  = os.path.join(bin_path_win32, subit_version)
-manifest_file_base_win32    = \
-    os.path.join(helpers_path_win32, 'SubiT.exe.manifest')
+manifest_file_base_win32    = os.path.join(helpers_path_win32, 
+                                           'SubiT.exe.manifest')
 
 setup_path_win32                = os.path.join(setup_path, 'win32')
 setup_helpers_path_win32        = os.path.join(setup_path_win32, '_helpers')
+setup_icon_file_path_win32      = os.path.join(setup_helpers_path_win32, 
+                                               'subit-icon-setup.ico')
+setup_image_file_path_win32     = os.path.join(setup_helpers_path_win32, 
+                                               'subit-image-setup.bmp')
+setup_logo_file_path_win32      = os.path.join(setup_helpers_path_win32, 
+                                               'subit-logo-setup.bmp')
 setup_path_win32_and_version    = os.path.join(setup_path_win32, subit_version)
 
 # The full path to the ISCC compiler. 
 iscc_compiler_path = r'%programfiles%\Inno Setup 5\ISCC.exe'
 iscc_compiler_path = os.path.expandvars(iscc_compiler_path)
+
+
 
 def copyWinAssociatorDir(dest_dir):
     """ Will copy the files win32._helpers.WinAssociator to 
@@ -293,6 +301,11 @@ def copyWinAssociatorDir(dest_dir):
     log('Copying WinAssociator from [%s] to [%s]' % 
         (win_associator_win32, dest_dir))
     shutil.copytree(win_associator_win32, dest_dir)
+
+def getWin32BinDirPath(debug):
+    """ Returns the path for the release or debug binaries for win32. """
+    return os.path.join(bin_path_win32_and_version, 
+                        "debug" if debug else "release")
 
 def getWin32ApplicationManifets():
     """ Get a win32 application manifest for subit. The manifest is returned as
@@ -312,7 +325,19 @@ def getWin32SpecFile(tmp_path_for_build, build_path, manifest_path):
         final_build_dir_path    = build_path,
         helpers_dir_path        = helpers_path_win32,
         manifest_file_path      = manifest_path)
-                     
+       
+def getWin32IssFile(debug):
+    """ Formats the ISS template for either debug or release setup. """
+    iss_path = os.path.join\
+        (setup_path_win32, '_helpers', 'subit-template-setup.iss')
+    _base_iss_content = open(iss_path, "r").read()
+    return _base_iss_content.format(
+        subit_version           = subit_version,
+        setup_icon_file_path    = setup_icon_file_path_win32,
+        setup_logo_file_path    = setup_logo_file_path_win32,
+        setup_image_file_path   = setup_image_file_path_win32,
+        bin_dir_path            = getWin32BinDirPath(debug))
+
 def zipWin32Dir(debug):
     """ 
         Zips the bin dir (debug or release). The archive's root will be the 
@@ -341,9 +366,8 @@ def buildWin32Dir(debug):
         log('bin_path_win32_and_version [%s] exists' %
             bin_path_win32_and_version)
 
+    _bin_path = getWin32BinDirPath(debug)
     _dir_prefix = 'debug' if debug else 'release'
-    _bin_path = os.path.join\
-        (bin_path_win32_and_version, _dir_prefix)
     _tmp_bin_path = os.path.join\
         (bin_path_win32_and_version, '__tmp_' + _dir_prefix)
 
@@ -373,12 +397,6 @@ def buildWin32Dir(debug):
 def buildWin32Setup(debug):
     """ Creates the setup file of SubiT for win32 platform. """
 
-    # This value keys are the placeholders in the iss files. 
-    replacment_dict = {
-        '|$#VERSION#$|' : subit_version,
-        '|$#ROOTDIR#$|' : base_path
-    }
-
     if not os.path.exists(setup_path_win32_and_version):
         log('Setup path for current version is missing, creating it: %s' % 
             setup_path_win32_and_version)
@@ -388,10 +406,6 @@ def buildWin32Setup(debug):
         (setup_path_win32_and_version, 'debug' if debug else 'release')
     removeTreeAndWaitForFinish(_setup_path)
 
-    iss_file_name = 'subit-template-setup-%s.iss' % \
-        ('debug' if debug else 'release')
-    iss_template_path = os.path.join\
-        (setup_path_win32, '_helpers', iss_file_name)
     iss_for_version_path = os.path.join\
         (_setup_path, 'subit-%s-setup.iss' % subit_version)
 
@@ -402,14 +416,8 @@ def buildWin32Setup(debug):
 
     log('Creating new win32 setup folder: %s' % _setup_path)
     os.mkdir(_setup_path)
-    shutil.copyfile(iss_template_path, iss_for_version_path)
 
-    # Read the iss file content.
-    iss_content = open(iss_for_version_path, 'r').read()
-    # Replace the placeholders.
-    for placeholder, value in replacment_dict.iteritems():
-        iss_content = iss_content.replace(placeholder, value)
-
+    iss_content = getWin32IssFile(debug)
     open(iss_for_version_path, 'w').write(iss_content)
     log('Inno Setup script created for current version: %s' % 
         iss_for_version_path)

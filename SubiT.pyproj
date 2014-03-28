@@ -225,8 +225,7 @@
     <Content Include="build\setup\win32\_helpers\subit-icon-setup.ico" />
     <Content Include="build\setup\win32\_helpers\subit-image-setup.bmp" />
     <Content Include="build\setup\win32\_helpers\subit-logo-setup.bmp" />
-    <Content Include="build\setup\win32\_helpers\subit-template-setup-debug.iss" />
-    <Content Include="build\setup\win32\_helpers\subit-template-setup-release.iss" />
+    <Content Include="build\setup\win32\_helpers\subit-template-setup.iss" />
     <Content Include="resources\gui\images.qrc" />
     <Content Include="src\Settings\Config.ini" />
   </ItemGroup>
