@@ -21,24 +21,20 @@ if not IsWindowsPlatform():
     sys.path.append(get_python_lib())
 
 
+def getPlatformName():
+    if IsWindowsPlatform(): 
+        return "win32"
+    else:
+        raise NotImplementedError("Only win32 is present.")
+
 # We get the path of SubiT dynamically. This file (setup.py) is located inside
 # the build directory, so calling dirname() twice, will give us SubiT's root
 # directory.
-current_path        = os.path.abspath(__file__)
-base_path           = os.path.dirname(os.path.dirname(current_path))
-src_dir_path        = os.path.join(base_path, 'src')
-build_dir_path      = os.path.join(base_path, 'build')
+current_path    = os.path.abspath(__file__)
+base_path       = os.path.dirname(os.path.dirname(current_path))
+src_dir_path    = os.path.join(base_path, 'src')
+build_dir_path  = os.path.join(base_path, 'build')
 
-bin_path_base       = os.path.join(build_dir_path, 'bin')
-
-setup_path          = os.path.join(build_dir_path, 'setup')
-build_src_dir_path  = os.path.join(build_dir_path, '__src')
-build_tmp_dir_path  = os.path.join(build_dir_path, '__tmp')
-subit_proxy_py_path = os.path.join(build_src_dir_path, 'SubiTProxy.py')
-providers_path      = os.path.join(build_src_dir_path, 'SubProviders')
-
-pyinstaller_build_path = os.path.join\
-    (get_python_lib(), r'PyInstaller\utils\Build.py')
 
 # Append the src folder the sys.path in 
 # order to get access to the modules
@@ -61,6 +57,24 @@ del SubiTConfig
 sys.path.remove(src_dir_path)
 # ============================================================================ #
 # ============================================================================ #
+
+
+build_platform_dir_path     = os.path.join(build_dir_path, getPlatformName())
+build_platform_helpers_path = os.path.join(build_platform_dir_path, "_helpers")
+build_version_dir_path      = os.path.join(build_platform_dir_path, subit_version)
+
+build_bin_path      = os.path.join(build_version_dir_path, 'bin')
+build_setup_path    = os.path.join(build_version_dir_path, 'setup')
+build_dist_path     = os.path.join(build_version_dir_path, 'dist')
+build_src_dir_path  = os.path.join(build_version_dir_path, '__src')
+build_tmp_dir_path  = os.path.join(build_version_dir_path, '__tmp')
+
+subit_proxy_py_path = os.path.join(build_src_dir_path, 'SubiTProxy.py')
+providers_path      = os.path.join(build_src_dir_path, 'SubProviders')
+
+pyinstaller_build_path = os.path.join\
+    (get_python_lib(), r'PyInstaller\utils\Build.py')
+
 
 # ============================================================================ #
 # Platform independent functions                                               #
@@ -89,7 +103,7 @@ def removeTreeAndWaitForFinish(dir, wait_time = 0.10, wait_after = 3):
 def createAndMoveToTempBuildDir():
     removeTreeAndWaitForFinish(build_tmp_dir_path)
     log("Moving to temp dir: %s" % build_tmp_dir_path)
-    os.mkdir(build_tmp_dir_path)
+    os.makedirs(build_tmp_dir_path)
     os.chdir(build_tmp_dir_path)
 
 def copySrcDir(destination):
@@ -259,6 +273,16 @@ def executeInPythonInterpreter(command):
         return check_output(command)
     else:
         return check_output(command, shell=True)
+
+def getBuildStr(debug):
+    if debug:
+        return "debug"
+    else:
+        return "release"
+
+def copyReadmeToDist():
+    readme_path = os.path.join(base_path, "README.md")
+    shutil.copy(readme_path, build_dist_path)
 # ============================================================================ #
 # ============================================================================ #
 
@@ -268,31 +292,18 @@ def executeInPythonInterpreter(command):
 # Win32 building functions                                                     #
 # ============================================================================ #
 
-bin_path_win32              = os.path.join(bin_path_base, 'win32')
 zip_name_format_win32       = "subit-%s-{build}-win32.zip" % subit_version
-helpers_path_win32          = os.path.join(bin_path_win32, '_helpers')
-spec_file_base_win32        = os.path.join(helpers_path_win32, 'SubiT.spec')
-icon_file_win32             = os.path.join(helpers_path_win32, 'icon.ico')
-win_associator_win32        = os.path.join(helpers_path_win32, 'WinAssociator')
-bin_path_win32_and_version  = os.path.join(bin_path_win32, subit_version)
-manifest_file_base_win32    = os.path.join(helpers_path_win32, 
-                                           'SubiT.exe.manifest')
-
-setup_path_win32                = os.path.join(setup_path, 'win32')
-setup_helpers_path_win32        = os.path.join(setup_path_win32, '_helpers')
-setup_icon_file_path_win32      = os.path.join(setup_helpers_path_win32, 
-                                               'subit-icon-setup.ico')
-setup_image_file_path_win32     = os.path.join(setup_helpers_path_win32, 
-                                               'subit-image-setup.bmp')
-setup_logo_file_path_win32      = os.path.join(setup_helpers_path_win32, 
-                                               'subit-logo-setup.bmp')
-setup_path_win32_and_version    = os.path.join(setup_path_win32, subit_version)
+spec_file_base_win32        = os.path.join(build_platform_helpers_path, 'SubiT.spec')
+icon_file_win32             = os.path.join(build_platform_helpers_path, 'subit-icon.ico')
+win_associator_win32        = os.path.join(build_platform_helpers_path, 'WinAssociator')
+manifest_file_base_win32    = os.path.join(build_platform_helpers_path, 'SubiT.exe.manifest')
+setup_image_file_path_win32 = os.path.join(build_platform_helpers_path, 'subit-image-setup.bmp')
+setup_logo_file_path_win32  = os.path.join(build_platform_helpers_path, 'subit-logo-setup.bmp')
+setup_iss_file_path_win32   = os.path.join(build_platform_helpers_path, 'subit-template-setup.iss')
 
 # The full path to the ISCC compiler. 
 iscc_compiler_path = r'%programfiles%\Inno Setup 5\ISCC.exe'
 iscc_compiler_path = os.path.expandvars(iscc_compiler_path)
-
-
 
 def copyWinAssociatorDir(dest_dir):
     """ Will copy the files win32._helpers.WinAssociator to 
@@ -304,8 +315,7 @@ def copyWinAssociatorDir(dest_dir):
 
 def getWin32BinDirPath(debug):
     """ Returns the path for the release or debug binaries for win32. """
-    return os.path.join(bin_path_win32_and_version, 
-                        "debug" if debug else "release")
+    return os.path.join(build_bin_path, getBuildStr(debug))
 
 def getWin32ApplicationManifets():
     """ Get a win32 application manifest for subit. The manifest is returned as
@@ -323,17 +333,15 @@ def getWin32SpecFile(tmp_path_for_build, build_path, manifest_path):
         src_dir_path            = build_src_dir_path, 
         temp_dir_path           = tmp_path_for_build,
         final_build_dir_path    = build_path,
-        helpers_dir_path        = helpers_path_win32,
+        helpers_dir_path        = build_platform_helpers_path,
         manifest_file_path      = manifest_path)
        
 def getWin32IssFile(debug):
     """ Formats the ISS template for either debug or release setup. """
-    iss_path = os.path.join\
-        (setup_path_win32, '_helpers', 'subit-template-setup.iss')
-    _base_iss_content = open(iss_path, "r").read()
+    _base_iss_content = open(setup_iss_file_path_win32, "r").read()
     return _base_iss_content.format(
         subit_version           = subit_version,
-        setup_icon_file_path    = setup_icon_file_path_win32,
+        setup_icon_file_path    = icon_file_win32,
         setup_logo_file_path    = setup_logo_file_path_win32,
         setup_image_file_path   = setup_image_file_path_win32,
         bin_dir_path            = getWin32BinDirPath(debug))
@@ -344,13 +352,14 @@ def zipWin32Dir(debug):
         bin dir.
     """
     import zipfile
-    build_type = "debug" if debug else "release"
-    zip_name = zip_name_format_win32.format(build = build_type)
-    zip_path = os.path.join(bin_path_win32_and_version, zip_name)
-    bin_path = os.path.join(bin_path_win32_and_version, build_type)
+    zip_name = zip_name_format_win32.format(build = getBuildStr(debug))
+    zip_path = os.path.join(build_dist_path, zip_name)
     zip_file = zipfile.ZipFile(zip_path, "w")
+    # The binary path to zip.
+    bin_path = os.path.join(build_bin_path, getBuildStr(debug))
     for root, dirs, files in os.walk(bin_path):
         for file in files:
+            # Remove the full path to the file, and keep only the relative.
             archive_name = root.replace(bin_path, "")
             archive_name = os.path.join(archive_name, file)
             zip_file.write(os.path.join(root, file), archive_name)
@@ -358,18 +367,9 @@ def zipWin32Dir(debug):
 
 def buildWin32Dir(debug):
     """ Build procedure for Windows. """
-    if not os.path.exists(bin_path_win32_and_version):
-        log('bin_path_win32_and_version [%s] is missing, creating it' %
-            bin_path_win32_and_version)
-        os.mkdir(bin_path_win32_and_version)
-    else:
-        log('bin_path_win32_and_version [%s] exists' %
-            bin_path_win32_and_version)
 
     _bin_path = getWin32BinDirPath(debug)
-    _dir_prefix = 'debug' if debug else 'release'
-    _tmp_bin_path = os.path.join\
-        (bin_path_win32_and_version, '__tmp_' + _dir_prefix)
+    _tmp_bin_path = os.path.join(build_bin_path, '__tmp_' + getBuildStr(debug))
 
     removeTreeAndWaitForFinish(_bin_path)
     removeTreeAndWaitForFinish(_tmp_bin_path)
@@ -397,13 +397,7 @@ def buildWin32Dir(debug):
 def buildWin32Setup(debug):
     """ Creates the setup file of SubiT for win32 platform. """
 
-    if not os.path.exists(setup_path_win32_and_version):
-        log('Setup path for current version is missing, creating it: %s' % 
-            setup_path_win32_and_version)
-        os.mkdir(setup_path_win32_and_version)
-
-    _setup_path = os.path.join\
-        (setup_path_win32_and_version, 'debug' if debug else 'release')
+    _setup_path = os.path.join(build_setup_path, getBuildStr(debug))
     removeTreeAndWaitForFinish(_setup_path)
 
     iss_for_version_path = os.path.join\
@@ -422,8 +416,8 @@ def buildWin32Setup(debug):
     log('Inno Setup script created for current version: %s' % 
         iss_for_version_path)
 
-    setup_file_name = 'subit-%s-setup' % subit_version
-    setup_file_name += '-release-win32' if not debug else '-debug-win32'
+    setup_file_name = 'subit-{subit_version}-setup-{build}-win32'.format(
+       subit_version = subit_version, build = getBuildStr(debug))
 
     compiler_args = '"%s" /O"%s" /F%s' % \
         (iss_for_version_path, _setup_path, setup_file_name)
@@ -432,6 +426,11 @@ def buildWin32Setup(debug):
 
     for line in check_output(compiler_full_command).decode().split('\r\n'):
         log('[Compiler] => %s' % line)
+
+    setup_file_name = setup_file_name + ".exe"
+
+    # Copy to dist directory.
+    shutil.copy(os.path.join(_setup_path, setup_file_name), build_dist_path)
 
     log('Setup compilation finished: %s' % _setup_path)
     
@@ -443,6 +442,15 @@ def buildWin32():
         After calling this method, SubiT is ready to publish.
     """
     log('Starting build for SubiT %s for Win32 platform' % subit_version)
+
+    # Clear the directories
+    removeTreeAndWaitForFinish(build_bin_path)
+    os.makedirs(build_bin_path)
+    removeTreeAndWaitForFinish(build_setup_path)
+    os.makedirs(build_setup_path)
+    removeTreeAndWaitForFinish(build_dist_path)
+    os.makedirs(build_dist_path)
+
     def _build_release():
         log('Building release version')
         copySrcDirToBuildDir()
@@ -462,6 +470,9 @@ def buildWin32():
         log('Finished building debug version')
     _build_release()
     _build_debug()
+
+    copyReadmeToDist()
+
     log('Builing SubiT %s for win32 platform finished!' % subit_version)
 # ============================================================================ #
 # ============================================================================ #

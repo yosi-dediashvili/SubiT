@@ -13,7 +13,7 @@ update_exe_file_path 	= os.path.join(temp_dir_path,
 
 final_build_dir_path 	= r'{final_build_dir_path}'
 helpers_dir_path    	= r'{helpers_dir_path}'
-icon_file_path       	= os.path.join(helpers_dir_path, "icon.ico")
+icon_file_path       	= os.path.join(helpers_dir_path, "subit-icon.ico")
 
 manifest_file_path 		= r'{manifest_file_path}'
 
