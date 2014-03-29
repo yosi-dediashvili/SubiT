@@ -1,16 +1,27 @@
 #Our site: http://subit-app.sf.net
 
+SubiT is an automated program for downloading subtitles.
+
+This is how the main window of the program looks under Windows 7:
+![alt text](http://subit-app.sourceforge.net/images/subit-main-win7.png "SubiT's main window under Windows 7")
+
 First of all, feel free to contact us with any problem at:
 http://www.subit-app.sf.net/contact.html
+
+##Download:
+SubiT's compiled files are stored in [Sourceforge](https://sourceforge.net/projects/subit-app/files/).
+
+##Develop:
+SubiT is written in python, with one exception which is the ContextMenuHandler (for Windows) that was written in c++.
+
 ##Usage:
 
 ###For Windows users:
-
 	It's recommended that you will use the win32 setup file of SubiT in order to perform the installation.
-	However, if you refuse to do so, follow this steps:
+	However, if you refuse to do so, follow these steps:
 	
 	How To Install: 
-		1. Extract files from the rar archive
+		1. Extract files from the zip archive
 		2. For right click association, Click Start->Run->Cmd, and type in the location of SubiT.exe 
 		   file and pass it the -associate param, i.e. "SubiT.exe -associate" (without the quotes)
 		3. Use right click on a movie/ TV show or just run SubiT.exe
@@ -25,18 +36,14 @@ http://www.subit-app.sf.net/contact.html
 	recheck the checkbox, and finally, click Apply.
 
 ###For Linux users:
-
-	1. SubiT source code is compiled using python 2.7.3
-	2. The tar.gz comes with everything needed for SubiT to run (except for python)
-	3. Currently, a right click association is not supported under linux
-	4. Simply extract the files from the tar.gz file, and execute SubiT
+    1. Grab SubiT's source files.
+    2. Install the dependencies specified in "SubiTSdk/Dependencies.txt"
+    3. Execute SubiTProxy.py under the src directory.
 
 ###For OSX users:
-
-	From minor check that we made, SubiT is capable of running under OSX after the PySide module is installed
-	on the System. We currently not supporting OSX. Contact us if you're interested on running SubiT under 
-	apple's OS.
-
+    From minor check that we made, SubiT is capable of running under OSX after
+    the PySide module is installed on the System. We currently not supporting
+    OSX. Contact us if you're interested on running SubiT under apple's OS.
 
 ###Using SubiT in Command Line mode (CLI):
 
