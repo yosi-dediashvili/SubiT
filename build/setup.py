@@ -83,20 +83,16 @@ def log(message):
     message = '[Setup]-[%s] => %s' % (time.strftime('%I:%M:%S'), message)
     print(message)
 
-def printSubitDefs():
-    log('subit_name:          %s' % subit_name)
-    log('subit_desc:          %s' % subit_desc)
-    log('subit_author:        %s' % subit_author)
-    log('subit_author_mail:   %s' % subit_author_mail)
-    log('subit_version:       %s' % subit_version)
 
 def removeTreeAndWaitForFinish(dir, wait_time = 0.10, wait_after = 3):
     log('Removing: %s' % dir)
-    if os.path.exists(dir):
-        shutil.rmtree(dir)
 
     while os.path.exists(dir):
-        time.sleep(wait_time)
+        try:
+            shutil.rmtree(dir)
+            time.sleep(wait_time)
+        except Exception as eX:
+            log("Failed deleting the directory: %s" % dir)
     log('Removed: %s' % dir)
     time.sleep(wait_after)
 
@@ -474,6 +470,7 @@ def buildWin32():
     copyReadmeToDist()
 
     log('Builing SubiT %s for win32 platform finished!' % subit_version)
+    log('The dist directory is located at: %s' % build_dist_path)
 # ============================================================================ #
 # ============================================================================ #
 
