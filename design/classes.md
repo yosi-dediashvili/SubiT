@@ -91,7 +91,21 @@ Represents a search for a series. Will derive from BaseInput. Additionally, will
 
 ## Collection
 
-The second step is the collection of subtitles using the providers.
+The second step is the collection of subtitles using the providers. Because the previous version of SubiT used the SubFlow mechanism, that didn't really stored the providers result in some useful structure, we need to construct such structure.
+
+### Performance
+One of the cons of the current structure of SubiT is that the providers are being used in an synchronous mode, were each provider gets used only after the previous one finished. There's no single reason to do that, and therefore, we need to change the way the providers are implemented. 
+
+There are two facts that we should consider:
+1. More than one input might be processed in any given time (each in a different location in the flow)
+2. While we want to allow asynchronous operations with the providers, we don't want the same provider to start more than one active communication with the server. 
+
+With this in mind, the new structure will look like this:
+* Prior to the initialization of each provider, we'll initialize some sort of Connection/Request manager for each provider. This manager will be initialized with a domain (the provider's domain), and will have a queue to which it will post request, then, at any given time it will fetch at most one request from that queue, and post it to the site.
+* Whenever a provider is initialized, it will be given an instance the instance of the manager that was initialized with its domain.
+* The provider will always perform requests via the manager.
+* Each input will have only one instance of each provider (inputs will not share instances of providers). The provider will live as long as the input lives.
+* The input will not operate directly on the providers, instead, it will have a some sort of a single, generic provider, that will hold all the other providers, and that will wrap all the operation with the providers.
 
 ## Selection
 
