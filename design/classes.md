@@ -9,12 +9,16 @@ The second step is collection subtitles that might be related to the title that 
 3. **Selection:**  
 The last step is to select that the subtitle that matches the most to the title identified.
 
-## Input
+## Identification
+
+### Input
 The input is the first step when it comes to processing some query. It's as soon as this stage that we distinguish between movie and series in the query.
+
+We'll store under the Input object all the data associated with an input. This means that it will store all the information from the providers (the SubStages) also.
 
 It should be noted that it's not the input's responsibility to supply the right query for the providers. It should only supply the full information about what is being searched, and gather as much info as it can regarding that search.
 
-# BaseInput
+#### BaseInput
 The base class for inputs. First, it will define whether the query was entered manually by the user (via the -q argument to the program, or via the search box and ```os.path.exists()``` returned false), or is an actual file on the system (i.e. the user dragged it to the program, or passed it via -f argument).
 
 Also, we'll information about the title that we're searching (for movie it will be the movie name, and for series it will be the series name without the episode). 
@@ -31,7 +35,7 @@ isinstance(series_input, SeriesInput)
 
 The input is initialized only with a single input string which might be a full path to a file, or a simple search. It's the Input's job to figure out the type of the input.
 
-#### InputStatus
+##### InputStatus
 A class within the BaseInput that serves as Enum. The class describes the status in which the input processing is currently in:
 ```python
 class InputStatus:
@@ -45,13 +49,22 @@ class InputStatus:
     FAILED      = 3
 ```
 
-#### Identifiers
+##### Identifiers
 The identifiers attribute withing the input object will have all the strings that was located regarding the input, that are not the title and the year of the input. For example:
 ```python
 matrix_input = BaseInput.new("The.Matrix.720p.dts")
 # Will print ['720p', 'dts']
 print matrix_input.identifiers
 ```
+
+In order to collect the identifier, we introduce a new mechanism: **IdentifiersExtractors** The mechanism will use one or more implementation of an interface called IIDentifersExtractor. The goal of an implementation is to supply identification string given an Input class.
+
+For starters, the implementations will be:
+* OpenSubtitlesIdentifiersExtractor - Extracts identifiers by sending the file hash / file name to OpenSubtitle's service.
+* FileNameIdentifiersExtractor - All the strings in the file name excepts for the title and year.
+* DirectoryNameIdentifiersExtractor - All the strings in the directory name excepts for the title and year.
+
+In the future, we might add some more sophisticated implementation like extracting the video and sound quality by parsing the file headers etc.
 
 To sum up, the **BaseInput** will have the following attributes:
 ```python
@@ -70,15 +83,15 @@ status = InputStatus.WAITING
 identifiers = [""]
 ```
 
-## MovieInput
+#### MovieInput
 Represents a search for a movie. Will derive from BaseInput.
 
-## SeriesInput
+#### SeriesInput
 Represents a search for a series. Will derive from BaseInput. Additionally, will define two numbers, the **SeasonNumber** and the **EpisodeNumber**
 
-```python
-# The season number of the episode that is searched.
-season_number = 0
-# The episode number.
-episode_number = 0
-```
+## Collection
+
+The second step is the collection of subtitles using the providers.
+
+## Selection
+
