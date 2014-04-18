@@ -3,34 +3,100 @@
 The processing flow is divided into three steps:
 
 1. **Identification:**  
-The first step is to identify what exactly we're looking for (A movie? A series? What resolution? What is the title? etc.)
+The first step is to identify what exactly we're looking for (A movie? A 
+series? What resolution? What is the title? etc.)
 2. **Collection:**  
-The second step is collection subtitles that might be related to the title that we identified in the first step.
+The second step is collection subtitles that might be related to the title that 
+we identified in the first step.
 3. **Selection:**  
-The last step is to select that the subtitle that matches the most to the title identified.
+The last step is to select that the subtitle that matches the most to the title 
+identified.
 
 ## Identification
 
-### Input
-The input is the first step when it comes to processing some query. It's as soon as this stage that we distinguish between movie and series in the query.
+In order to make it easier to identify the right result, we need a strong 
+separation between the movie/series as a title, and the format of that movie 
+(sound quality, video quality etc.). 
 
-We'll store under the Input object all the data associated with an input. This means that it will store all the information from the providers (the SubStages) also.
+In order to do that, we divide each input to SubiT into two. The title that is 
+being searched, and the version of that title.
 
-It should be noted that it's not the input's responsibility to supply the right query for the providers. It should only supply the full information about what is being searched, and gather as much info as it can regarding that search.
+### Title
 
-#### BaseInput
-The base class for inputs. First, it will define whether the query was entered manually by the user (via the -q argument to the program, or via the search box and ```os.path.exists()``` returned false), or is an actual file on the system (i.e. the user dragged it to the program, or passed it via -f argument).
+In order to support that separation, we introduce the Title object. The title
+is not concerned about the format of the title. It contains information like the
+name of the title, what year it was published, etc.
 
-Also, we'll information about the title that we're searching (for movie it will be the movie name, and for series it will be the series name without the episode). 
+We have two version of Title. The first is the MovieTitle, and the second is the
+SeriesTitle.
 
-The BaseInput will provide a factory method that will construct the appropriate input object (movie or series). For example:
+#### MovieTitle
+
+Currently adds nothing to Title. It's simply makes it easier to distinguish 
+between movie and series.
+
+#### SeriesTitle
+
+Adds episode numbering to the title, and the episode name.
+
+**To sum up, the basic structure will look like this:**
+
 ```python
-movie_input = BaseInput.new("The Matrix")
+class Title:
+    name = ""
+    year = 0
+    imdb_id = ""
+
+class MovieTitle(Title):
+    pass
+
+class SeriesTitle(Title):
+    season_number = 0
+    episode_number = 0
+    episode_name = ""
+```
+
+
+### Version
+
+The version specify the format of the title that is being searched. In format 
+we mean: Sound/Video quality, number of CDs, etc. The version does not care 
+about the title that is being search, only about the format of that title, 
+therefore, it does not care about what's the type of title (movie/series).
+
+The version will be used both for specifying what is being searched (via the 
+Input object), and what is present in each provider.
+
+#### Identifiers
+The identifiers attribute withing the version object will contain all the strings that represent the version.
+
+**The basic structure will look like this:**
+```python
+class Version:
+    identifiers = [""]
+    # -1 means unknown.
+    num_of_cds = 0
+```
+
+
+### Input
+
+The input is the first step when it comes to processing some query. It will 
+contain under it a single Title and Version instances that represents what is 
+being searched.
+
+This object is what the provider will receive in order to supply versions.
+
+The Input object will first define whether the query was entered manually by the user (via the -q argument to the program, or via the search box and ```os.path.exists()``` returned false), or is an actual file on the system (i.e. the user dragged it to the program, or passed it via -f argument).
+
+The Input will provide a factory method that will construct the appropriate input object (movie or series Title). For example:
+```python
+movie_input = Input.new("The Matrix")
 # Will yield true
-isinstance(movie_input, MovieInput)
-series_input = BaseInput.new("The Big Bang Theory S05E15")
+isinstance(movie_input.title, MovieTitle)
+series_input = Input.new("The Big Bang Theory S05E15")
 # Will yield true
-isinstance(series_input, SeriesInput)
+isinstance(series_input.title, SeriesTitle)
 ```
 
 The input is initialized only with a single input string which might be a full path to a file, or a simple search. It's the Input's job to figure out the type of the input.
@@ -49,15 +115,7 @@ class InputStatus:
     FAILED      = 3
 ```
 
-##### Identifiers
-The identifiers attribute withing the input object will have all the strings that was located regarding the input, that are not the title and the year of the input. For example:
-```python
-matrix_input = BaseInput.new("The.Matrix.720p.dts")
-# Will print ['720p', 'dts']
-print matrix_input.identifiers
-```
-
-In order to collect the identifier, we introduce a new mechanism: **IdentifiersExtractors** The mechanism will use one or more implementation of an interface called IIDentifersExtractor. The goal of an implementation is to supply identification string given an Input class.
+In order to collect the identifiers, we introduce a new mechanism: **IdentifiersExtractors** The mechanism will use one or more implementation of an interface called IIDentifersExtractor. The goal of an implementation is to supply identification string given an Input class.
 
 For starters, the implementations will be:
 * OpenSubtitlesIdentifiersExtractor - Extracts identifiers by sending the file hash / file name to OpenSubtitle's service.
@@ -97,6 +155,7 @@ The second step is the collection of subtitles using the providers. Because the 
 One of the cons of the current structure of SubiT is that the providers are being used in an synchronous mode, were each provider gets used only after the previous one finished. There's no single reason to do that, and therefore, we need to change the way the providers are implemented. 
 
 There are two facts that we should consider:
+
 1. More than one input might be processed in any given time (each in a different location in the flow)
 2. While we want to allow asynchronous operations with the providers, we don't want the same provider to start more than one active communication with the server. 
 
@@ -105,7 +164,7 @@ With this in mind, the new structure will look like this:
 * Whenever a provider is initialized, it will be given an instance the instance of the manager that was initialized with its domain.
 * The provider will always perform requests via the manager.
 * Each input will have only one instance of each provider (inputs will not share instances of providers). The provider will live as long as the input lives.
-* The input will not operate directly on the providers, instead, it will have a some sort of a single, generic provider, that will hold all the other providers, and that will wrap all the operation with the providers.
+* The input will not operate directly on the providers, instead, it will have some sort of a single, generic provider, that will hold all the other providers, and that will wrap all the operation with the providers. 
 
 ## Selection
-
+ bla bla~ Yah YTah!~::
