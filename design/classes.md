@@ -68,9 +68,26 @@ The version will be used both for specifying what is being searched (via the
 Input object), and what is present in each provider.
 
 #### Identifiers
-The identifiers attribute withing the version object will contain all the strings that represent the version.
+The identifiers attribute withing the version object will contain all the 
+strings that represent the version.
 
-**The basic structure will look like this:**
+In order to collect the identifiers, we introduce a new mechanism: 
+**IdentifiersExtractors** The mechanism will use one or more implementation of 
+an interface called IIDentifersExtractor. The goal of an implementation is to 
+supply identification string given an Input class.
+
+For starters, the implementations will be:
+* OpenSubtitlesIdentifiersExtractor - Extracts identifiers by sending the file 
+* hash / file name to OpenSubtitle's service.
+* FileNameIdentifiersExtractor - All the strings in the file name excepts for 
+* the title and year.
+* DirectoryNameIdentifiersExtractor - All the strings in the directory name 
+excepts for the title and year.
+
+In the future, we might add some more sophisticated implementation like
+extracting the video and sound quality by parsing the file headers etc.
+
+**The basic structure of the Version will look like this:**
 ```python
 class Version:
     identifiers = [""]
@@ -87,9 +104,13 @@ being searched.
 
 This object is what the provider will receive in order to supply versions.
 
-The Input object will first define whether the query was entered manually by the user (via the -q argument to the program, or via the search box and ```os.path.exists()``` returned false), or is an actual file on the system (i.e. the user dragged it to the program, or passed it via -f argument).
+The Input object will first define whether the query was entered manually by 
+the user (via the -q argument to the program, or via the search box and ```os.
+path.exists()``` returned false), or is an actual file on the system (i.e. the 
+user dragged it to the program, or passed it via -f argument).
 
-The Input will provide a factory method that will construct the appropriate input object (movie or series Title). For example:
+The Input will provide a factory method that will construct the appropriate 
+input object (with movie or series Title). For example:
 ```python
 movie_input = Input.new("The Matrix")
 # Will yield true
@@ -99,10 +120,16 @@ series_input = Input.new("The Big Bang Theory S05E15")
 isinstance(series_input.title, SeriesTitle)
 ```
 
-The input is initialized only with a single input string which might be a full path to a file, or a simple search. It's the Input's job to figure out the type of the input.
+The input is initialized only with a single input string which might be a full 
+path to a file, or a simple search. It's the Input's job to figure out the type 
+of the input.
 
-##### InputStatus
-A class within the BaseInput that serves as Enum. The class describes the status in which the input processing is currently in:
+#### InputStatus
+
+In order to specify where are we in the whole process of locating the right
+subtitle, the Input uses a status, a class within the BaseInput that serves as 
+Enum. The class describes the status in which the input processing is currently 
+in:
 ```python
 class InputStatus:
     # The input is waiting in the queue.
@@ -115,49 +142,42 @@ class InputStatus:
     FAILED      = 3
 ```
 
-In order to collect the identifiers, we introduce a new mechanism: **IdentifiersExtractors** The mechanism will use one or more implementation of an interface called IIDentifersExtractor. The goal of an implementation is to supply identification string given an Input class.
-
-For starters, the implementations will be:
-* OpenSubtitlesIdentifiersExtractor - Extracts identifiers by sending the file hash / file name to OpenSubtitle's service.
-* FileNameIdentifiersExtractor - All the strings in the file name excepts for the title and year.
-* DirectoryNameIdentifiersExtractor - All the strings in the directory name excepts for the title and year.
-
-In the future, we might add some more sophisticated implementation like extracting the video and sound quality by parsing the file headers etc.
-
-To sum up, the **BaseInput** will have the following attributes:
+**To sum up, the Input will have the following structure:**
 ```python
-# Zero or more full paths to the title's files. For series, it'll always have
-# one item at most, but for movie, it might have several, if the movies has
-# several discs.
-full_path = [""]
-# The title we're searching. For movies, it'll be the movie name, and for
-# series, only the series name (without the season/episode number).
-title = ""
-# The year in which the title was released (For series, it will be the year in
-# which the episode was aired).
-year = 0
-# The status in which the input is in.
-status = InputStatus.WAITING
-identifiers = [""]
+class Input:
+    # Zero or more full paths to the title's files. For series, it'll always 
+    # have one item at most, but for movie, it might have several, if the 
+    # movies has several discs.
+    full_path = [""]
+    # The status in which the input is in.
+    status = InputStatus.WAITING
+    # The title instance
+    title = None
+    # The version instance
+    version = None
 ```
 
-#### MovieInput
-Represents a search for a movie. Will derive from BaseInput.
-
-#### SeriesInput
-Represents a search for a series. Will derive from BaseInput. Additionally, will define two numbers, the **SeasonNumber** and the **EpisodeNumber**
 
 ## Collection
 
-The second step is the collection of subtitles using the providers. Because the previous version of SubiT used the SubFlow mechanism, that didn't really stored the providers result in some useful structure, we need to construct such structure.
+The second step is the collection of subtitles using the providers. Because the 
+previous version of SubiT used the SubFlow mechanism, that didn't really stored 
+the providers result in some useful structure, we need to construct such 
+structure.
 
 ### Performance
-One of the cons of the current structure of SubiT is that the providers are being used in an synchronous mode, were each provider gets used only after the previous one finished. There's no single reason to do that, and therefore, we need to change the way the providers are implemented. 
+One of the cons of the current structure of SubiT is that the providers are 
+being used in an synchronous mode, were each provider gets used only after the 
+previous one finished. There's no single reason to do that, and therefore, we 
+need to change the way the providers are implemented. 
 
-There are two facts that we should consider:
+There are two facts that we should consider: 
 
-1. More than one input might be processed in any given time (each in a different location in the flow)
-2. While we want to allow asynchronous operations with the providers, we don't want the same provider to start more than one active communication with the server. 
+1. More than one input might be processed in any given time (each in a 
+different location in the flow)
+2. While we want to allow asynchronous operations with the providers, we don't 
+want the same provider to start more than one active communication with the 
+server. 
 
 With this in mind, the new structure will look like this:
 * Prior to the initialization of each provider, we'll initialize some sort of Connection/Request manager for each provider. This manager will be initialized with a domain (the provider's domain), and will have a queue to which it will post request, then, at any given time it will fetch at most one request from that queue, and post it to the site.
@@ -167,4 +187,4 @@ With this in mind, the new structure will look like this:
 * The input will not operate directly on the providers, instead, it will have some sort of a single, generic provider, that will hold all the other providers, and that will wrap all the operation with the providers. 
 
 ## Selection
- bla bla~ Yah YTah!~::
+ 
