@@ -152,6 +152,11 @@ The input is initialized only with a single input string which might be a full
 path to a file, or a simple search. It's the Input's job to figure out the type 
 of the input.
 
+Access to the provider will be made via a main provider instance. This provider
+will store the actual results from the providers, and will pass the providers 
+the input in order to receive results. This way, we keep the providers logic out
+of the Input's logic
+
 #### InputStatus
 
 In order to specify where are we in the whole process of locating the right
@@ -194,6 +199,33 @@ The second step is the collection of subtitles using the providers. Because the
 previous version of SubiT used the SubFlow mechanism, that didn't really stored 
 the providers result in some useful structure, we need to construct such 
 structure.
+
+Additionally, while the previous design of the provider was one that used 2 
+steps in order to get to a subtitle version, the current design will have only
+one step. This will allow us to select the right version while we have all the
+versions from all the providers, and not just portion of it.
+
+### TitleVersions
+
+In this version, we're dropping the stages mechanism. In order to receive 
+versions from the providers, we'll pass them the Input object. And in return, we
+will get an instance of **TitleVersions**, that is a simple structure that 
+unites several **ProviderVersion** under a single **Title**.
+
+When a provider returns us a list of versions that might match the input that 
+was passed to it, it will group the versions by title, thus, we'll have **Zero**
+or more titles for each input, and under each title, it will have **One** or 
+more **ProviderVersions**. 
+
+Notice that the provider will not drop version because they come from a 
+different title. That's not its job.
+
+**The basic structure of the TitleVersions will look like that:**
+```python
+class TitleVersions:
+    title = None
+    version = [None]
+```
 
 ### Performance
 One of the cons of the current structure of SubiT is that the providers are 
