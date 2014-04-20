@@ -96,6 +96,31 @@ class Version:
 ```
 
 
+#### ProviderVersion
+
+This object will derive from Version, and will be used by the providers. It will
+represent a single version result in each provider.
+
+The object will have a language attribute that will determine the language of 
+that version. Also, it will have a reference to the provider that generated it.
+
+In order to help in the ranking process, the version will have a property named
+```is_certain_match``` that specify whether or not that version matches the 
+version that is inside the Input object completely or not (Each provider will 
+have use its own logic to determine that). 
+
+
+**The basic structure of ProviderVersion:**
+```python
+class ProviderVersion(Version):
+    language = ""
+    provider = None
+    version_string = ""
+    # Provider's specific attributes.
+    attributes = {}
+    is_certain_match = False
+```
+
 ### Input
 
 The input is the first step when it comes to processing some query. It will 
@@ -155,6 +180,8 @@ class Input:
     title = None
     # The version instance
     version = None
+    # The main provider, wraps the use of all the providers.
+    main_provider = None
 ```
 
 
