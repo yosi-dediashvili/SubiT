@@ -105,12 +105,15 @@ The object will have a language attribute that will determine the language of
 that version. Also, it will have a reference to the provider that generated it.
 
 In order to help in the ranking process, the version will have a property named
-```is_certain_match``` that specify whether or not that version matches the 
+**is_certain_match** that specify whether or not that version matches the 
 version that is inside the Input object completely or not (Each provider will 
 have use its own logic to determine that). 
 
+Lastly, any other attribute that the provider will need to store under the 
+version instance will be inserted into the attributes dictionary.
 
 **The basic structure of ProviderVersion:**
+
 ```python
 class ProviderVersion(Version):
     language = ""
