@@ -1,4 +1,4 @@
-# Design of SubiT's processing flow
+# Design of SubiT's classes
 
 The processing flow is divided into three steps:
 
@@ -249,4 +249,3 @@ With this in mind, the new structure will look like this:
 * The input will not operate directly on the providers, instead, it will have some sort of a single, generic provider, that will hold all the other providers, and that will wrap all the operation with the providers. 
 
 ## Selection
- 
