@@ -27,6 +27,51 @@ In order to support that separation, we introduce the Title object. The title
 is not concerned about the format of the title. It contains information like the
 name of the title, what year it was published, etc.
 
+For the title, we'll have to attribute that specify its name. The first will be 
+the raw name, that is the name as it appears originally in the source (provider, 
+IMDB, etc.). The second attribute will be a list of normalized name. It will 
+contain the raw name after a normalization process was applied to it as follows:
+
+#### Name normalization
+
+The normalized names will be stored in a list where each item is the previous 
+item with another normalization applied to it, with the first item being the 
+raw name left untouched. If a normalization step ended up with the same result
+as the previous step, it will not get inserted to the list.
+
+###### The 1st step
+1. Return the raw name as-is.
+
+###### The 2nd step
+
+1. Apply the ```Lower()``` function to it.
+2. Replace every non-alphanumeric letter (including space) with underscore.
+3. Replace any continuous underscore with a single one.
+
+###### The 3rd step
+
+1. Convert each Arabic formatted number that is located either at the start or 
+the end of the normalized name, or is surrounded with two underscores to a lower 
+case Latin one (```22``` becomes ```xxii```)
+
+###### The 4th step
+
+1. Convert each [Ordinal number](http://en.wikipedia.org/wiki/English_numerals#Ordinal_numbers) 
+to its string alphabet equivalent (```1st``` becomes ```first```)
+
+##### Examples
+
+|         Before         |                                      After                                       |
+|------------------------|----------------------------------------------------------------------------------|
+| The Godfather: Part II | ```['The Godfather: Part II', 'the_godfather_part_ii']```                        |
+| Schindler's List       | ```['Schindler's List', 'schindler_s_list']```                                   |
+| Amélie                 | ```['Amélie', 'am_lie']```                                                       |
+| The Godfather: Part 2  | ```['The Godfather: Part 2', 'the_godfather_part_2', 'the_godfather_part_ii']``` |
+| The Third Man          | ```['The Third Man', 'the_third_man']```                                         |
+| The 3rd Man            | ```['The 3rd Man', 'the_third_man']```                                           |
+
+* * *
+
 We have two version of Title. The first is the MovieTitle, and the second is the
 SeriesTitle.
 
@@ -44,6 +89,7 @@ Adds episode numbering to the title, and the episode name.
 ```python
 class Title:
     name = ""
+    normalized_names = [""]
     year = 0
     imdb_id = ""
 
@@ -86,6 +132,8 @@ excepts for the title and year.
 
 In the future, we might add some more sophisticated implementation like
 extracting the video and sound quality by parsing the file headers etc.
+
+***
 
 **The basic structure of the Version will look like this:**
 ```python
@@ -175,6 +223,8 @@ class InputStatus:
     FAILED      = 3
 ```
 
+***
+
 **To sum up, the Input will have the following structure:**
 ```python
 class Input:
@@ -224,7 +274,7 @@ different title. That's not its job.
 ```python
 class TitleVersions:
     title = None
-    version = [None]
+    versions = [None]
 ```
 
 ### Performance
@@ -242,6 +292,7 @@ want the same provider to start more than one active communication with the
 server. 
 
 With this in mind, the new structure will look like this:
+
 * Prior to the initialization of each provider, we'll initialize some sort of Connection/Request manager for each provider. This manager will be initialized with a domain (the provider's domain), and will have a queue to which it will post request, then, at any given time it will fetch at most one request from that queue, and post it to the site.
 * Whenever a provider is initialized, it will be given an instance the instance of the manager that was initialized with its domain.
 * The provider will always perform requests via the manager.
