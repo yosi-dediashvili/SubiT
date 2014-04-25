@@ -339,3 +339,19 @@ and that will wrap all the operation with the providers.
 
 ## Selection
 
+The selection phase is the most important step in the flow. Our goal is to 
+select the best matching version that is present in the TitleVersions.
+
+#### Matching titles
+
+The first step will be to select the right title from the ones that we 
+collected. In order to do so, we simply use the Title's equality check. Note 
+that we expect only single (at most) title from the collected titles to match 
+the Input's title. Otherwise, something went wrong in the process.
+
+If we fail to match against a title, we'll not proceed to version matching, and
+instead, use the behavior that is specific in the configuration (exit/ask the 
+user/etc.).
+
+#### Matching versions
+
