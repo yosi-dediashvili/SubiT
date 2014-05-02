@@ -209,9 +209,9 @@ being searched.
 This object is what the provider will receive in order to supply versions.
 
 The Input object will first define whether the query was entered manually by 
-the user (via the -q argument to the program, or via the search box and ```os.
-path.exists()``` returned false), or is an actual file on the system (i.e. the 
-user dragged it to the program, or passed it via -f argument).
+the user (via the -q argument to the program, or via the search box and 
+ ```os.path.exists()``` returned false), or is an actual file on the system 
+(i.e. the user dragged it to the program, or passed it via -f argument).
 
 The Input will provide a factory method that will construct the appropriate 
 input object (with movie or series Title). For example:
