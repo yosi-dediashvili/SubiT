@@ -183,7 +183,7 @@ that version. Also, it will have a reference to the provider that generated it.
 In order to help in the ranking process, the version will have a property named
 **is_certain_match** that specify whether or not that version matches the 
 version that is inside the Input object completely or not (Each provider will 
-have use its own logic to determine that). 
+have its own logic to determine that). 
 
 Lastly, any other attribute that the provider will need to store under the 
 version instance will be inserted into the attributes dictionary.
@@ -350,8 +350,95 @@ that we expect only single (at most) title from the collected titles to match
 the Input's title. Otherwise, something went wrong in the process.
 
 If we fail to match against a title, we'll not proceed to version matching, and
-instead, use the behavior that is specific in the configuration (exit/ask the 
+instead, use the behavior that is specified in the configuration (exit/ask the 
 user/etc.).
 
 #### Matching versions
 
+After the title got chosen, we'll select a single version out of it. We divide 
+the process into two steps:
+
+##### 1. Sorting the versions
+
+The sorting process consist also of two steps:
+
+###### 1. Giving the ProviderVersion instances a rank
+
+The rank will be a value from 0 to 100, where 100 specify a perfect match, and
+0 specify the worst possible match.
+
+The ranking algorithm will be as follows:
+
+- Group the version based on their language
+    - For each language
+        - For each version
+            - Rank it using the rank algorithm.
+
+A single version will be ranked with the following algorithm:
+
+- Count the number of identifiers in the input version as `IIC` and in the
+    provider version as `PIC`.
+- If either `PIC` or `IIC` is 0, give the version rank of 0.
+- Count the number of identifiers that **only** appears in the provider's 
+    version as `POC`, and in the input's as `IOC`
+- Define `100 = IR/PR` as the ration between the input's identifiers and the 
+    provider's ones. (`IR` and `PR` will be configured in the configuration)
+- Calculate the rank as: `100 - ((IR * (IOC / IIC)) + (PR * (POC / PIC)))`
+
+For example:
+
+If the configuration specify a ratio of 60:40 for the Input identifiers:
+
+```python
+input_identifiers = ["720p", "ac3", "bluray", "chd"]
+provider_identifiers = ["720p", "ac3", "wtf"]
+
+IIC = len(input_identifiers)
+PIC = len(provider_identifiers)
+
+IOC = float(len(set(input_identifiers).difference(provider_identifiers)))
+POC = float(len(set(provider_identifiers).difference(input_identifiers)))
+
+IR = 60
+PR = 40
+
+# rank will be equal to 56.66...
+rank = 100 - ((IR * (IOC / IIC)) + (PR * (POC / PIC)))
+```
+
+###### 2. Sorting within each rank group
+
+After we ranked all the version, we'll divide the versions into groups based on
+their rank. The first group will be versions with rank **0** to **10**, the 
+second will be from **11** to **20**, the third from **21** to **30** etc.
+
+Within each group, we'll sort the versions based on the provider's order that
+is defined in the configuration.
+
+For example:
+
+If version #1 has a rank of 100 with provider that is placed 2nd in the 
+configuration, and version #2 has a rank of 95 with provider that is placed 1st,
+version #2 will be placed before version #1.
+
+##### 2. Selecting the first version
+
+The final step is to select the version. In order to do that, we use two values
+that defines the behavior. The first value is the minimal rank that is required
+in order for us to download a version without asking the user (in the example,
+we'll name it `MAR`). The second value is the maximum rank, that if not passed,
+we'll try to find a subtitle version in a different selected language (we'll 
+name this value `MLR`).
+
+NOTE: Both values should be set to one of the values from `[0, 10, 20, ..., 90]`.
+
+The selection algorithm will be as followed:
+
+- For each language that is specified in the configuration (starting from the 
+    first)
+    - If the first version in the versions list has a rank higher than `MAR`, 
+        select it.
+    - Otherwise, if the first version has a value lower than `MLR`, continue 
+        to the next language.
+- If no version was selected, perform the action that is specified in the 
+configuration.
