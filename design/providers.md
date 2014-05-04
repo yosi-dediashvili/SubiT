@@ -134,7 +134,7 @@ In order to perform this, we'll use the following algorithm:
 
 - Create a new empty list of **TitleVersion**, `TV`
 - For each provider
-    + Call the provider's `getTitlesVesrsion()` function, name the result `PTV`
+    + Call the provider's `getTitlesVersions()` function, name the result `PTV`
     + For each Title `T` in `PTV`
         * If `T` is in `TV`
             * Add the versions associated with the title to the appropriate 
