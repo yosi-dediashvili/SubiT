@@ -73,7 +73,7 @@ a previous call to `getTitlesVersions()`, and return a buffer (Bytes) that is
 the downloaded zip/srt file. It's not the provider's responsibility to deploy
 the subtitle.
 
-###### `supportedLanguages()`
+###### `getSupportedLanguages()`
 The function will return a list of string (where each item is a language).
 
 **To sum up, this is the basic structure:**
@@ -82,7 +82,7 @@ class ISubtitlesProvider:
     def __init__(self, requests_manager): pass
     def getTitlesVersions(self, input): pass
     def downloadSubtitleBuffer(self, provider_version): pass
-    def supportedLanguages(self): pass
+    def getSupportedLanguages(self): pass
 ```
 
 ### 2. The requests manager
@@ -97,8 +97,56 @@ back.
 The manager's function will much like the PerformRequest that is used in the
 current version of SubiT.
 
+There will be a different instance of the manager for each provider. Each 
+manager instance will have a working thread that starts with it and fetches
+requests from an internal queue. The queue will get populated by calls to 
+`performRequest()`. 
+
+Each request will be stored in an instance of an internal class that holds both
+the request and the response. When the instance will be pushed to the queue, it
+will have only the request instance. The `performRequest()` function will check
+for the response instance, and once it is present, the response will be return 
+to the caller.
+
 ```python
 class RequestsManager:
-    def performRequest(domain, url, data, type, more_headers)
+    def performRequest(domain, url, data, type, more_headers): pass
 ```
 
+### The Main provider instance
+
+This instance will sum up interaction with the providers into a single point. 
+
+Different instance of this provider will be stored within each Input that is
+created in SubiT.
+
+It will implement the `ISubtitleProvider` interface as followed:
+
+###### `__init__()`
+Upon initialization, it will retrieve a single instance of every provider. 
+###### `getTitlesVersions()`
+This is where we need to perform some work. 
+
+Unite all the version coming from the same title from different providers under
+a single Title instance.
+
+In order to perform this, we'll use the following algorithm:
+
+- Create a new empty list of **TitleVersion**, `TV`
+- For each provider
+    + Call the provider's `getTitlesVesrsion()` function, name the result `PTV`
+    + For each Title `T` in `PTV`
+        * If `T` is in `TV`
+            * Add the versions associated with the title to the appropriate 
+                TitleVersion
+        * Otherwise
+            * Add `T` to `TV`
+- Return `TV`
+
+###### `downloadSubtitleBuffer()`
+The function will use the provider instance stored withing the version passed
+to the function, and call its `downloadSubtitleBuffer()`.
+
+###### `getSuppotedLanguages()`
+The function will collect all the supported languages from the providers, and 
+return a list contains all of them.
