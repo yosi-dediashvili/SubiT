@@ -1,4 +1,4 @@
-# Design of SubiT's classes
+# SubiT's input processing
 
 The processing flow is divided into three steps:
 
@@ -8,7 +8,7 @@ series? What resolution? What is the title? etc.)
 2. **Collection:**  
 The second step is collection subtitles that might be related to the title that 
 we identified in the first step.
-3. **Selection:**  
+3. **Selection:**   
 The last step is to select that the subtitle that matches the most to the title 
 identified.
 
