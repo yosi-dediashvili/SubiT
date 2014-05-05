@@ -242,13 +242,15 @@ in:
 ```python
 class InputStatus:
     # The input is waiting in the queue.
-    WAITING     = 0
+    QUEUED      = 0
     # The input's processing was started.
     PROCESSING  = 1
+    # The input is waiting for the user to perform some action.
+    WAITING     = 2
     # Finished, a subtitle was downloaded.
-    SUCCEEDED   = 2
+    SUCCEEDED   = 3
     # Finished, a subtitle was not downloaded.
-    FAILED      = 3
+    FAILED      = 4
 ```
 
 ***
