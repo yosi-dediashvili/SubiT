@@ -97,16 +97,14 @@ back.
 The manager's function will much like the PerformRequest that is used in the
 current version of SubiT.
 
-There will be a different instance of the manager for each provider. Each 
-manager instance will have a working thread that starts with it and fetches
-requests from an internal queue. The queue will get populated by calls to 
-`performRequest()`. 
+In order to allow only a single session against some server, the manager will
+use a mutex that will get locked when `performRequest()` is called. Each 
+instance of the manager will have a different mutex, thus, they will not block
+each other. 
 
-Each request will be stored in an instance of an internal class that holds both
-the request and the response. When the instance will be pushed to the queue, it
-will have only the request instance. The `performRequest()` function will check
-for the response instance, and once it is present, the response will be return 
-to the caller.
+Because several instances of the same provider are guarantee to share the same
+instance of the manager, their calls to `performRequest()` will block, thus, 
+preserving the synchronous mode.
 
 ```python
 class RequestsManager:
@@ -119,6 +117,11 @@ This instance will sum up interaction with the providers into a single point.
 
 Different instance of this provider will be stored within each Input that is
 created in SubiT.
+
+This provider will use the providers in parallel, thus, saving a lot of time.
+In order to do so, it will use the multiprocessing module of python. The module
+offers the `dummy` process pool that is actually a thread pool that exposes all
+the parallel algorithm of the multiprocessing module.
 
 It will implement the `ISubtitleProvider` interface as followed:
 
@@ -133,8 +136,9 @@ a single Title instance.
 In order to perform this, we'll use the following algorithm:
 
 - Create a new empty list of **TitleVersion**, `TV`
-- For each provider
-    + Call the provider's `getTitlesVersions()` function, name the result `PTV`
+- Call `getTitlesVersions()` of each provider using the multiprocessing's map
+    function, and name the result `ATV`
+- For each `PTV` in `ATV`
     + For each Title `T` in `PTV`
         * If `T` is in `TV`
             * Add the versions associated with the title to the appropriate 
@@ -150,3 +154,40 @@ to the function, and call its `downloadSubtitleBuffer()`.
 ###### `getSuppotedLanguages()`
 The function will collect all the supported languages from the providers, and 
 return a list contains all of them.
+
+### Factories
+
+Will use factories both for creating provider instances and requests manager
+instances.
+
+#### The requests manager factory
+
+The factory for the requests manager will receive a string that identify the 
+provider (The provider name), and will return an instance of RequestManager.
+
+The algorithm for the factory will be:
+
+- Prior to usage, allocate an empty dictionary named `D`
+- On each call to the factory 
+    - Name the provider name `PN`
+    - Search for the key `PN` in `D`
+    - If found
+        + Return the value in `D`
+    - Otherwise
+        + Create new instance of RequestManager as `R`
+        + Store it under the key `PN` in `D`
+        + return `R`
+
+
+The factory will be implemented as a classmethod inside the RequestsManager. 
+
+**The factory method look like this:**
+```python
+class RequestsManager:
+    @classmethod
+    def getInstance(provider_name): pass
+```
+
+#### The providers factory
+
+
