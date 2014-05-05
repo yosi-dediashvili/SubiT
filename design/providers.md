@@ -111,50 +111,6 @@ class RequestsManager:
     def performRequest(domain, url, data, type, more_headers): pass
 ```
 
-### The Main provider instance
-
-This instance will sum up interaction with the providers into a single point. 
-
-Different instance of this provider will be stored within each Input that is
-created in SubiT.
-
-This provider will use the providers in parallel, thus, saving a lot of time.
-In order to do so, it will use the multiprocessing module of python. The module
-offers the `dummy` process pool that is actually a thread pool that exposes all
-the parallel algorithm of the multiprocessing module.
-
-It will implement the `ISubtitleProvider` interface as followed:
-
-###### `__init__()`
-Upon initialization, it will retrieve a single instance of every provider. 
-###### `getTitlesVersions()`
-This is where we need to perform some work. 
-
-Unite all the version coming from the same title from different providers under
-a single Title instance.
-
-In order to perform this, we'll use the following algorithm:
-
-- Create a new empty list of **TitleVersion**, `TV`
-- Call `getTitlesVersions()` of each provider using the multiprocessing's map
-    function, and name the result `ATV`
-- For each `PTV` in `ATV`
-    + For each Title `T` in `PTV`
-        * If `T` is in `TV`
-            * Add the versions associated with the title to the appropriate 
-                TitleVersion
-        * Otherwise
-            * Add `T` to `TV`
-- Return `TV`
-
-###### `downloadSubtitleBuffer()`
-The function will use the provider instance stored withing the version passed
-to the function, and call its `downloadSubtitleBuffer()`.
-
-###### `getSuppotedLanguages()`
-The function will collect all the supported languages from the providers, and 
-return a list contains all of them.
-
 ### Factories
 
 Will use factories both for creating provider instances and requests manager
@@ -200,7 +156,7 @@ class.
 provider will use. If omitted, the function will use the languages specified 
 in SubiT's configuration.
 
-**requests_manager_factory (options):** The factory function of the requests
+**requests_manager_factory (optional):** The factory function of the requests
 manager. We allow passing of the function in order for us to be able to bypass
 the default manager (for testing). If omitted, the function will use SubiT's
 default manager factory.
@@ -209,6 +165,52 @@ default manager factory.
 def getSubtitlesProviderInstance(
     provider_name, 
     languages = None, 
-    requests_maanger_factory = None): pass
+    requests_manager_factory = None): pass
 ```
 
+### The Main provider instance
+
+This instance will sum up interaction with the providers into a single point. 
+
+Different instance of this provider will be stored within each Input that is
+created in SubiT.
+
+This provider will use the providers in parallel, thus, saving a lot of time.
+In order to do so, it will use the multiprocessing module of python. The module
+offers the `dummy` process pool that is actually a thread pool that exposes all
+the parallel algorithm of the multiprocessing module.
+
+It will implement the `ISubtitleProvider` interface as followed:
+
+###### `__init__()`
+Upon initialization, it will retrieve a single instance of every provider by 
+using the providers factory. The languages for the providers will be loaded 
+from the configuration.
+
+###### `getTitlesVersions()`
+This is where we need to perform some work. 
+
+Unite all the version coming from the same title from different providers under
+a single Title instance.
+
+In order to perform this, we'll use the following algorithm:
+
+- Create a new empty list of **TitleVersion**, `TV`
+- Call `getTitlesVersions()` of each provider using the multiprocessing's map
+    function, and name the result `ATV`
+- For each `PTV` in `ATV`
+    + For each Title `T` in `PTV`
+        * If `T` is in `TV`
+            * Add the versions associated with the title to the appropriate 
+                TitleVersion
+        * Otherwise
+            * Add `T` to `TV`
+- Return `TV`
+
+###### `downloadSubtitleBuffer()`
+The function will use the provider instance stored withing the version passed
+to the function, and call its `downloadSubtitleBuffer()`.
+
+###### `getSuppotedLanguages()`
+The function will collect all the supported languages from the providers, and 
+return a list contains all of them.
