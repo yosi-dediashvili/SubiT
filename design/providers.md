@@ -17,9 +17,9 @@ the processing code.
 
 ## The new design
 
-In the new design, we introduce two objects:
+In the new design, we introduce several objects:
 
-### 1. The provider
+### The provider
 
 The provider is responsible to retrieve versions list and to download a version
 from some subtitles site source.
@@ -85,7 +85,7 @@ class ISubtitlesProvider:
     def getSupportedLanguages(self): pass
 ```
 
-### 2. The requests manager
+### The requests manager
 
 The managing process will be performed internally in the manager. The providers
 will no be aware to the manager logic. This means that the manager will expose
