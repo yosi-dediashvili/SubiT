@@ -190,4 +190,25 @@ class RequestsManager:
 
 #### The providers factory
 
+The provider factory will be implemented as a function within the providers 
+package, and will receive up to three arguments:
+
+**provider_name:** The name of the provider as it appears in the provider's 
+class.
+
+**languages (optional):** List of string the specify that languages that the
+provider will use. If omitted, the function will use the languages specified 
+in SubiT's configuration.
+
+**requests_manager_factory (options):** The factory function of the requests
+manager. We allow passing of the function in order for us to be able to bypass
+the default manager (for testing). If omitted, the function will use SubiT's
+default manager factory.
+
+```python
+def getSubtitlesProviderInstance(
+    provider_name, 
+    languages = None, 
+    requests_maanger_factory = None): pass
+```
 
