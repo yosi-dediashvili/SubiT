@@ -33,6 +33,25 @@ We'll recognize the subtitle files within the archive by their extensions. SubiT
 will expose via configuration a list of file extensions that are considered to
 be subtitle files extensions.
 
+### Identifying cd number within file names
+
+The algorithm for extracting the cd number from the subtitle file (when it's)
+within archive, will count on the assumptions:
+
+1. The only part of the name that should be different between two subtitle files
+within an archive, is the cd number.
+2. The difference will only be a single digit.
+
+Then, the algorithm will be:
+
+- Take two subtitle file names `SA` and `SB`
+- Subtract `SB` from `SA` such that `SA` will be left only with the chars 
+that are not present in `SB` and name it `SA_CD`
+- If `SA_CD` is a single digit
+    - Use it as the CD number for `SA`
+- Otherwise
+    - Define the CD number for `SA` as unknown
+
 ## Directory location
 
 We'll offer three options regarding where to deploy the subtitles:
@@ -51,6 +70,8 @@ symbols that will get interpreted during the deployment process.
 For movie and series, we'll have the following symbols:
 
 - `input_file_name` - The name (without the extension) of the input file
+- `subtitle_file_name` - The name of the subtitle file itself, as it was 
+sent from the servers
 - `language` - The language of the version that was downloaded (
 Based on the ISO 639-2 standard)
 - `title` - The movie/series title
@@ -131,3 +152,4 @@ Any other string that will be present in the scheme, will be left untouched.
 | `${title}.${year}.S${season_number_padded}E${episode_number_padded}.srt` | `The Big Bang Theory.2013.S06E03.srt`                         |
 | `${input_file}-${language}.srt`                                          | `The.Big.Bang.Theory.S06E03.720p.HDTV.X264-DIMENSION-heb.srt` |
 | `${title} - ${season_number}x${episode_number} - ${episode_name}.srt`    | `The Big Bang Theory - 6x3 - The Higgs Boson Observation.srt` |
+
