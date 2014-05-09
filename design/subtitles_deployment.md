@@ -33,4 +33,101 @@ We'll recognize the subtitle files within the archive by their extensions. SubiT
 will expose via configuration a list of file extensions that are considered to
 be subtitle files extensions.
 
+## Directory location
 
+We'll offer three options regarding where to deploy the subtitles:
+
+1. At the same directory as the input (if there's any)
+2. At a predefined directory
+3. Ask the user each time
+
+## File names
+
+We'll use a naming scheme for naming the subtitles. SubiT will offer several 
+symbols that will get interpreted during the deployment process. 
+
+### Symbols
+
+For movie and series, we'll have the following symbols:
+
+- `input_file_name` - The name (without the extension) of the input file
+- `language` - The language of the version that was downloaded (
+Based on the ISO 639-2 standard)
+- `title` - The movie/series title
+- `year` - The movie/series year
+
+For series, we'll also have the following symbols:
+
+- `season_number_padded` - 2 digits long season number (02, 11, etc.)
+- `season_number` - The season number (2, 11, etc.)
+- `episode_number_padded` - 2 digits long episode number (02, 11, etc.)
+- `episode_number` - The episode number (2, 11, etc.)
+- `episode_name` - The name of the episode
+
+For movie, we'll have the following symbols:
+
+- `cd_number` - A one digit long cd number
+
+### Schemes
+
+We'll have three naming scheme:
+
+1. For movies with single cd
+2. For movies with multiple cds
+3. For series (assumed to be single cd always)
+
+#### Scheme usage
+
+A scheme is simply a static string that we'll hold in the program. Each symbol
+`S` in the scheme, will be represented as `${S}`. Any symbol that is located
+will be replaced by its appropriate value.
+
+Any other string that will be present in the scheme, will be left untouched.
+
+##### Examples
+
+##### One cd movies
+
+###### Input:
+
+|    Title     |  Year  |           Input file           |  Language |
+|--------------|--------|--------------------------------|-----------|
+| `The Matrix` | `1999` | `the.matrix.1999.720p.dts.mkv` | `English` |
+
+###### Schemes:
+
+|               Scheme               |             Result             |
+|------------------------------------|--------------------------------|
+| `${title}.${year}-${language}.srt` | `The Matrix.1999-eng.srt`      |
+| `${input_file}.srt`                | `the.matrix.1999.720p.dts.srt` |
+
+##### Multiple cds movies
+
+###### Input:
+
+|    Title     |  Year  | cds |                               Input files                                |  Language |
+|--------------|--------|-----|--------------------------------------------------------------------------|-----------|
+| `The Matrix` | `1999` |   2 | `the.matrix.dvdrip.ac3.cd1.avi, the.matrix.dvdrip.ac3.cd2.avi` | `English` |
+
+###### Schemes:
+
+|                  Scheme                 |                                 Result                                 |
+|-----------------------------------------|------------------------------------------------------------------------|
+| `${title}.${year}.disc${cd_number}.srt` | `The Matrix.1999.disc1.srt, The Matrix.1999.disc2.srt`                 |
+| `${input_file}-${language}.srt`         | `the.matrix.dvdrip.ac3.cd1-eng.srt, the.matrix.dvdrip.ac3.cd2-eng.srt` |
+
+##### Series
+
+###### Input:
+
+|         Title         |  Year  | Season | Episode |              Name             |                         Input file                        | Language |
+|-----------------------|--------|--------|---------|-------------------------------|-----------------------------------------------------------|----------|
+| `The Big Bang Theory` | `2013` | `6`    | `3`     | `The Higgs Boson Observation` | `The.Big.Bang.Theory.S06E03.720p.HDTV.X264-DIMENSION.mkv` | `Hebrew` |
+
+###### Schemes:
+
+|                                  Scheme                                  |                             Result                            |
+|--------------------------------------------------------------------------|---------------------------------------------------------------|
+| `${title}.${year}.S${season_number_padded}E${episode_number_padded}.srt` | `The Big Bang Theory.2013.S06E03.srt`                         |
+| `${input_file}-${language}.srt`                                          | `The.Big.Bang.Theory.S06E03.720p.HDTV.X264-DIMENSION-heb.srt` |
+| `${title} - ${season_number}x${episode_number} - ${episode_name}.srt`    | `The Big Bang Theory - 6x3 - The Higgs Boson Observation.srt` |
