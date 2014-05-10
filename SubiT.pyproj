@@ -52,6 +52,7 @@
     <Folder Include="src\SubProviders\Addic7ed\tur_Addic7edProvider\" />
     <Folder Include="src\SubProviders\Addic7ed\spa_Addic7edProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\cze_OpenSubtitlesProvider\" />
+    <Folder Include="src\SubProviders\OpenSubtitles\bul_OpenSubtitlesProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\slo_OpenSubtitlesProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\tur_OpenSubtitlesProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\spa_OpenSubtitlesProvider\" />
@@ -157,6 +158,8 @@
     <Compile Include="src\SubProviders\ISubProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\all_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\all_OpenSubtitlesProvider\__init__.py" />
+    <Compile Include="src\SubProviders\OpenSubtitles\bul_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
+    <Compile Include="src\SubProviders\OpenSubtitles\bul_OpenSubtitlesProvider\__init__.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\cze_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\cze_OpenSubtitlesProvider\__init__.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\eng_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />

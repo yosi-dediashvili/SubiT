@@ -88,3 +88,12 @@ class Test_cze_OpenSubtitlesProviderTest(
         BaseSubProviderTest.BaseSubProviderTest.__init__(
             self, 
             OpenSubtitlesProvider.OpenSubtitlesProvider())
+
+class Test_bul_OpenSubtitlesProviderTest(
+    unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
+    def setUp(self):
+        from SubProviders.OpenSubtitles.bul_OpenSubtitlesProvider import \
+            OpenSubtitlesProvider
+        BaseSubProviderTest.BaseSubProviderTest.__init__(
+            self, 
+            OpenSubtitlesProvider.OpenSubtitlesProvider())
