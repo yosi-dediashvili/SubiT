@@ -48,6 +48,7 @@
     <Folder Include="src\Settings\Associators\WinAssociator\" />
     <Folder Include="src\SubInputs\" />
     <Folder Include="src\SubProviders\Addic7ed\cze_Addic7edProvider\" />
+    <Folder Include="src\SubProviders\Addic7ed\bul_Addic7edProvider\" />
     <Folder Include="src\SubProviders\Addic7ed\slo_Addic7edProvider\" />
     <Folder Include="src\SubProviders\Addic7ed\tur_Addic7edProvider\" />
     <Folder Include="src\SubProviders\Addic7ed\spa_Addic7edProvider\" />
@@ -125,6 +126,8 @@
     <Compile Include="src\SubInputs\__init__.py" />
     <Compile Include="src\SubiTArgumentParser.py" />
     <Compile Include="src\SubiTProxy.py" />
+    <Compile Include="src\SubProviders\Addic7ed\bul_Addic7edProvider\Addic7edProvider.py" />
+    <Compile Include="src\SubProviders\Addic7ed\bul_Addic7edProvider\__init__.py" />
     <Compile Include="src\SubProviders\Addic7ed\cze_Addic7edProvider\Addic7edProvider.py" />
     <Compile Include="src\SubProviders\Addic7ed\cze_Addic7edProvider\__init__.py" />
     <Compile Include="src\SubProviders\Addic7ed\eng_Addic7edProvider\Addic7edProvider.py" />

@@ -6,3 +6,4 @@ from . import tur_Addic7edProvider
 from . import nor_Addic7edProvider
 from . import slo_Addic7edProvider
 from . import cze_Addic7edProvider
+from . import bul_Addic7edProvider
