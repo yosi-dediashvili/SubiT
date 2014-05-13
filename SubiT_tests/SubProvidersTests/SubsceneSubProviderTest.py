@@ -92,3 +92,12 @@ class Test_ara_SubsceneProviderTest(
         base_SubscenceProviderTest.__init__(
             self, 
             SubsceneProvider.SubsceneProvider())
+
+class Test_bul_SubsceneProviderTest(
+    unittest.TestCase, base_SubscenceProviderTest):    
+    def setUp(self):
+        from SubProviders.Subscene.bul_SubsceneProvider import SubsceneProvider
+        base_SubscenceProviderTest.__init__(
+            self, 
+            SubsceneProvider.SubsceneProvider(),
+            series_query = 'Lost Fifth Season')

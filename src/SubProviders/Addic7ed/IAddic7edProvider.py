@@ -14,6 +14,7 @@ class ADDIC7ED_LANGUAGES:
     TURKISH     = '16'
     SLOVAK      = '25'
     CZECH       = '14'
+    BULGARIAN   = '35'
     GLOBAL      = '0'
 
 class ADDIC7ED_PAGES:

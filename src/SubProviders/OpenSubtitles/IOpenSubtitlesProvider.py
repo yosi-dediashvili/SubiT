@@ -25,6 +25,7 @@ class OPENSUBTITLES_LANGUAGES:
     TURKISH     = 'tur'
     SLOVAK      = 'slo'
     CZECH       = 'cze'
+    BULGARIAN   = 'bul'
     GLOBAL      = 'all'
 
 class OPENSUBTITLES_PAGES:

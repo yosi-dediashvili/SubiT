@@ -25,7 +25,7 @@ auto_update = False
 last_update_check = 0
 
 [Providers]
-languages_order = ['Hebrew']
+languages_order = []
 providers_order = ['www.torec.net', 'www.subscenter.org', 'www.subtitle.co.il', 'www.opensubtitles.org', 'www.addic7ed.com']
 
 [Flow]

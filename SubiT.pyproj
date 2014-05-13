@@ -45,10 +45,12 @@
     <Folder Include="src\Settings\Associators\WinAssociator\" />
     <Folder Include="src\SubInputs\" />
     <Folder Include="src\SubProviders\Addic7ed\cze_Addic7edProvider\" />
+    <Folder Include="src\SubProviders\Addic7ed\bul_Addic7edProvider\" />
     <Folder Include="src\SubProviders\Addic7ed\slo_Addic7edProvider\" />
     <Folder Include="src\SubProviders\Addic7ed\tur_Addic7edProvider\" />
     <Folder Include="src\SubProviders\Addic7ed\spa_Addic7edProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\cze_OpenSubtitlesProvider\" />
+    <Folder Include="src\SubProviders\OpenSubtitles\bul_OpenSubtitlesProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\slo_OpenSubtitlesProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\tur_OpenSubtitlesProvider\" />
     <Folder Include="src\SubProviders\OpenSubtitles\spa_OpenSubtitlesProvider\" />
@@ -57,6 +59,7 @@
     <Folder Include="src\SubProviders\Subscene\eng_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\cze_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\ara_SubsceneProvider\" />
+    <Folder Include="src\SubProviders\Subscene\bul_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\slo_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\tur_SubsceneProvider\" />
     <Folder Include="src\SubProviders\Subscene\spa_SubsceneProvider\" />
@@ -121,6 +124,8 @@
     <Compile Include="src\SubInputs\__init__.py" />
     <Compile Include="src\SubiTArgumentParser.py" />
     <Compile Include="src\SubiTProxy.py" />
+    <Compile Include="src\SubProviders\Addic7ed\bul_Addic7edProvider\Addic7edProvider.py" />
+    <Compile Include="src\SubProviders\Addic7ed\bul_Addic7edProvider\__init__.py" />
     <Compile Include="src\SubProviders\Addic7ed\cze_Addic7edProvider\Addic7edProvider.py" />
     <Compile Include="src\SubProviders\Addic7ed\cze_Addic7edProvider\__init__.py" />
     <Compile Include="src\SubProviders\Addic7ed\eng_Addic7edProvider\Addic7edProvider.py" />
@@ -154,6 +159,8 @@
     <Compile Include="src\SubProviders\ISubProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\all_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\all_OpenSubtitlesProvider\__init__.py" />
+    <Compile Include="src\SubProviders\OpenSubtitles\bul_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
+    <Compile Include="src\SubProviders\OpenSubtitles\bul_OpenSubtitlesProvider\__init__.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\cze_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\cze_OpenSubtitlesProvider\__init__.py" />
     <Compile Include="src\SubProviders\OpenSubtitles\eng_OpenSubtitlesProvider\OpenSubtitlesProvider.py" />
@@ -174,6 +181,8 @@
     <Compile Include="src\SubProviders\OpenSubtitles\__init__.py" />
     <Compile Include="src\SubProviders\Subscene\ara_SubsceneProvider\SubsceneProvider.py" />
     <Compile Include="src\SubProviders\Subscene\ara_SubsceneProvider\__init__.py" />
+    <Compile Include="src\SubProviders\Subscene\bul_SubsceneProvider\SubsceneProvider.py" />
+    <Compile Include="src\SubProviders\Subscene\bul_SubsceneProvider\__init__.py" />
     <Compile Include="src\SubProviders\Subscene\cze_SubsceneProvider\SubsceneProvider.py" />
     <Compile Include="src\SubProviders\Subscene\cze_SubsceneProvider\__init__.py" />
     <Compile Include="src\SubProviders\Subscene\eng_SubsceneProvider\SubsceneProvider.py" />

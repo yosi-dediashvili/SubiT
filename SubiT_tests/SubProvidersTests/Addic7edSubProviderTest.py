@@ -86,4 +86,14 @@ class Test_cze_Addic7edProviderTest(
 			Addic7edProvider.Addic7edProvider(),
 			"Barbie of Swan Lake",
 			"The Big Bang Theory S03E04")
+
+class Test_bul_Addic7edProviderTest(
+	unittest.TestCase, BaseSubProviderTest.BaseSubProviderTest):
+	def setUp(self):
+		from SubProviders.Addic7ed.bul_Addic7edProvider import Addic7edProvider
+		BaseSubProviderTest.BaseSubProviderTest.__init__(
+			self, 
+			Addic7edProvider.Addic7edProvider(),
+			"2011 MTV Movie Awards",
+			"Lost S05E11")
 		

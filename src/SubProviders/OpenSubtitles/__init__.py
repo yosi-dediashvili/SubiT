@@ -6,4 +6,5 @@ from . import spa_OpenSubtitlesProvider
 from . import tur_OpenSubtitlesProvider
 from . import slo_OpenSubtitlesProvider
 from . import cze_OpenSubtitlesProvider
+from . import bul_OpenSubtitlesProvider
 from . import all_OpenSubtitlesProvider
