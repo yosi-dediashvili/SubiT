@@ -8,7 +8,7 @@ following:
 2. Zip file
 3. RAR file
 
-This step is responsible for:
+This step is responsible of:
 
 1. **Where** to put the subtitle file/files
 2. How to **name** each of the subtitles
@@ -153,3 +153,87 @@ Any other string that will be present in the scheme, will be left untouched.
 | `${input_file}-${language}.srt`                                          | `The.Big.Bang.Theory.S06E03.720p.HDTV.X264-DIMENSION-heb.srt` |
 | `${title} - ${season_number}x${episode_number} - ${episode_name}.srt`    | `The Big Bang Theory - 6x3 - The Higgs Boson Observation.srt` |
 
+
+
+## Implementation
+
+To the user (of the module, not the actual "Human" user...), the whole process 
+of deploying the subtitles will be summed up into a single function call.
+
+The function will be available from the `SubtitleDeployer` module. The function
+signature will be:
+
+```python
+def deploySubtitle(input, version, buffer_name, buffer_bytes): pass
+```
+
+The function receives the input object associated with the whole process, and 
+the version from which the subtitle was retrieved, and the name and content of
+the buffer (as returned from calling to the provider's `downloadSubtitleBuffer()`
+method).
+
+### ISubtitleFile
+
+The interface defines a file that is considered to be a subtitle of some king.
+The purpose of the interface is to hole a buffer name and content, and from it
+extract a map of file names to subtitle content (the `getFiles()` function).
+
+```python
+class ISubtitleFile:
+    def __init__(self, name, buffer_bytes): pass
+    def getFiles(self):
+```
+
+#### Implementations
+
+We'll have four implementations for that interface:
+
+##### SingleSubtitleFile
+
+Implements the handling for single subtitle text file.
+
+##### ArchiveSubtitleFile
+
+Abstract implementation that operates upon archives that contains at least 
+single subtitle files inside them.
+
+###### ZipSubtitleFile
+
+Derives from `ArchiveSubtitleFile` and implements it for **ZIP** archive. If the
+buffer that was passed to it is not a valid Zip file, it raises Exception.
+
+###### RarSubtitleFile
+
+Derives from `ArchiveSubtitleFile` and implements it for **RAR** archive. If the
+buffer that was passed to it is not a valid RAR file, it raises Exception.
+
+### Extracting the files and names from the buffer
+
+Inside the module, we'll have a function that receives the name and the buffer
+from the `deploySubtitle()` function, and tries to instantiate implementations
+of the ISubtitleFile, keeping the SingleSubtitleFile to the end. 
+
+Once instantiated successfully (If the buffer is not an archive, we'll not be
+able to accidentally instantiate an archive object, because they throws 
+exceptions for none-archive buffers), the function will return the output of 
+the `getFiles()`.
+
+### Evaluating the file names for deployment
+
+In this step, we'll start with input object, the version, and the output of the
+last step, which is a mapping of file names to buffers.
+
+At this point, we'll extract all the **Symbols** from the arguments, and apply
+the name scheme.
+
+The output of the step will be mapping of file names for deployment and the 
+buffer for each name.
+
+### Saving the subtitles
+
+The last step is to save to subtitles on the disk. From the last step, we know 
+what name to give to each buffer, but we don't know yet in which directory to 
+deploy it. 
+
+Luckily, the directory is configured in the configuration, and will act according
+to that.

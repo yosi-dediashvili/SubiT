@@ -69,7 +69,8 @@ object.
 
 ###### `downloadSubtitleBuffer()`
 The function receive a single version from the versions that was retrieved with
-a previous call to `getTitlesVersions()`, and return a buffer (Bytes) that is 
+a previous call to `getTitlesVersions()`, and return a tuple of the file name 
+that was downloaded from the servers and the buffer (Bytes) itself that is 
 the downloaded zip/srt file. It's not the provider's responsibility to deploy
 the subtitle.
 
