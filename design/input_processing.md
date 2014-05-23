@@ -138,6 +138,8 @@ we mean: Sound/Video quality, number of CDs, etc. The version does not care
 about the title that is being search, only about the format of that title, 
 therefore, it does not care about what's the type of title (movie/series).
 
+For usability, the version will have reference to its associated title.
+
 The version will be used both for specifying what is being searched (via the 
 Input object), and what is present in each provider.
 
@@ -166,6 +168,7 @@ extracting the video and sound quality by parsing the file headers etc.
 **The basic structure of the Version will look like this:**
 ```python
 class Version:
+    title = None
     identifiers = [""]
     # -1 means unknown.
     num_of_cds = 0
@@ -185,6 +188,11 @@ In order to help in the ranking process, the version will have a property named
 version that is inside the Input object completely or not (Each provider will 
 have its own logic to determine that). 
 
+The class will have a rank item that specifies the rank for the given version 
+relative to its associated input. The algorithm for calculating the rank will 
+be executed by the version itself at initialization. Additionally, we'll have 
+a `rank_group` attribute that specify in which ranking group we're in.
+
 Lastly, any other attribute that the provider will need to store under the 
 version instance will be inserted into the attributes dictionary.
 
@@ -198,6 +206,8 @@ class ProviderVersion(Version):
     # Provider's specific attributes.
     attributes = {}
     is_certain_match = False
+    rank = 0
+    rank_group = 0
 ```
 
 ### Input
@@ -295,7 +305,13 @@ unites several **ProviderVersion** under a single **Title**.
 When a provider returns us a list of versions that might match the input that 
 was passed to it, it will group the versions by title, thus, we'll have **Zero**
 or more titles for each input, and under each title, it will have **One** or 
-more **ProviderVersions**. 
+more **ProviderVersions**.
+
+The **versions** attribute will be a dictionary that its keys are the languages
+and the values are list of versions matching the language.
+
+The versions under each language will be sorted based on the algorithm specified
+later.
 
 Notice that the provider will not drop version because they come from a 
 different title. That's not its job.
@@ -306,7 +322,8 @@ Titles will be united using the title's own equality method.
 ```python
 class TitleVersions:
     title = None
-    versions = [None]
+    # {language, [provider_version, ...]}
+    versions = {"" : [None]}
 ```
 
 ### Performance
