@@ -1,6 +1,6 @@
 # Design of SubiT's API
 
-The idea behind the API is to allow us to use SubiT in order programs (XBMC etc.), 
+The idea behind the API is to allow us to use SubiT in other programs (XBMC etc.), 
 and also, separate between the core of SubiT, to everything else. This means that
 SubiT will also use the API internally.
 
@@ -19,6 +19,18 @@ The API will **NOT** supply:
 1. Ability to perform several queries via single function (The user of the API 
 will handle this)
 2. User interaction inside API calls
+
+## Separation
+
+Via the API, we want to be able to override any configuration value. This means
+that all the functions in the API will receive the configuration values relevant
+for them via the arguments.
+
+SubiT's configuration is not considered to be part of the core, so, the API will
+not use it. Instead, when we'll use the API internally, we'll read the 
+configuration and pass it to the API.
+
+Additionally, any interaction with the user will be kept outside of the API.
 
 ## Usage
 
