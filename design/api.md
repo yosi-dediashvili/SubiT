@@ -34,6 +34,10 @@ Additionally, any interaction with the user will be kept outside of the API.
 
 ## Usage
 
+The API will allow for both single call usage (Automatic selection and downloading)
+and more controlled usage, where the user gets to select the version, and request
+download of a version.
+
 ### Controlled usage
 
 The first step is to retrieve an instance of the API:
