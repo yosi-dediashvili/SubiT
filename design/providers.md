@@ -103,6 +103,12 @@ use a mutex that will get locked when `performRequest()` is called. Each
 instance of the manager will have a different mutex, thus, they will not block
 each other. 
 
+With that said, there might be cases where we will not want to wait in the line
+for our request to be processed (When we decide to download some version for 
+example). Therefore, the manager will expose another function `performRequestNext()` 
+that will put the request at the first place in the queue, and thus, making sure 
+it will get processed next.
+
 Because several instances of the same provider are guarantee to share the same
 instance of the manager, their calls to `performRequest()` will block, thus, 
 preserving the synchronous mode.
@@ -110,11 +116,12 @@ preserving the synchronous mode.
 ```python
 class RequestsManager:
     def performRequest(domain, url, data, type, more_headers): pass
+    def performRequestNext(domain, url, data, type, more_headers): pass
 ```
 
 ### Factories
 
-Will use factories both for creating provider instances and requests manager
+We'll use factories both for creating provider instances and requests manager
 instances.
 
 #### The requests manager factory
@@ -153,7 +160,7 @@ package, and will receive up to three arguments:
 **provider_name:** The name of the provider as it appears in the provider's 
 class.
 
-**languages (optional):** List of string the specify that languages that the
+**languages (optional):** List of string that specify the languages that the
 provider will use. If omitted, the function will use the languages specified 
 in SubiT's configuration.
 
@@ -209,7 +216,7 @@ In order to perform this, we'll use the following algorithm:
 - Return `TV`
 
 ###### `downloadSubtitleBuffer()`
-The function will use the provider instance stored withing the version passed
+The function will use the provider instance stored within the version passed
 to the function, and call its `downloadSubtitleBuffer()`.
 
 ###### `getSuppotedLanguages()`
