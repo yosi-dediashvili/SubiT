@@ -26,8 +26,9 @@ class SubiTAPI(object):
 		empty, an InvalidLanguage exception will be raised.
 
 		>>> languages = [Languages.HEBREW, Languages.ENGLISH]
-		>>> providers = [ProviderNames.TOREC, ProviderNames.OPEN_SUBTITLES]
+		>>> providers = [ProviderNames.TOREC]
 		>>> SubiTAPI(languages, providers)
+		<SubiTAPI languages=["Hebrew", "English"], providers=["www.torec.net"]>
 
 		>>> languages = []
 		>>> SubiTAPI(languages, providers)
@@ -44,6 +45,7 @@ class SubiTAPI(object):
 		>>> languages = [Languages.HEBREW, Languages.ENGLISH]
 		>>> providers = [] # Empty provider list is valid.
 		>>> SubiTAPI(languages, providers)
+		<SubiTAPI languages=["Hebrew", "English"], providers=[...]>
 
 		>>> languages = [Languages.HEBREW, Languages.ENGLISH]
 		>>> providers = ["www.torec.net"]
@@ -59,6 +61,47 @@ class SubiTAPI(object):
 		Retrieve an Input object for some query. The query is a string that can
 		either point to some file available on the filesystem, or a string that
 		only contain the file name, or even only the title of the movie/series.
+
+		>>> languages = [Languages.HEBREW]
+		>>> providers = ["www.torec.net"]
+		>>> subit_api = SubiTAPI(languages, providers)
+		>>> input = subit_api.get_input("The Matrix")
+		>>> input
+		<Input title=<MovieTitle name="The Matrix", ...>, verion=<Version ...>>
+
+		>>> input = subit_api.get_input("The Big Bang Theory S03E04")
+		>>> input
+		<Input title=<SeriesTitle name="The Big Bang Theory", ...>, \
+		verion=<Version ...>>
+
+		>>> input = subit_api.get_input("The.Matrix.1999.720p.HDDVD.DTS.x264")
+		>>> input
+		<Input title=<MovieTitle name="The Matrix", ...>, verion=<Version ...>>
+
+		If we can't identify the Title behind the query, None is returned. 
+
+		>>> type(subit_api.get_input("dasgsdfvb sdfbsde"))
+		NoneType
+
+		If the query is a path to a file, and we can't locate the file, an 
+		InvalidQuery exception will be raised.
+
+		>>> subit_api.get_input(r"Y:\\Not.A.Real.Path.To.Movie.mkv")
+		Traceback (most recent call last):
+			...
+		InvalidQuery: query looks like a path, but we can't find it.
+
+		The same goes for empty string queries.
+
+		>>> subit_api.get_input("")
+		Traceback (most recent call last):
+			...
+		InvalidQuery: query can't be an empty string.
+
+		>>> subit_api.get_input(None)
+		Traceback (most recent call last):
+			...
+		InvalidQuery: query should be of type str got NoneType.
 		"""
 		pass
 
