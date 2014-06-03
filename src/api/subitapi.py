@@ -1,4 +1,4 @@
-from .langauges import Langauges
+from .languages import Languages
 
 class SubiTAPI(object):
 	""" 
@@ -21,6 +21,36 @@ class SubiTAPI(object):
 
 		If the providers list is empty, we'll use the default order. Look in the
 		ProviderNames class for more details.
+
+		If the languages list contains an invalid language item or the list is
+		empty, an InvalidLanguage exception will be raised.
+
+		>>> languages = [Languages.HEBREW, Languages.ENGLISH]
+		>>> providers = [ProviderNames.TOREC, ProviderNames.OPEN_SUBTITLES]
+		>>> SubiTAPI(languages, providers)
+
+		>>> languages = []
+		>>> SubiTAPI(languages, providers)
+		Traceback (most recent call last):
+			...
+		InvalidLanguage: At least one language should be specified
+
+		>>> languages = ["English"]
+		>>> SubiTAPI(languages, providers)
+		Traceback (most recent call last):
+			...
+		InvalidLanguage: language should be of type Language, got str.
+
+		>>> languages = [Languages.HEBREW, Languages.ENGLISH]
+		>>> providers = [] # Empty provider list is valid.
+		>>> SubiTAPI(languages, providers)
+
+		>>> languages = [Languages.HEBREW, Languages.ENGLISH]
+		>>> providers = ["www.torec.net"]
+		>>> SubiTAPI(languages, providers)		
+		Traceback (most recent call last):
+			...
+		InvalidProviderName: provider should be of type ProviderName, got str.
 		"""
 		pass
 
