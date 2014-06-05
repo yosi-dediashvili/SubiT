@@ -288,7 +288,7 @@ class Input:
     # movies has several discs.
     full_path = [""]
     # The status in which the input is in.
-    status = InputStatus.WAITING
+    status = InputStatus.CREATED
     # The title instance
     title = None
     # The version instance
