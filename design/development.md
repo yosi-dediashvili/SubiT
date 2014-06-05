@@ -34,6 +34,7 @@ _foo_var
 We'll use two built-in mechanism of python for tests in SubiT. 
 
 1. [doctest](https://docs.python.org/2/library/doctest.html) - for testing 
-single function regarding their api.
+single functions regarding their api. These tests will cover simple tasks, like
+verifying that exceptions are raised, and the right output is returned etc.
 2. [unittest](https://docs.python.org/2/library/unittest.html) - for testing 
-module flow and such
+module flow and more complex function/module behavior.
