@@ -68,7 +68,7 @@ to its string alphabet equivalent (```1st``` becomes ```first```)
 | Amélie                 | ```['Amélie', 'am_lie']```                                                       |
 | The Godfather: Part 2  | ```['The Godfather: Part 2', 'the_godfather_part_2', 'the_godfather_part_ii']``` |
 | The Third Man          | ```['The Third Man', 'the_third_man']```                                         |
-| The 3rd Man            | ```['The 3rd Man', 'the_third_man']```                                           |
+| The 3rd Man            | ```['The 3rd Man', 'the_3rd_man', 'the_third_man']```                            |
 
 * * *
 
