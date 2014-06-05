@@ -251,16 +251,31 @@ Enum. The class describes the status in which the input processing is currently
 in:
 ```python
 class InputStatus:
-    # The input is waiting in the queue.
-    QUEUED      = 0
-    # The input's processing was started.
-    PROCESSING  = 1
-    # The input is waiting for the user to perform some action.
-    WAITING     = 2
-    # Finished, a subtitle was downloaded.
-    SUCCEEDED   = 3
-    # Finished, a subtitle was not downloaded.
-    FAILED      = 4
+    # The input instance was created. It might take some time from this step to
+    # the next step if there are several inputs in the queue.
+    CREATED = 0 
+    # States regarding the Title lookup
+    TITLE_SEARCH
+    TITLE_FOUND
+    TITLE_FAILURE # We can't find a title
+    # States regarding the versions lookup for the title
+    VERSIONS_SEARCH
+    VERSIONS_FOUND
+    VERSIONS_FAILURE # We can't find versions
+    # States regarding matching a version to our version
+    VERSION_MATCHED
+    VERSION_FAILURE # Can't find matching version
+    # States regarding the download process (not deployment)
+    DOWNLOAD_START
+    DOWNLOAD_SUCCESS
+    DOWNLOAD_FAILURE
+    # States regarding the deployment process (extracting and saving the files)
+    DEPLOYMENT_START
+    DEPLOYMENT_SUCCESS
+    DEPLOYMENT_FAILURE
+    # Last states
+    SUCCEEDED # Subtitle file/s downloaded
+    FAILED # No subtitle got downloaded
 ```
 
 ***
