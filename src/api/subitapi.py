@@ -113,6 +113,16 @@ class SubiTAPI(object):
 
 		Note that the versions inside each TitleVersions are sorted such that 
 		the first version in the versions list is ranked highest.
+
+		>>> languages = [Languages.HEBREW]
+		>>> providers = ["www.torec.net"]
+		>>> subit_api = SubiTAPI(languages, providers)
+		>>> input = subit_api.get_input("The Matrix")
+		>>> titles_versions = subit_api.get_title_versions(input)
+		>>> len(titles_versions) > 0
+		True
+		>>> len(titles_versions[0].versions.items()) > 0
+		True
 		"""
 		pass
 
@@ -124,6 +134,18 @@ class SubiTAPI(object):
 		provider that holds that version). The buffer is the Bytes that was 
 		retrieved from the site (Usually the zip/rar/srt buffer), and the name
 		is the value that the site gave to that download.
+
+		>>> languages = [Languages.HEBREW]
+		>>> providers = ["www.torec.net"]
+		>>> subit_api = SubiTAPI(languages, providers)
+		>>> input = subit_api.get_input("The Matrix")
+		>>> title_version = subit_api.get_title_versions(input)[0]
+		>>> version = title_version.versions[Languages.HEBREW.iso_name][0]
+		>>> name, buffer = subit_api.get_subtitle_buffer(input, version)
+		>>> len(buffer) > 0
+		True
+		>>> isinstance(name, str)
+		True
 		"""
 		pass
 
