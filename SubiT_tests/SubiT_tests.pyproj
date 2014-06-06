@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>13bf253a-8314-42f4-bfa9-ef78d9db9b16</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>ProvidersTests\BaseProviderTest.py</StartupFile>
+    <StartupFile>api\test_namenormalization.py</StartupFile>
     <SearchPath>..\src</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -24,6 +24,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="api\test_namenormalization.py" />
     <Compile Include="SubProvidersTests\Addic7edSubProviderTest.py" />
     <Compile Include="SubProvidersTests\BaseSubProviderTest.py" />
     <Compile Include="SubProvidersTests\OpenSubtitlesSubProviderTest.py" />
@@ -45,6 +46,7 @@
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="api\" />
     <Folder Include="SubProvidersTests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
