@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>13bf253a-8314-42f4-bfa9-ef78d9db9b16</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>api\test_namenormalization.py</StartupFile>
+    <StartupFile>api\test_title.py</StartupFile>
     <SearchPath>..\src</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -25,6 +25,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="api\test_namenormalization.py" />
+    <Compile Include="api\test_title.py" />
     <Compile Include="SubProvidersTests\Addic7edSubProviderTest.py" />
     <Compile Include="SubProvidersTests\BaseSubProviderTest.py" />
     <Compile Include="SubProvidersTests\OpenSubtitlesSubProviderTest.py" />
