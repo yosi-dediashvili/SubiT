@@ -58,7 +58,9 @@ is surrounded with two underscores to a lower case Latin one (```22``` becomes
 ###### The 4th step
 
 1. Convert each [Ordinal number](http://en.wikipedia.org/wiki/English_numerals#Ordinal_numbers) 
-to its string alphabet equivalent (```1st``` becomes ```first```)
+to its string alphabet equivalent (```1st``` becomes ```first```). We'll perform
+the operation up to the number 20 (Past that it gets to complicated to guess how
+it will be represented).
 
 ##### Examples
 
