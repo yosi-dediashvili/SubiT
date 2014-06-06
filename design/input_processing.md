@@ -52,8 +52,7 @@ as the previous step, it will not get inserted to the list.
 
 1. Convert each Arabic formatted number that is located either at the start or 
 the end of the normalized name (and is followed/preceded by underscore), or 
-is surrounded with two underscores to a lower case Latin one (```22``` becomes 
-```xxii```).
+is surrounded with two underscores to a lower case Latin one (`22' becomes `xxii`).
 
 ###### The 4th step
 
