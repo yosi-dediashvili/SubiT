@@ -47,6 +47,7 @@ as the previous step, it will not get inserted to the list.
 1. Apply the ```Lower()``` function to it.
 2. Replace every non-alphanumeric letter (including space) with underscore.
 3. Replace any continuous underscore with a single one.
+4. Remove any leading/trailing underscores.
 
 ###### The 3rd step
 

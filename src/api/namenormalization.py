@@ -57,9 +57,10 @@ def normalize_name_1st_step(name):
 def normalize_name_2nd_step(name):
     """ 
     The second step:
-        1. Apply lower() on the name.
+        1. Apply lower() on the name
         2. Replace any non-alphanumeric (including space) with underscore
         3. Replace any continous underscore with a single one
+        4. Remove any leading/trailing underscores
 
     >>> print normalize_name_2nd_step(r"The Godfather: Part II")
     the_godfather_part_ii
@@ -69,13 +70,14 @@ def normalize_name_2nd_step(name):
     am_lie
     >>> print normalize_name_2nd_step(r"The Godfather: Part 2")
     the_godfather_part_2
-    >>> print normalize_name_2nd_step(r"The Third Man")
+    >>> print normalize_name_2nd_step(r" The Third Man  ")
     the_third_man
     """
     import re
     name = name.lower()
     name = re.sub("[^A-Za-z0-9]", "_", name)
     name = re.sub("(_){2,}", "_", name)
+    name = name.strip("_")
     return name
 
 
