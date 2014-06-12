@@ -8,6 +8,11 @@ class Title(object):
         """
         A Title is initialized with at least a name. And it cannot be an empty
         string.
+
+        >>> Title("", 1991, "")
+        Traceback (most recent call last):
+            ...
+        InvalidTitleName: Title's name cannot be empty.
         """
         if not name:
             raise InvalidTitleName("Title's name cannot be empty.")
