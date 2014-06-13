@@ -205,10 +205,27 @@ from the configuration.
 ###### `getTitlesVersions()`
 This is where we need to perform some work. 
 
-Unite all the version coming from the same title from different providers under
-a single Title instance.
+In here, we'll unite all the version coming from the same title from different 
+providers under a single Title instance.
 
-In order to perform this, we'll use the following algorithm:
+**The Title instance will be united using the following rules:**
+
+- Given a list of Title instances named `TITLES` that share the same Title type 
+and returns True in the equality check
+- A new Title `T_` will be created (with the same type as `A` and `B`)
+- Its `name` value will be set to the name that is shared between most of the 
+titles in `TITLES`
+- Its `normalized_names` list will contain all the normalized names appeared 
+- Its `year` value will be set to the same year as the first title in `TITLES` that
+has a year other than `0`, or `0` if no such title exists
+- The same logic will be applied to the `imdb_id` value
+- If the Title is SeriesTitle
+    + The `episode_number` and `season_number` value will be determined by applying
+    the same logic applied in `year`'s value
+    + The `episode_name` will use the same logic as the `name`
+    + The `episode_normalized_names` will use the same logic as the `normalized_names`
+
+**The TitleVersion will be united using the following algorithm:**
 
 - Create a new empty list of **TitleVersion**, `TV`
 - Call `getTitlesVersions()` of each provider using the multiprocessing's map
@@ -218,6 +235,7 @@ In order to perform this, we'll use the following algorithm:
         * If `T` is in `TV`
             * Add the versions associated with the title to the appropriate 
                 TitleVersion
+            * Update the Title instance
         * Otherwise
             * Add `T` to `TV`
 - Return `TV`
