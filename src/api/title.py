@@ -101,14 +101,22 @@ class SeriesTitle(Title):
         >>> title_b = SeriesTitle("Lost", episode_name = "He_s_Our_You")
         >>> title_a == title_b
         True
+        >>> title_a = SeriesTitle("Lost", 1, 2, "He's Our You")
+        >>> title_b = SeriesTitle("Lost", 2, 4, "He_s_Our_You")
+        >>> title_a == title_b
+        False
         """
         if not Title.__eq__(self, other):
             return False
 
-        # season and episode numbers cannot be empty/0.
-        if (self.season_number == other.season_number) and (
-            self.episode_number == other.episode_number):
-            return True
+        # First, make sure that their not empty.
+        if (self.season_number and other.episode_number and 
+            self.episode_number and other.episode_number):
+
+            if (self.season_number == other.season_number and 
+                self.episode_number == other.episode_number):
+                return True
+        # Only if we're lacking episode\season number, check the name.
         else:
             return bool(self.episode_normalized_names_set.intersection(
                 other.episode_normalized_names_set))
