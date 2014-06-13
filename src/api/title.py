@@ -1,8 +1,9 @@
+from abc import ABCMeta, abstractmethod
+
 from exceptions import InvalidTitleName
 from exceptions import InvalidSeasonNumber
 from exceptions import InvalidEpisodeNumber
 
-from abc import ABCMeta, abstractmethod
 
 class Title(object):
     """ The base Title object. """
@@ -72,21 +73,27 @@ class Title(object):
 
     def __str__(self):
         return repr(self)
-        
+
 class MovieTitle(Title):
     """ Title object for movies. """
     def __init__(self, name, year = 0, imdb_id = ""):
         Title.__init__(self, name, year, imdb_id)
 
     def __repr__(self):
-        return "<{cls} name='{name}', year='{year}', imdb_id='{imdb_id}'>"\
+        """
+        >>> print MovieTitle("The Matrix", 1999, "tt0133093")
+        <MovieTitle name='The Matrix', year=1999, imdb_id='tt0133093'>
+        >>> print MovieTitle("The Matrix", 1999)
+        <MovieTitle name='The Matrix', year=1999, imdb_id=''>
+        >>> print MovieTitle("The Matrix")
+        <MovieTitle name='The Matrix', year=0, imdb_id=''>
+        """
+        return "<{cls} name='{name}', year={year}, imdb_id='{imdb_id}'>"\
             .format(
                 cls='MovieTitle', 
                 name=self.name, 
                 year=str(self.year), 
                 imdb_id=self.imdb_id)
-
-
 
 class SeriesTitle(Title):
     """ 
@@ -163,3 +170,31 @@ class SeriesTitle(Title):
             return bool(self.episode_normalized_names_set.intersection(
                 other.episode_normalized_names_set))
         return False
+
+    def __repr__(self):
+        """
+        >>> print SeriesTitle("Lost", 1, 3, "Tabula Rasa", 2004, "tt0411008")
+        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
+        episode_name='Tabula Rasa', year=2004, imdb_id='tt0411008'>
+        >>> print SeriesTitle("Lost", 1, 3, "Tabula Rasa", 2004)
+        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
+        episode_name='Tabula Rasa', year=2004, imdb_id=''>
+        >>> print SeriesTitle("Lost", 1, 3, "Tabula Rasa")
+        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
+        episode_name='Tabula Rasa', year=0, imdb_id=''>
+        >>> print SeriesTitle("Lost", 1, 3)
+        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
+        episode_name='', year=0, imdb_id=''>
+        """
+        return \
+            "<{cls} name='{name}', season_number={season_number}, "\
+            "episode_number={episode_number}, episode_name='{episode_name}', "\
+            "year={year}, imdb_id='{imdb_id}'>".format(
+                cls='SeriesTitle', 
+                name=self.name, 
+                season_number = self.season_number,
+                episode_number = self.episode_number,
+                episode_name = self.episode_name,
+                year=self.year, 
+                imdb_id=self.imdb_id)
+                
