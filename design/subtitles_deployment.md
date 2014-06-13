@@ -27,6 +27,9 @@ A subtitles archive files contains, most of the time, the following files:
 We're only interested in the subtitle files, so we'll not extract the other 
 files. 
 
+We expect the archive to contain a single subtitle file within it or several 
+subtitles in case of multiple CDs. But not several versions for a title.
+
 ### Recognizing subtitle files within the archive
 
 We'll recognize the subtitle files within the archive by their extensions. SubiT
