@@ -92,20 +92,18 @@ for (i.e., the languages it was initialized with).
 
 ###### `suppoert_languages`
 
-A static property in each provider that returns a Language list that specify
+A class attribute in each provider that returns a Language list that specify
 the languages that the provider can support.
 
 **To sum up, this is the basic structure:**
 ```python
 class IProvider:
+    supported_languages = []
     def __init__(self, languages, requests_manager): pass
     def get_titles_versions(self, input): pass
     def download_subtitle_buffer(self, provider_version): pass
     @property
     def languages_in_use(self): pass
-    @property
-    @staticmethod
-    def supported_languages(): pass
 ```
 
 ### The requests manager
