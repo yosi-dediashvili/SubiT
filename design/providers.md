@@ -98,7 +98,7 @@ the languages that the provider can support.
 **To sum up, this is the basic structure:**
 ```python
 class IProvider:
-    def __init__(self, requests_manager): pass
+    def __init__(self, languages, requests_manager): pass
     def get_titles_versions(self, input): pass
     def download_subtitle_buffer(self, provider_version): pass
     @property
