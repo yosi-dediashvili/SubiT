@@ -22,7 +22,19 @@ class Title(object):
         self.imdb_id    = imdb_id
         from namenormalization import normalize_name
         self.normalized_names = normalize_name(self.name)
-        self.normalized_names_set = set(self.normalized_names)
+
+    @property
+    def normalized_names_set(self):
+        return self._normalized_names_set
+
+    @property
+    def normalized_names(self):
+        return self._normalized_names
+
+    @normalized_names.setter
+    def normalized_names(self, value):
+        self._normalized_names = value
+        self._normalized_names_set = set(self.normalized_names)
 
     def __eq__(self, other):
         """
@@ -85,7 +97,19 @@ class SeriesTitle(Title):
             self.episode_normalized_names = normalize_name(self.episode_name)
         else:
             self.episode_normalized_names = []
-        self.episode_normalized_names_set   = set(self.episode_normalized_names)
+
+    @property
+    def episode_normalized_names_set(self):
+        return self._episode_normalized_names_set
+
+    @property
+    def episode_normalized_names(self):
+        return self._episode_normalized_names
+
+    @episode_normalized_names.setter
+    def episode_normalized_names(self, value):
+        self._episode_normalized_names = value
+        self._episode_normalized_names_set = set(self.episode_normalized_names)
 
     def __eq__(self, other):
         """
