@@ -71,4 +71,24 @@ class ProviderVersion(Version):
     def __init__(
         self, identifiers, title, provider, attributes = {}, 
         is_certain_match = False, rank = 0, num_of_cds = 0):
+        """
+        Create a new instance of ProviderVersion. The rules includes all the
+        Version's rules, and also, a provider instance must be supplied. The 
+        rank value should be between 0 to 100. 
+
+        >>> from title import MovieTitle
+        >>> title = MovieTitle("The Matrix")
+        >>> ProviderVersion([], title, None)
+        Traceback (most recent call last):
+            ...
+        InvalidProviderValue: provider instance must be supplied.
+
+        >>> ProviderVersion([], title, object(), rank=-1)
+        Traceback (most recent call last):
+            ...
+        InvalidRankValue: rank value must be between 0 to 100.
+
+        >>> print ProviderVersion([], title, object(), rank=50)
+        <ProviderVersion ...>
+        """
         pass
