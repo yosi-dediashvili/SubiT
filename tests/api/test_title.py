@@ -1,4 +1,4 @@
 from api import title
 import doctest
 
-doctest.testmod(title, verbose=True, optionflags=doctest.NORMALIZE_WHITESPACE)
+doctest.testmod(title, verbose=False, optionflags=doctest.NORMALIZE_WHITESPACE)
