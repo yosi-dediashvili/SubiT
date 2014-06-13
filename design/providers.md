@@ -60,16 +60,19 @@ time to the servers.
 ##### The functions:
 
 ###### `__init__()`
-Upon initialization, the provider receives an instance of requests_manager (The
-object is discussed later in the document).
+Upon initialization, the provider receives a list of Languages it should use, 
+and an instance of requests_manager (The object is discussed later in the document).
 
-###### `getTitlesVersions()`
+The provider might not support all the languages it receives, but it will must
+not use other languages than those.
+
+###### `get_titles_versions()`
 The function receive the new Input object, and returns a list of TitleVersions
 object.
 
-###### `downloadSubtitleBuffer()`
+###### `download_subtitle_buffer()`
 The function receive a single version from the versions that was retrieved with
-a previous call to `getTitlesVersions()`, and return a tuple of the file name 
+a previous call to `get_titles_versions()`, and return a tuple of the file name 
 that was downloaded from the servers and the buffer (Bytes) itself that is 
 the downloaded zip/srt file. It's not the provider's responsibility to deploy
 the subtitle. 
@@ -81,16 +84,28 @@ the provider will need to perform the action of extracting the right subtitle
 from the archive and returning it as the buffer (or putting it in another 
 archive).
 
-###### `getSupportedLanguages()`
-The function will return a list of string (where each item is a language).
+###### `languages_in_use`
+
+The function will be a property of instances, and return a list of Language items 
+that specify for what languages this instance of the provider returns versions 
+for (i.e., the languages it was initialized with).
+
+###### `suppoert_languages`
+
+A static property in each provider that returns a Language list that specify
+the languages that the provider can support.
 
 **To sum up, this is the basic structure:**
 ```python
-class ISubtitlesProvider:
+class IProvider:
     def __init__(self, requests_manager): pass
-    def getTitlesVersions(self, input): pass
-    def downloadSubtitleBuffer(self, provider_version): pass
-    def getSupportedLanguages(self): pass
+    def get_titles_versions(self, input): pass
+    def download_subtitle_buffer(self, provider_version): pass
+    @property
+    def languages_in_use(self): pass
+    @property
+    @staticmethod
+    def supported_languages(): pass
 ```
 
 ### The requests manager
@@ -106,24 +121,24 @@ The manager's function will much like the PerformRequest that is used in the
 current version of SubiT.
 
 In order to allow only a single session against some server, the manager will
-use a mutex that will get locked when `performRequest()` is called. Each 
+use a mutex that will get locked when `perform_request()` is called. Each 
 instance of the manager will have a different mutex, thus, they will not block
 each other. 
 
 With that said, there might be cases where we will not want to wait in the line
 for our request to be processed (When we decide to download some version for 
-example). Therefore, the manager will expose another function `performRequestNext()` 
+example). Therefore, the manager will expose another function `perform_request_next()` 
 that will put the request at the first place in the queue, and thus, making sure 
 it will get processed next.
 
 Because several instances of the same provider are guarantee to share the same
-instance of the manager, their calls to `performRequest()` will block, thus, 
+instance of the manager, their calls to `perform_request()` will block, thus, 
 preserving the synchronous mode.
 
 ```python
 class RequestsManager:
-    def performRequest(domain, url, data, type, more_headers): pass
-    def performRequestNext(domain, url, data, type, more_headers): pass
+    def perform_request(domain, url, data, type, more_headers): pass
+    def perform_request_next(domain, url, data, type, more_headers): pass
 ```
 
 ### Factories
@@ -156,7 +171,7 @@ The factory will be implemented as a classmethod inside the RequestsManager.
 ```python
 class RequestsManager:
     @classmethod
-    def getInstance(provider_name): pass
+    def get_instance(provider_name): pass
 ```
 
 #### The providers factory
@@ -177,7 +192,7 @@ the default manager (for testing). If omitted, the function will use SubiT's
 default manager factory.
 
 ```python
-def getSubtitlesProviderInstance(
+def get_provider_instance(
     provider_name, 
     languages = None, 
     requests_manager_factory = None): pass
@@ -195,14 +210,14 @@ In order to do so, it will use the multiprocessing module of python. The module
 offers the `dummy` process pool that is actually a thread pool that exposes all
 the parallel algorithm of the multiprocessing module.
 
-It will implement the `ISubtitleProvider` interface as followed:
+It will implement the `IProvider` interface as followed:
 
 ###### `__init__()`
 Upon initialization, it will retrieve a single instance of every provider by 
 using the providers factory. The languages for the providers will be loaded 
 from the configuration.
 
-###### `getTitlesVersions()`
+###### `get_titles_versions()`
 This is where we need to perform some work. 
 
 In here, we'll unite all the version coming from the same title from different 
@@ -228,7 +243,7 @@ has a year other than `0`, or `0` if no such title exists
 **The TitleVersion will be united using the following algorithm:**
 
 - Create a new empty list of **TitleVersion**, `TV`
-- Call `getTitlesVersions()` of each provider using the multiprocessing's map
+- Call `get_titles_versions()` of each provider using the multiprocessing's map
     function, and name the result `ATV`
 - For each `PTV` in `ATV`
     + For each Title `T` in `PTV`
@@ -240,10 +255,15 @@ has a year other than `0`, or `0` if no such title exists
             * Add `T` to `TV`
 - Return `TV`
 
-###### `downloadSubtitleBuffer()`
+###### `download_subtitle_buffer()`
 The function will use the provider instance stored within the version passed
-to the function, and call its `downloadSubtitleBuffer()`.
+to the function, and call its `download_subtitle_buffer()`.
 
-###### `getSuppotedLanguages()`
-The function will collect all the supported languages from the providers, and 
-return a list contains all of them.
+###### `languages_in_use`
+The function will collect all the languages from the providers, and return a 
+list contains all of them.
+
+###### `supported_languages`
+The function will return all the languages present in the languages module, 
+because a language is present in there only if at least single provider supports
+it.
