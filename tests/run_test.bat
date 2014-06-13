@@ -2,7 +2,7 @@
 if "%PYTHONPATH%" == "" (
 	set PYTHONPATH=%~dp0..\src
 ) else (
-	set PYTHONPATH=%PYTHONPATH% + %~dp0..\src
+	set PYTHONPATH=%PYTHONPATH%;%~dp0..\src
 )
 
 :: Execute the script
