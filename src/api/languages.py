@@ -7,8 +7,17 @@ class Languages(object):
 	via its "Language" instance. In any other place, there will be a reference
 	to this place.
 	"""
-	class Langauge(object):
+	class Language(object):
 		def __init__(self, full_name, iso_name):
 			self.full_name = full_name
 			self.iso_name = iso_name
-	pass
+
+		def __str__(self):
+			return repr(self)
+
+		def __repr__(self):
+			return "<Language full_name='%s', iso_name='%s'>" % \
+				(self.full_name, self.iso_name)
+
+	
+	HEBREW = Language("Hebrew", "heb")
