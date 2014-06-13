@@ -3,5 +3,5 @@ import doctest
 
 doctest.testmod(
     version, 
-    verbose=True, 
+    verbose=False, 
     optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS)

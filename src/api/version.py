@@ -11,6 +11,10 @@ __all__ = ['Version', 'ProviderVersion', 'UKNOWN_NUM_OF_CDS']
 
 from exceptions import InvalidTitleValue
 from exceptions import InvalidNumOfCDs
+from exceptions import InvalidProviderValue
+from exceptions import InvalidRankValue
+from exceptions import InvalidLanguageValue
+
 
 UKNOWN_NUM_OF_CDS = 0
 
@@ -41,9 +45,9 @@ class Version(object):
         if num_of_cds < 0:
             raise InvalidNumOfCDs("num_of_cds cannot be lower than 0.")
 
-        self.identifiers = identifiers
-        self.title = title
-        self.num_of_cds = num_of_cds
+        self.identifiers    = identifiers
+        self.title          = title
+        self.num_of_cds     = num_of_cds
 
     def __str__(self):
         return repr(self)
@@ -69,8 +73,8 @@ class Version(object):
 
 class ProviderVersion(Version):
     def __init__(
-        self, identifiers, title, provider, attributes = {}, 
-        is_certain_match = False, rank = 0, num_of_cds = 0):
+        self, identifiers, title, language, provider, version_string = "", 
+        attributes = {}, is_certain_match = False, rank = 0, num_of_cds = 0):
         """
         Create a new instance of ProviderVersion. The rules includes all the
         Version's rules, and also, a provider instance must be supplied. The 
@@ -78,17 +82,105 @@ class ProviderVersion(Version):
 
         >>> from title import MovieTitle
         >>> title = MovieTitle("The Matrix")
-        >>> ProviderVersion([], title, None)
+
+        >>> ProviderVersion([], title, object(), object())
+        Traceback (most recent call last):
+            ...
+        InvalidLanguageValue: language instance must be supplied.
+
+        >>> from languages import Languages
+        >>> lang = Languages.HEBREW
+        >>> ProviderVersion([], title, lang, None)
         Traceback (most recent call last):
             ...
         InvalidProviderValue: provider instance must be supplied.
 
-        >>> ProviderVersion([], title, object(), rank=-1)
+        >>> ProviderVersion([], title, lang, object(), rank=-1)
         Traceback (most recent call last):
             ...
         InvalidRankValue: rank value must be between 0 to 100.
 
-        >>> print ProviderVersion([], title, object(), rank=50)
+        >>> print ProviderVersion([], title, lang, object(), rank=50)
         <ProviderVersion ...>
         """
-        pass
+
+        Version.__init__(self, identifiers, title, num_of_cds)
+
+        from languages import Languages
+        if not isinstance(language, Languages.Language):
+            raise InvalidLanguageValue("language instance must be supplied.")
+        if not provider:
+            raise InvalidProviderValue("provider instance must be supplied.")
+
+        self.rank               = rank
+        self.provider           = provider
+        self.language           = language
+        self.attributes         = attributes
+        self.version_string     = version_string
+        self.is_certain_match   = is_certain_match
+        
+    @property
+    def rank_group(self):
+        """
+        >>> from title import MovieTitle
+        >>> title = MovieTitle("The Matrix")
+        >>> from languages import Languages
+        >>> lang = Languages.HEBREW        
+        >>> ver = ProviderVersion([], title, lang, object(), rank=0)
+        >>> ver.rank_group == 1
+        True
+        >>> ver.rank = 61
+        >>> ver.rank_group == 7
+        True
+        >>> ver.rank = 100
+        >>> ver.rank_group == 10
+        True
+        """
+        return self._rank_group
+
+    @property
+    def rank(self):
+        return self._rank
+
+    @rank.setter
+    def rank(self, value):
+        if value < 0 or value > 100:
+            raise InvalidRankValue("rank value must be between 0 to 100.")
+        self._rank = value
+        # Set the group also.
+        if value == 0:
+            self._rank_group = 1
+        else:
+            import math
+            self._rank_group = int(math.ceil((value/100.0) * 10))
+
+
+    def __repr__(self):
+        """
+        >>> from title import MovieTitle
+        >>> title = MovieTitle("The Matrix")
+        >>> from languages import Languages
+        >>> lang = Languages.HEBREW        
+        >>> print ProviderVersion([], title, lang, object(), rank=0)
+        <ProviderVersion identifiers=[], title=<MovieTitle ...>, \
+        language=<...>, provider=<...>, version_string='', attributes={...},  \
+        num_of_cds=0, rank=0, rank_group=1, is_certain_match=False>
+        """
+        return \
+            "<{cls} identifiers={identifiers}, title={title}, "\
+            "language={language}, provider={provider}, "\
+            "version_string='{version_string}', attributes={attributes}, "\
+            "num_of_cds={num_of_cds}, rank={rank}, rank_group={rank_group}, "\
+            "is_certain_match={is_certain_match}>".format(
+                cls='ProviderVersion',
+                identifiers=self.identifiers,
+                title=repr(self.title),
+                language=repr(self.language),
+                provider=repr(self.provider),
+                version_string=self.version_string,
+                attributes=str(self.attributes),
+                num_of_cds=self.num_of_cds,
+                rank=self.rank,
+                rank_group=self.rank_group,
+                is_certain_match=self.is_certain_match
+            )
