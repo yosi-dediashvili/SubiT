@@ -38,3 +38,15 @@ single functions regarding their api. These tests will cover simple tasks, like
 verifying that exceptions are raised, and the right output is returned etc.
 2. [unittest](https://docs.python.org/2/library/unittest.html) - for testing 
 module flow and more complex function/module behavior.
+
+### Structure
+
+Each file in the **src** that has test written for it, should have its corresponding
+file in the **tests** directory. The directory structure should be identical to the
+src directory. The tests file names should start with `test_` and followed by
+the original file name.
+
+For example, the file `title.py`, will have a test file named `test_title.py`.
+
+If a some file in the **src** has only doctests, it should have a test file also 
+in the **tests** directory, and the tests will take care of the doctest execution.
