@@ -2,14 +2,19 @@ from exceptions import InvalidTitleName
 from exceptions import InvalidSeasonNumber
 from exceptions import InvalidEpisodeNumber
 
+from abc import ABCMeta, abstractmethod
+
 class Title(object):
     """ The base Title object. """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
     def __init__(self, name, year = 0, imdb_id = ""):
         """
         A Title is initialized with at least a name. And it cannot be an empty
         string.
 
-        >>> Title("", 1991, "")
+        >>> MovieTitle("", 1991, "")
         Traceback (most recent call last):
             ...
         InvalidTitleName: Title's name cannot be empty.
@@ -40,18 +45,18 @@ class Title(object):
         """
         Base equality check for titles.
 
-        >>> title_a = Title("The Matrix", 1999, "tt0133093")
-        >>> title_b = Title("The Matrix", 0, "tt0133093")
+        >>> title_a = MovieTitle("The Matrix", 1999, "tt0133093")
+        >>> title_b = MovieTitle("The Matrix", 0, "tt0133093")
         >>> title_a == title_b
         True
-        >>> title_b = Title("The  Matrix", 0, "")
+        >>> title_b = MovieTitle("The  Matrix", 0, "")
         >>> title_a == title_b
         True
-        >>> title_b = Title("The Metrix", 0, "")
+        >>> title_b = MovieTitle("The Metrix", 0, "")
         >>> title_a == title_b
         False
-        >>> title_a = Title("The Matrix", 0, "")
-        >>> title_b = Title("The Matrix", 0, "")
+        >>> title_a = MovieTitle("The Matrix", 0, "")
+        >>> title_b = MovieTitle("The Matrix", 0, "")
         >>> title_a == title_b
         True
         """
@@ -64,11 +69,24 @@ class Title(object):
                 other.normalized_names_set)
             return bool(intersection)
         return False
+
+    def __str__(self):
+        return repr(self)
         
 class MovieTitle(Title):
     """ Title object for movies. """
     def __init__(self, name, year = 0, imdb_id = ""):
         Title.__init__(self, name, year, imdb_id)
+
+    def __repr__(self):
+        return "<{cls} name='{name}', year='{year}', imdb_id='{imdb_id}'>"\
+            .format(
+                cls='MovieTitle', 
+                name=self.name, 
+                year=str(self.year), 
+                imdb_id=self.imdb_id)
+
+
 
 class SeriesTitle(Title):
     """ 
