@@ -1,3 +1,15 @@
+""" 
+Implementation of the Title classes. This package is not responsible for 
+resolving the Title from arbitrary string input and such. It simply the 
+implementation of Titles.
+
+Users of this package will implement the methods for extracting the required 
+info for the Title.
+"""
+
+__all__ = ['MovieTitle', 'SeriesTitle']
+
+
 from abc import ABCMeta, abstractmethod
 
 from exceptions import InvalidTitleName
