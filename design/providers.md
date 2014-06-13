@@ -72,7 +72,14 @@ The function receive a single version from the versions that was retrieved with
 a previous call to `getTitlesVersions()`, and return a tuple of the file name 
 that was downloaded from the servers and the buffer (Bytes) itself that is 
 the downloaded zip/srt file. It's not the provider's responsibility to deploy
-the subtitle.
+the subtitle. 
+
+With that said, if the there might be providers that will need to 
+perform some logic in this phase, because the archive files that will get 
+downloaded might contain several subtitles for several versions. In such cases,
+the provider will need to perform the action of extracting the right subtitle
+from the archive and returning it as the buffer (or putting it in another 
+archive).
 
 ###### `getSupportedLanguages()`
 The function will return a list of string (where each item is a language).
