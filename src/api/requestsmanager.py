@@ -16,8 +16,20 @@ class RequestsManager(object):
         """
         Perform a request without locking the mutex.
         """
+        return self._perform_request(domain, url, data, type, more_headers)
+
+    def _perform_request(self, domain, url, data, type, more_headers = {}, 
+        retry = False, is_redirection = False):
+        """ 
+        Performs http requests. We are using fake user-agents. Use the data arg
+        in case you send a "POST" request. Also, you can specify more headers 
+        by supplying a dict in the more_headers arg
+    
+        Url should start with "/". If not, the function adds it.
+        """
         raise NotImplementedError
 
+    _instances = {}
     @classmethod
     def get_instance(cls, provider_name):
         """
