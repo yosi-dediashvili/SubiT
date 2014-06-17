@@ -7,4 +7,4 @@ class InvalidNumOfCDs(Exception): pass
 
 class InvalidProviderValue(Exception): pass
 class InvalidRankValue(Exception): pass
-class InvalidLanguageValue(Exception): pass
+class InvalidLanguageValue(Exception): passclass InvalidLanguageValue(Exception): passclass InvalidProviderName(Exception): pass
