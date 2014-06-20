@@ -22,6 +22,9 @@ UKNOWN_NUM_OF_CDS = 0
 
 
 class Version(object):
+    """
+    The basic Version object. Used both by the Input and by the ProviderVersion.
+    """
     def __init__(self, identifiers, title, num_of_cds = UKNOWN_NUM_OF_CDS):
         """
         A version is instantiated with an identifiers list that can be and 
@@ -105,6 +108,9 @@ class ProviderVersion(Version):
         
     @property
     def rank_group(self):
+        """
+        The rank group defines a range from 1 to 10 for the rank.
+        """
         return self._rank_group
 
     @property
@@ -113,6 +119,9 @@ class ProviderVersion(Version):
 
     @rank.setter
     def rank(self, value):
+        """ 
+        Sets the rank for the version along with the rank group. 
+        """
         if value < 0 or value > 100:
             raise InvalidRankValue("rank value must be between 0 to 100.")
         self._rank = value
