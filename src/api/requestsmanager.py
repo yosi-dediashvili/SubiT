@@ -1,30 +1,38 @@
 from exceptions import InvalidProviderName
 
 class RequestsManager(object):
+    class HttpRequestTypes:
+        GET  = 'GET'
+        POST = 'POST'
+        HEAD = 'HEAD'
 
-    def perform_request(self, domain, url, 
+    def __init__(self):
+        from threading import Lock
+        self._requests_mutex = Lock()
+
+    def perform_request(self, domain, url,
         data = '', type = HttpRequestTypes.GET, more_headers = {}):
         """
-        Locks the requests mutex, and after that, sends the request. If the 
-        mutex is already lock, the function will block until the mutex is 
+        Locks the requests mutex, and after that, sends the request. If the
+        mutex is already lock, the function will block until the mutex is
         released, and we manage to lock it.
         """
         raise NotImplementedError
 
-    def perform_request_next(self, domain, url, 
+    def perform_request_next(self, domain, url,
         data = '', type = HttpRequestTypes.GET, more_headers = {}):
         """
         Perform a request without locking the mutex.
         """
         return self._perform_request(domain, url, data, type, more_headers)
 
-    def _perform_request(self, domain, url, data, type, more_headers = {}, 
+    def _perform_request(self, domain, url, data, type, more_headers = {},
         retry = False, is_redirection = False):
-        """ 
+        """
         Performs http requests. We are using fake user-agents. Use the data arg
-        in case you send a "POST" request. Also, you can specify more headers 
+        in case you send a "POST" request. Also, you can specify more headers
         by supplying a dict in the more_headers arg
-    
+
         Url should start with "/". If not, the function adds it.
         """
         raise NotImplementedError
@@ -34,11 +42,11 @@ class RequestsManager(object):
     def get_instance(cls, provider_name):
         """
         A RequestsManager factory that given the same provider name will return
-        the same RequestsManager instance. 
+        the same RequestsManager instance.
 
-        This currently isn't a thread safe factory, so in case where to 
-        different threads trying to receive a RequestsManager for a 
-        provider_name that hasn't already been initialzied, will get in to a 
+        This currently isn't a thread safe factory, so in case where to
+        different threads trying to receive a RequestsManager for a
+        provider_name that hasn't already been initialzied, will get in to a
         race condition, in which they might end up with different instances.
 
         >>> a = RequestsManager.get_instance("a")
@@ -60,4 +68,11 @@ class RequestsManager(object):
             ...
         InvalidProviderName: provider_name must be a string.
         """
-        raise NotImplementedError
+        if not provider_name:
+            raise InvalidProviderName("provider_name can not be empty.")
+        if not isinstance(provider_name, str):
+            raise InvalidProviderName("provider_name must be a string.")
+
+        if not provider_name in cls._instances:
+            cls._instances[provider_name] = cls()
+        return cls._instances[provider_name]
