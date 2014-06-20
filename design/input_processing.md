@@ -422,6 +422,9 @@ The ranking algorithm will be as follows:
 
 A single version will be ranked with the following algorithm:
 
+- If at least one of the versions has a `num_of_cds` values of `UNKNOWN` or 
+    their `num_of_cds` is equal, continue in the rank, otherwise, give the 
+    version a rank of 0.
 - Count the number of identifiers in the input version as `IIC` and in the
     provider version as `PIC`.
 - If either `PIC` or `IIC` is 0, give the version rank of 0.
