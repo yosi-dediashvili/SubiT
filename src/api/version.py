@@ -7,7 +7,9 @@ Users of this package will implement the methods for extracting the required
 info for the Version.
 """
 
+
 __all__ = ['Version', 'ProviderVersion', 'UKNOWN_NUM_OF_CDS']
+
 
 from exceptions import InvalidTitleValue
 from exceptions import InvalidNumOfCDs
@@ -17,6 +19,7 @@ from exceptions import InvalidLanguageValue
 
 
 UKNOWN_NUM_OF_CDS = 0
+
 
 class Version(object):
     def __init__(self, identifiers, title, num_of_cds = UKNOWN_NUM_OF_CDS):
@@ -72,6 +75,9 @@ class Version(object):
 
 
 class ProviderVersion(Version):
+    """
+    A Version class for the providers versions.
+    """
     def __init__(
         self, identifiers, title, language, provider, version_string = "", 
         attributes = {}, is_certain_match = False, rank = 0, num_of_cds = 0):
@@ -79,37 +85,15 @@ class ProviderVersion(Version):
         Create a new instance of ProviderVersion. The rules includes all the
         Version's rules, and also, a provider instance must be supplied. The 
         rank value should be between 0 to 100. 
-
-        >>> from title import MovieTitle
-        >>> title = MovieTitle("The Matrix")
-
-        >>> ProviderVersion([], title, object(), object())
-        Traceback (most recent call last):
-            ...
-        InvalidLanguageValue: language instance must be supplied.
-
-        >>> from languages import Languages
-        >>> lang = Languages.HEBREW
-        >>> ProviderVersion([], title, lang, None)
-        Traceback (most recent call last):
-            ...
-        InvalidProviderValue: provider instance must be supplied.
-
-        >>> ProviderVersion([], title, lang, object(), rank=-1)
-        Traceback (most recent call last):
-            ...
-        InvalidRankValue: rank value must be between 0 to 100.
-
-        >>> print ProviderVersion([], title, lang, object(), rank=50)
-        <ProviderVersion ...>
         """
-
         Version.__init__(self, identifiers, title, num_of_cds)
 
         from languages import Languages
         if not isinstance(language, Languages.Language):
             raise InvalidLanguageValue("language instance must be supplied.")
-        if not provider:
+
+        from providers.iprovider import IProvider
+        if not isinstance(provider, IProvider):
             raise InvalidProviderValue("provider instance must be supplied.")
 
         self.rank               = rank
@@ -121,21 +105,6 @@ class ProviderVersion(Version):
         
     @property
     def rank_group(self):
-        """
-        >>> from title import MovieTitle
-        >>> title = MovieTitle("The Matrix")
-        >>> from languages import Languages
-        >>> lang = Languages.HEBREW        
-        >>> ver = ProviderVersion([], title, lang, object(), rank=0)
-        >>> ver.rank_group == 1
-        True
-        >>> ver.rank = 61
-        >>> ver.rank_group == 7
-        True
-        >>> ver.rank = 100
-        >>> ver.rank_group == 10
-        True
-        """
         return self._rank_group
 
     @property
@@ -154,18 +123,10 @@ class ProviderVersion(Version):
             import math
             self._rank_group = int(math.ceil((value/100.0) * 10))
 
+    def __str__(self):
+        return repr(self)
 
     def __repr__(self):
-        """
-        >>> from title import MovieTitle
-        >>> title = MovieTitle("The Matrix")
-        >>> from languages import Languages
-        >>> lang = Languages.HEBREW        
-        >>> print ProviderVersion([], title, lang, object(), rank=0)
-        <ProviderVersion identifiers=[], title=<MovieTitle ...>, \
-        language=<...>, provider=<...>, version_string='', attributes={...},  \
-        num_of_cds=0, rank=0, rank_group=1, is_certain_match=False>
-        """
         return \
             "<{cls} identifiers={identifiers}, title={title}, "\
             "language={language}, provider={provider}, "\
