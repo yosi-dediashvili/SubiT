@@ -317,7 +317,7 @@ versions from all the providers, and not just portion of it.
 
 In this version, we're dropping the stages mechanism. In order to receive 
 versions from the providers, we'll pass them the Input object. And in return, we
-will get an instance of **TitleVersions**, that is a simple structure that 
+will get a list of **TitleVersions** instances, that is a simple structure that 
 unites several **ProviderVersion** under a single **Title**.
 
 When a provider returns us a list of versions that might match the input that 
@@ -326,22 +326,31 @@ or more titles for each input, and under each title, it will have **One** or
 more **ProviderVersions**.
 
 The **versions** attribute will be a dictionary that its keys are the languages
-and the values are list of versions matching the language.
-
-The versions under each language will be sorted based on the algorithm specified
-later.
+and the values are also dictionary that is keys are the rank group and the 
+values are the provider version falling under that group.
 
 Notice that the provider will not drop version because they come from a 
 different title. That's not its job.
 
-Titles will be united using the title's own equality method.
+A TitleVersions will be constructed using a single Title instance, and zero or
+more ProviderVersion instances (the list does not need to be sorted). Each 
+version passed, will be inserted to the dictionary using the `add_version` 
+method.
+
+The class will expose a function named `add_version` which inserts a 
+provider_version to the versions dictionary in the appropriate position. The 
+function will receive an optional parameter `provider_rank` that defaults to 1,
+and can be changed (will be different when the MainProvider will create its 
+TitleVersions). The algorithm for the function is described later.
 
 **The basic structure of the TitleVersions will look like that:**
 ```python
 class TitleVersions:
     title = None
-    # {language, [provider_version, ...]}
+    # {language, {rank_group: [provider_version, ...]}}
     versions = {"" : [None]}
+    def __init__(title, versions = []): pass
+    def add_version(provider_version, provider_rank = 1): pass
 ```
 
 ### Performance
