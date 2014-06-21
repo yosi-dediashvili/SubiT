@@ -325,7 +325,8 @@ more **ProviderVersions**.
 
 The **versions** attribute will be a dictionary that its keys are the languages
 and the values are also dictionary that is keys are the rank group and the 
-values are the provider version falling under that group.
+values are tuples of the provider rank and the provider version falling under 
+that group.
 
 Notice that the provider will not drop version because they come from a 
 different title. That's not its job.
@@ -333,7 +334,7 @@ different title. That's not its job.
 A TitleVersions will be constructed using a single Title instance, and zero or
 more ProviderVersion instances (the list does not need to be sorted). Each 
 version passed, will be inserted to the dictionary using the `add_version` 
-method.
+method, with the default provider_rank value.
 
 The class will expose a function named `add_version` which inserts a 
 provider_version to the versions dictionary in the appropriate position. The 
@@ -345,7 +346,7 @@ TitleVersions). The algorithm for the function is described later.
 ```python
 class TitleVersions:
     title = None
-    # {language, {rank_group: [provider_version, ...]}}
+    # {language, {rank_group: [(provider_rank, provider_version), ...]}}
     versions = {"" : [None]}
     def __init__(title, versions = []): pass
     def add_version(provider_version, provider_rank = 1): pass
