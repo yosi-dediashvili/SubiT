@@ -15,11 +15,12 @@ args = parser.parse_args()
 
 def run_test(test_path):
     print "Running test file: %s" % test_path
+    import imp
     global_wd = getcwd()
     dir_name = dirname(test_path)
     sys.path.append(dir_name)
     chdir(dir_name)
-    execfile(test_path)
+    imp.load_source('current_test', test_path).run_tests()
     sys.path.remove(dir_name)
     chdir(global_wd)
 

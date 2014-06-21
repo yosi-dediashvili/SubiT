@@ -62,7 +62,7 @@ class TestProviderVersion(unittest.TestCase):
             "is_certain_match\=False\>")
 
 
-if __name__ == '__main__':
+def run_tests():
     unittest.TextTestRunner(verbosity=0).run(
         unittest.defaultTestLoader.loadTestsFromTestCase(TestProviderVersion))
     doctest.testmod(

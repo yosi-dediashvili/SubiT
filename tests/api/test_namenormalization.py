@@ -1,4 +1,5 @@
 from api import namenormalization
 import doctest
 
-doctest.testmod(namenormalization, verbose=False)
+def run_tests():
+    doctest.testmod(namenormalization, verbose=False)

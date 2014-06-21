@@ -1,4 +1,5 @@
 from api import requestsmanager
+
 import time
 import doctest
 import unittest
@@ -10,7 +11,6 @@ class TimeDiffCheckerRequestsManager(requestsmanager.RequestsManager):
     _last_request_time = time.time()
 
     def _perform_request(self, *args, **kwargs):
-        print(args)
         time.sleep(SECONDS_BETWEEN_REQEUESTS)
         current_time = time.time()
         time_diff = current_time - type(self)._last_request_time
@@ -54,9 +54,11 @@ class TestRequestsManagerAsyncOp(unittest.TestCase):
             end_time - start_time,
             SECONDS_BETWEEN_REQEUESTS * NUMBER_OF_THREADS)
 
-if __name__ == '__main__':
+def run_tests():
     doctest.testmod(
         requestsmanager,
         verbose=False,
         optionflags=doctest.NORMALIZE_WHITESPACE)
-    unittest.main(verbosity=0)
+    unittest.TextTestRunner(verbosity=0).run(
+        unittest.defaultTestLoader.loadTestsFromTestCase(
+            TestRequestsManagerAsyncOp))
