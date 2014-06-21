@@ -147,8 +147,8 @@ The version will be used both for specifying what is being searched (via the
 Input object), and what is present in each provider.
 
 #### Identifiers
-The identifiers attribute withing the version object will contain all the 
-strings that represent the version.
+The identifiers attribute within the version object will contain all the 
+strings (in lower-case format), that represent the version.
 
 In order to collect the identifiers, we introduce a new mechanism: 
 **IdentifiersExtractors** The mechanism will use one or more implementation of 
@@ -191,10 +191,8 @@ In order to help in the ranking process, the version will have a property named
 version that is inside the Input object completely or not (Each provider will 
 have its own logic to determine that). 
 
-The class will have a rank item that specifies the rank for the given version 
-relative to its associated input. The algorithm for calculating the rank will 
-be executed by the version itself at initialization. Additionally, we'll have 
-a `rank_group` attribute that specify in which ranking group we're in.
+A instance of the class will have a rank value that should be set at initialization
+by the creator (probably the provider). The rank algorithm is specified later.
 
 Lastly, any other attribute that the provider will need to store under the 
 version instance will be inserted into the attributes dictionary.
