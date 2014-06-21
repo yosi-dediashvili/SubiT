@@ -8,7 +8,7 @@ info for the Version.
 """
 
 
-__all__ = ['Version', 'ProviderVersion', 'UKNOWN_NUM_OF_CDS']
+__all__ = ['Version', 'ProviderVersion', 'UKNOWN_NUM_OF_CDS', 'rank_version']
 
 
 from exceptions import InvalidTitleValue
@@ -119,7 +119,7 @@ class ProviderVersion(Version):
 
     @rank.setter
     def rank(self, value):
-        """ 
+        """
         Sets the rank for the version along with the rank group. 
         """
         if value < 0 or value > 100:
@@ -154,3 +154,56 @@ class ProviderVersion(Version):
                 rank_group=self.rank_group,
                 is_certain_match=self.is_certain_match
             )
+
+def rank_version(input_version, provider_version, input_ratio):
+    """
+    Ranks the provider_version using the input_version. input_ratio should be
+    between 0 to 100, the provider's ration value is '100 - input_ratio'.
+
+    >>> from api.title import MovieTitle
+    >>> title = MovieTitle("The Matrix") 
+    >>> input_version = Version(["720p", "ac3", "bluray", "chd"], title)
+    >>> provider_version = Version(["720p", "ac3", "wtf"], title)
+    >>> rank_version(input_version, provider_version, 60)
+    56.66...
+    >>> input_version = Version(["720p", "ac3", "wtf"], title)
+    >>> provider_version = Version(["720p", "ac3", "wtf"], title)
+    >>> rank_version(input_version, provider_version, 60)
+    100.0...
+    >>> input_version = Version(["720p", "ac3", "wtf"], title, num_of_cds=2)
+    >>> provider_version = Version(["720p", "ac3", "wtf"], title)
+    >>> rank_version(input_version, provider_version, 60)
+    100.0...
+    >>> input_version = Version(["720p", "ac3", "wtf"], title, num_of_cds=2)
+    >>> provider_version = Version(["720p", "ac3", "wtf"], title, num_of_cds=1)
+    >>> rank_version(input_version, provider_version, 60)
+    0.0...
+    >>> input_version = Version([], title)
+    >>> provider_version = Version(["720p", "ac3", "wtf"], title)
+    >>> rank_version(input_version, provider_version, 60)
+    0.0...
+    """
+    # Check num_of_cds values.
+    if (UKNOWN_NUM_OF_CDS in 
+        [input_version.num_of_cds, provider_version.num_of_cds]):
+        pass
+    elif input_version.num_of_cds != provider_version.num_of_cds:
+        return 0.0
+
+    # If one of them is empty.
+    if not input_version.identifiers or not provider_version.identifiers:
+        return 0.0
+
+    input_identifiers = set(input_version.identifiers)
+    provider_identifiers = set(provider_version.identifiers)
+    
+    iic = len(input_identifiers)
+    pic = len(provider_identifiers)
+    
+    ioc = float(len(input_identifiers.difference(provider_identifiers)))
+    poc = float(len(provider_identifiers.difference(input_identifiers)))
+
+    ir = input_ratio
+    pr = 100 - input_ratio
+
+    return 100 - ((ir * (ioc / iic)) + (pr * (poc / pic)))
