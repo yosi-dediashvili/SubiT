@@ -83,7 +83,8 @@ class ProviderVersion(Version):
     """
     def __init__(
         self, identifiers, title, language, provider, version_string = "", 
-        attributes = {}, is_certain_match = False, rank = 0, num_of_cds = 0):
+        attributes = {}, is_certain_match = False, rank = 0, 
+        num_of_cds = UKNOWN_NUM_OF_CDS):
         """
         Create a new instance of ProviderVersion. The rules includes all the
         Version's rules, and also, a provider instance must be supplied. The 
