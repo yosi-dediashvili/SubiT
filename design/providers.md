@@ -208,6 +208,11 @@ In order to do so, it will use the multiprocessing module of python. The module
 offers the `dummy` process pool that is actually a thread pool that exposes all
 the parallel algorithm of the multiprocessing module.
 
+For each provider it holds, the main provider will have a provider_rank value, 
+which is the index of the provider in its provider list, such that the first 
+provider in the list will have a rank of `1`, the second one will have a rank 
+of `2` and so on.
+
 It will implement the `IProvider` interface as followed:
 
 ###### `__init__()`
@@ -247,7 +252,8 @@ has a year other than `0`, or `0` if no such title exists
     + For each Title `T` in `PTV`
         * If `T` is in `TV`
             * Add the versions associated with the title to the appropriate 
-                TitleVersion
+                TitleVersions using the add_version function, and passing a 
+                provider_rank value based on the provider used.
             * Update the Title instance
         * Otherwise
             * Add `T` to `TV`

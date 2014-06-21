@@ -147,8 +147,8 @@ The version will be used both for specifying what is being searched (via the
 Input object), and what is present in each provider.
 
 #### Identifiers
-The identifiers attribute withing the version object will contain all the 
-strings that represent the version.
+The identifiers attribute within the version object will contain all the 
+strings (in lower-case format), that represent the version.
 
 In order to collect the identifiers, we introduce a new mechanism: 
 **IdentifiersExtractors** The mechanism will use one or more implementation of 
@@ -191,10 +191,8 @@ In order to help in the ranking process, the version will have a property named
 version that is inside the Input object completely or not (Each provider will 
 have its own logic to determine that). 
 
-The class will have a rank item that specifies the rank for the given version 
-relative to its associated input. The algorithm for calculating the rank will 
-be executed by the version itself at initialization. Additionally, we'll have 
-a `rank_group` attribute that specify in which ranking group we're in.
+A instance of the class will have a rank value that should be set at initialization
+by the creator (probably the provider). The rank algorithm is specified later.
 
 Lastly, any other attribute that the provider will need to store under the 
 version instance will be inserted into the attributes dictionary.
@@ -317,7 +315,7 @@ versions from all the providers, and not just portion of it.
 
 In this version, we're dropping the stages mechanism. In order to receive 
 versions from the providers, we'll pass them the Input object. And in return, we
-will get an instance of **TitleVersions**, that is a simple structure that 
+will get a list of **TitleVersions** instances, that is a simple structure that 
 unites several **ProviderVersion** under a single **Title**.
 
 When a provider returns us a list of versions that might match the input that 
@@ -326,22 +324,31 @@ or more titles for each input, and under each title, it will have **One** or
 more **ProviderVersions**.
 
 The **versions** attribute will be a dictionary that its keys are the languages
-and the values are list of versions matching the language.
-
-The versions under each language will be sorted based on the algorithm specified
-later.
+and the values are also dictionary that is keys are the rank group and the 
+values are the provider version falling under that group.
 
 Notice that the provider will not drop version because they come from a 
 different title. That's not its job.
 
-Titles will be united using the title's own equality method.
+A TitleVersions will be constructed using a single Title instance, and zero or
+more ProviderVersion instances (the list does not need to be sorted). Each 
+version passed, will be inserted to the dictionary using the `add_version` 
+method.
+
+The class will expose a function named `add_version` which inserts a 
+provider_version to the versions dictionary in the appropriate position. The 
+function will receive an optional parameter `provider_rank` that defaults to 1,
+and can be changed (will be different when the MainProvider will create its 
+TitleVersions). The algorithm for the function is described later.
 
 **The basic structure of the TitleVersions will look like that:**
 ```python
 class TitleVersions:
     title = None
-    # {language, [provider_version, ...]}
+    # {language, {rank_group: [provider_version, ...]}}
     versions = {"" : [None]}
+    def __init__(title, versions = []): pass
+    def add_version(provider_version, provider_rank = 1): pass
 ```
 
 ### Performance
@@ -413,6 +420,9 @@ The ranking algorithm will be as follows:
 
 A single version will be ranked with the following algorithm:
 
+- If at least one of the versions has a `num_of_cds` values of `UNKNOWN` or 
+    their `num_of_cds` is equal, continue in the rank, otherwise, give the 
+    version a rank of 0.
 - Count the number of identifiers in the input version as `IIC` and in the
     provider version as `PIC`.
 - If either `PIC` or `IIC` is 0, give the version rank of 0.
