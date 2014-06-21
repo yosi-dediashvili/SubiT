@@ -34,4 +34,5 @@ class Languages(object):
 					yield value
 	
 	HEBREW = Language("Hebrew", "heb")
+	ENGLISH = Language("English", "eng")
 
