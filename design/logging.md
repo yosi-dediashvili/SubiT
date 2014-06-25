@@ -34,8 +34,8 @@ inside the logging module.
 Each module will set its channel name such that it contains the names of all
 its parents, with a dot between each one. So for example, the channel name for 
 the providers module will be `subit.api.providers`, and a specific provider 
-inside the provider module will have the name (in the case of www.torec.net for 
-example) `subit.api.providers.torec`.
+inside the provider module will have its short name (in the case of www.torec.net 
+for example) `subit.api.providers.torec`.
 
 ```python
 import logging
