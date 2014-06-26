@@ -100,12 +100,11 @@ class MovieTitle(Title):
         >>> print MovieTitle("The Matrix")
         <MovieTitle name='The Matrix', year=0, imdb_id=''>
         """
-        return "<{cls} name='{name}', year={year}, imdb_id='{imdb_id}'>"\
-            .format(
-                cls='MovieTitle', 
-                name=self.name, 
-                year=str(self.year), 
-                imdb_id=self.imdb_id)
+        return (
+            "<MovieTitle name='%(name)s', "
+            "year=%(year)d, "
+            "imdb_id='%(imdb_id)s'>"
+            % self.__dict__)
 
 class SeriesTitle(Title):
     """ 
@@ -198,15 +197,12 @@ class SeriesTitle(Title):
         <SeriesTitle name='Lost', season_number=1, episode_number=3, \
         episode_name='', year=0, imdb_id=''>
         """
-        return \
-            "<{cls} name='{name}', season_number={season_number}, "\
-            "episode_number={episode_number}, episode_name='{episode_name}', "\
-            "year={year}, imdb_id='{imdb_id}'>".format(
-                cls='SeriesTitle', 
-                name=self.name, 
-                season_number = self.season_number,
-                episode_number = self.episode_number,
-                episode_name = self.episode_name,
-                year=self.year, 
-                imdb_id=self.imdb_id)
+        return (
+            "<SeriesTitle name='%(name)s', "
+            "season_number=%(season_number)d, "
+            "episode_number=%(episode_number)d, "
+            "episode_name='%(episode_name)s', "
+            "year=%(year)d, "
+            "imdb_id='%(imdb_id)s'>" 
+            % self.__dict__)
                 
