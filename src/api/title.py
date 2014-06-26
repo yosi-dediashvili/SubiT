@@ -9,7 +9,8 @@ info for the Title.
 
 __all__ = ['MovieTitle', 'SeriesTitle']
 
-
+import logging
+logger = logging.getLogger("subit.api.title")
 from abc import ABCMeta, abstractmethod
 
 from exceptions import InvalidTitleName
@@ -73,6 +74,7 @@ class Title(object):
         >>> title_a == title_b
         True
         """
+        logger.debug("Checking Title equality: %s and %s" % (self, other))
         # When imdb_id is not empty, and equals.
         if self.imdb_id and self.imdb_id == other.imdb_id:
             return True
@@ -90,6 +92,7 @@ class MovieTitle(Title):
     """ Title object for movies. """
     def __init__(self, name, year = 0, imdb_id = ""):
         Title.__init__(self, name, year, imdb_id)
+        logger.debug("Created MovieTitle instance: %s" % self)
 
     def __repr__(self):
         """
@@ -134,6 +137,8 @@ class SeriesTitle(Title):
         else:
             self.episode_normalized_names = []
 
+        logger.debug("Created SeriesTitle instance: %s" % self)
+
     @property
     def episode_normalized_names_set(self):
         return self._episode_normalized_names_set
@@ -169,6 +174,7 @@ class SeriesTitle(Title):
         if not Title.__eq__(self, other):
             return False
 
+        logger.debug("Checking SeriesTitle equality: %s and %s" % (self, other))
         # First, make sure that their not empty.
         if (self.season_number and other.episode_number and 
             self.episode_number and other.episode_number):
