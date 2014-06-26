@@ -78,10 +78,24 @@ Those handlers will be registered under the root logger channel `subit` by
 calling the `addHandler` method of the logger, and therefor, will receive all 
 the logs.
 
+## Log record format
+
+We'll have two types of formats, one for the `INFO` level, and one for the 
+`DEBUG` and `ERROR` levels.
+
+#### `INFO` logs
+
+|             |   Time   |       Channel       |       Message        |
+|-------------|----------|---------------------|----------------------|
+| **Example** | 14:22:51 | subit.api.providers | Received 3 versions. |
+
+#### `DEBUG` and `ERROR` logs
+
+|             |   Time   |       Channel       |                          File                         |       Message        |
+|-------------|----------|---------------------|-------------------------------------------------------|----------------------|
+| **Example** | 14:22:51 | subit.api.providers | D:\dev\subit\src\api\providers\torec\TorecProvider.py | Received 3 versions. |
 
 ## Usage
-
-### Receiving logs from the API
 
 The examples uses the logging default handler (the console). First, we retrieve
 the logger, and only after we aquire it, we create an instance of API, otherwise
