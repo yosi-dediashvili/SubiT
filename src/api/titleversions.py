@@ -23,13 +23,16 @@ class TitleVersions(object):
             language_versions[provider_version.rank_group] = []
 
         rank_group_versions = language_versions[provider_version.rank_group]
+        # We're storing a tuple of (provider_rank, provider_version).
         rank_group_versions.append((provider_rank, provider_version))
-        # Sort by the provider_rank.
+        # t[0] is the provider_rank.
         rank_group_versions.sort(key=lambda t: t[0])
 
     def __str__(self):
         return repr(self)
 
     def __repr__(self):
-        return "<TitleVersions title={title}, versions={versions}>".format(
-            title=self.title, versions=self.versions)
+        return (
+            "<TitleVersions title=%(title)s, "
+            "versions=%(versions)s>"
+            % self.__dict__)
