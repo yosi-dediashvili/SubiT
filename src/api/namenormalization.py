@@ -6,6 +6,20 @@ Currently, we're using the normalization both for normalizing the movie title
 and episode names for serieses.
 """
 
+
+__all__ = [
+    'normalize_name', 
+    'normalize_name_1st_step', 
+    'normalize_name_2nd_step',
+    'normalize_name_3rd_step',
+    'normalize_name_4th_step'
+]
+
+
+import logging
+logger = logging.getLogger("subit.api.namenormalization")
+
+
 def normalize_name(name):
     """
     Normalizes the name according to our specification. Performs all the 4
@@ -28,6 +42,8 @@ def normalize_name(name):
     ['The 3rd Man', 'the_3rd_man', 'the_third_man']
     """
     
+    logger.debug("Received a name for normalization: %s" % name)
+
     normalization_steps = [
         normalize_name_1st_step,
         normalize_name_2nd_step,
@@ -40,6 +56,8 @@ def normalize_name(name):
         current_name = normalization_step(previous_name)
         if current_name != previous_name:
             normalized_names.append(current_name)
+
+    logger.debug("Normalization result is: %s" % normalized_names)
     return normalized_names
 
 def normalize_name_1st_step(name):
@@ -52,6 +70,7 @@ def normalize_name_1st_step(name):
     >>> print normalize_name_1st_step(r"Schindler's List")
     Schindler's List
     """
+    logger.debug("1st normalization step received: %s" % name)
     return name
 
 def normalize_name_2nd_step(name):
@@ -73,11 +92,13 @@ def normalize_name_2nd_step(name):
     >>> print normalize_name_2nd_step(r" The Third Man  ")
     the_third_man
     """
+    logger.debug("2nd normalization step received: %s" % name)
     import re
     name = name.lower()
     name = re.sub("[^A-Za-z0-9]", "_", name)
     name = re.sub("(_){2,}", "_", name)
     name = name.strip("_")
+    logger.debug("2nd normalization step returns: %s" % name)
     return name
 
 
@@ -98,6 +119,7 @@ def normalize_name_3rd_step(name):
     >>> print normalize_name_3rd_step(r"50_first_dates")
     l_first_dates
     """
+    logger.debug("3rd normalization step received: %s" % name)
     def _arabic_to_latin(arabic_number):
         LATIN_MAPPING = [('cd', 4 * 'c'),
                          ('xl', 4 * 'x'),
@@ -137,6 +159,7 @@ def normalize_name_3rd_step(name):
     name = re.sub("_(\d+)$", _replace_group, name)
     # Replace between underscores
     name = re.sub("_(\d+)_", _replace_group, name)
+    logger.debug("3rd normalization step returns: %s" % name)
     return name
 
 def normalize_name_4th_step(name):
@@ -159,6 +182,7 @@ def normalize_name_4th_step(name):
     >>> print normalize_name_4th_step(r"22th_hospital_street")
     22th_hospital_street
     """
+    logger.debug("4th normalization step received: %s" % name)
     import inflect
     inflect_engine = inflect.engine()
     ordinals = map(lambda i: inflect_engine.ordinal(i), range(21))
@@ -180,4 +204,5 @@ def normalize_name_4th_step(name):
     name = re.sub("_%s$" % ordinals_re, _replace_group, name)
     # Replace between underscores
     name = re.sub("_%s_" % ordinals_re, _replace_group, name)
+    logger.debug("4th normalization step returns: %s" % name)
     return name
