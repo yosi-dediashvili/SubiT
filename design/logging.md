@@ -95,6 +95,15 @@ We'll have two types of formats, one for the `INFO` level, and one for the
 |-------------|----------|---------------------|-------------------------------------------------------|----------------------|
 | **Example** | 14:22:51 | subit.api.providers | D:\dev\subit\src\api\providers\torec\TorecProvider.py | Received 3 versions. |
 
+## Receiving file paths in compiled mode
+
+When SubiT is compiled, the `__file__` value for each python file does not 
+contain the file name, so we can't get the path of the source for the logging.
+
+The solution for that is to modify the calls to the logging function during 
+build time using the `ast` module, such that each call is passed also the 
+`pathname` value which is the path to the python file.
+
 ## Usage
 
 The examples uses the logging default handler (the console). First, we retrieve
