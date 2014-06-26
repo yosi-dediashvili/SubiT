@@ -68,13 +68,11 @@ class Version(object):
         >>> print Version([], title, 3)
         <Version identifiers=[], num_of_cds=3, title=<MovieTitle ...>>
         """
-        return "<{cls} identifiers={identifiers}, num_of_cds={num_of_cds}, "\
-            "title={title}>".format(
-                cls='Version',
-                identifiers=self.identifiers,
-                num_of_cds=self.num_of_cds,
-                title=repr(self.title)
-            )
+        return (
+            "<Version identifiers=%(identifiers)s, "
+            "num_of_cds=%(num_of_cds)d, "
+            "title=%(title)s>"
+            % self.__dict__)
 
 
 class ProviderVersion(Version):
@@ -135,23 +133,17 @@ class ProviderVersion(Version):
         return repr(self)
 
     def __repr__(self):
-        return \
-            "<{cls} identifiers={identifiers}, title={title}, "\
-            "language={language}, provider={provider}, "\
-            "version_string='{version_string}', attributes={attributes}, "\
-            "num_of_cds={num_of_cds}, rank={rank}, rank_group={rank_group}>"\
-            .format(
-                cls='ProviderVersion',
-                identifiers=self.identifiers,
-                title=repr(self.title),
-                language=repr(self.language),
-                provider=repr(self.provider),
-                version_string=self.version_string,
-                attributes=str(self.attributes),
-                num_of_cds=self.num_of_cds,
-                rank=self.rank,
-                rank_group=self.rank_group
-            )
+        return (
+            "<ProviderVersion identifiers=%(identifiers)s, "
+            "title=%(title)s, "
+            "language=%(language)s, "
+            "provider=%(provider)s, "
+            "version_string='%(version_string)s', "
+            "attributes=%(attributes)s, "
+            "num_of_cds=%(num_of_cds)d, "
+            "rank=%(_rank)d, "
+            "rank_group=%(_rank_group)d>"
+            % self.__dict__)
 
 def rank_version(input_version, provider_version, input_ratio):
     """
