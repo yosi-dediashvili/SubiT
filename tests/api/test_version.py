@@ -58,8 +58,7 @@ class TestProviderVersion(unittest.TestCase):
             "title\=\<MovieTitle .*?\>, language\=\<Language .*?\>, "
             "provider\=\<Provider .*?\>, "
             "version_string='the\.matrix\.1999\.720p\.dts', "
-            "attributes\=\{.*?\}, num_of_cds\=0, rank\=60, rank_group\=6, "
-            "is_certain_match\=False\>")
+            "attributes\=\{.*?\}, num_of_cds\=0, rank\=60, rank_group\=6\>")
 
 
 def run_tests():

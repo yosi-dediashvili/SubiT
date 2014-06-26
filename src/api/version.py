@@ -83,8 +83,7 @@ class ProviderVersion(Version):
     """
     def __init__(
         self, identifiers, title, language, provider, version_string = "", 
-        attributes = {}, is_certain_match = False, rank = 0, 
-        num_of_cds = UKNOWN_NUM_OF_CDS):
+        attributes = {}, rank = 0, num_of_cds = UKNOWN_NUM_OF_CDS):
         """
         Create a new instance of ProviderVersion. The rules includes all the
         Version's rules, and also, a provider instance must be supplied. The 
@@ -105,7 +104,6 @@ class ProviderVersion(Version):
         self.language           = language
         self.attributes         = attributes
         self.version_string     = version_string
-        self.is_certain_match   = is_certain_match
         
     @property
     def rank_group(self):
@@ -141,8 +139,8 @@ class ProviderVersion(Version):
             "<{cls} identifiers={identifiers}, title={title}, "\
             "language={language}, provider={provider}, "\
             "version_string='{version_string}', attributes={attributes}, "\
-            "num_of_cds={num_of_cds}, rank={rank}, rank_group={rank_group}, "\
-            "is_certain_match={is_certain_match}>".format(
+            "num_of_cds={num_of_cds}, rank={rank}, rank_group={rank_group}>"\
+            .format(
                 cls='ProviderVersion',
                 identifiers=self.identifiers,
                 title=repr(self.title),
@@ -152,8 +150,7 @@ class ProviderVersion(Version):
                 attributes=str(self.attributes),
                 num_of_cds=self.num_of_cds,
                 rank=self.rank,
-                rank_group=self.rank_group,
-                is_certain_match=self.is_certain_match
+                rank_group=self.rank_group
             )
 
 def rank_version(input_version, provider_version, input_ratio):
