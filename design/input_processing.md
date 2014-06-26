@@ -186,13 +186,11 @@ represent a single version result in each provider.
 The object will have a language attribute that will determine the language of 
 that version. Also, it will have a reference to the provider that generated it.
 
-In order to help in the ranking process, the version will have a property named
-**is_certain_match** that specify whether or not that version matches the 
-version that is inside the Input object completely or not (Each provider will 
-have its own logic to determine that). 
-
 A instance of the class will have a rank value that should be set at initialization
-by the creator (probably the provider). The rank algorithm is specified later.
+by the creator (probably the provider). The rank algorithm is specified later, or
+by some other logic determined by the creator (for example, if the provider
+is certain that the version matches the one we're looking for, it might set the
+rank to 100 without using the ranking algorithm).
 
 Lastly, any other attribute that the provider will need to store under the 
 version instance will be inserted into the attributes dictionary.
@@ -206,7 +204,6 @@ class ProviderVersion(Version):
     version_string = ""
     # Provider's specific attributes.
     attributes = {}
-    is_certain_match = False
     rank = 0
     rank_group = 0
 ```
