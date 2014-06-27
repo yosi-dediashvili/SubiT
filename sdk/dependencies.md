@@ -10,6 +10,3 @@ inflect:        http://pypi.python.org/pypi/inflect
 PyInstaller (version 2.0 exactly): http://sourceforge.net/projects/pyinstaller/files/2.0  
 astor:      https://pypi.python.org/pypi/astor  
 Inno Setup: http://www.jrsoftware.org/isinfo.php  
-
-## SubiT is developed using "Python Tools for Visual Studio": 
-http://pytools.codeplex.com
