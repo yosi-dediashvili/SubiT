@@ -11,6 +11,9 @@ def discover_title(query):
     it's a full path to a file, will use all the three methods (file name, hash 
     and directory name).
 
+    If the query is a path to a file, and that file is missing, the function 
+    will raise FilePathDoesNotExists.
+
     If the function succeeds in discovering the title, a Title instance of the
     appropriate kind is returned (Movie or Series Title). If not, None is 
     returned.
@@ -29,5 +32,9 @@ def discover_title(query):
         year=2012, imdb_id='tt0898266'>
     >>> discover_title("afjbsdjfbkjab asjdvadvad")
     None
+    >>> discover_title(r"M:\\No such dir\\No.Such.File.mkv")
+    Traceback (most recent call last):
+        ...
+    FilePathDoesNotExists: r"M:\\No such dir\\No.Such.File.mkv"
     """
     pass
