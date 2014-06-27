@@ -1,4 +1,11 @@
+__all__ = ['RequestsManager']
+
+
+import logging
+logger = logging.getLogger("subit.api.requestsmanager")
+
 from exceptions import InvalidProviderName
+
 
 class RequestsManager(object):
     class HttpRequestTypes:
@@ -17,6 +24,7 @@ class RequestsManager(object):
         mutex is already lock, the function will block until the mutex is
         released, and we manage to lock it.
         """
+        logger.debug("perform_request got called.")
         with self._requests_mutex:
             return self._perform_request(domain, url, data, type, more_headers)
 
@@ -25,6 +33,7 @@ class RequestsManager(object):
         """
         Perform a request without locking the mutex.
         """
+        logger.debug("perform_request_next got called.")
         return self._perform_request(domain, url, data, type, more_headers)
 
     def _perform_request(self, domain, url, data, type, more_headers = {},
@@ -36,6 +45,9 @@ class RequestsManager(object):
 
         Url should start with "/". If not, the function adds it.
         """
+        logger.debug(
+            "_perform_request got called with: '%s', '%s', %s, %s, %s, %s, %s" % 
+            (domain, url, data, type, more_headers, retry, is_redirection))
         from useragents import get_agent
         import httplib
 
@@ -59,12 +71,15 @@ class RequestsManager(object):
             # In case of specifiyng more headers, we add them
             if (len(more_headers)):
                 headers.update(more_headers)
+            logger.debug("Request headers: %s" % headers)
 
-            got_respone = None
+            got_response = None
             response    = None
             # Try 3 times.
             for error_count in range(1, 4):
                 try:
+                    logger.debug(
+                        "Sending request for the %d time." % error_count)
                     # Before each request, we need to try and connect, because
                     # we're probably not connected (that's way the exception
                     # that we're catching was raised).
@@ -75,7 +90,9 @@ class RequestsManager(object):
                     # If we got the response, break the loop.
                     break
                 except Exception as error:
+                    logger.debug("Request failed: %s" % error)
                     # Sleep some time before we request it again.
+                    from time import sleep
                     sleep(2)
                     # Close it (we're calling connect() again inside the try).
                     httpcon.close()
@@ -85,27 +102,35 @@ class RequestsManager(object):
             # str. The problem is that when we do that, the str preserve the
             # preceding 'b' of the bytes type, so we remove it, and the single
             # quotes and the start and the end of the string
-            try:
-                response = response.decode('utf-8', errors='replace')
-            except:
-                response = str(response)[2:-1]
-            response = response.replace('\r', '').replace('\n', '')
+            if got_response:
+                try:
+                    response = response.decode('utf-8', errors='replace')
+                except:
+                    response = str(response)[2:-1]
+                response = response.replace('\r', '').replace('\n', '')
             # When we get and empty response, it might be a sign that we got a
             # redirection and therefor we check the current url against the
             # requested one. Also, if is_redirection is true, it means that we
             # already got redirection, and therefor we stop the procedure
-            if not response and not is_redirection:
-                new_url = got_response.msg.dict['location']
-                if url not in new_url:
+            if got_response and not response and not is_redirection:
+                logger.debug("Got no response, checking if it's redirection.")
+                location = got_response.msg.dict['location']
+                logger.debug("location value is: %s" % location)
+                if url not in location or url == '/':
+                    logger.debug("url is different, redirecting.")
                     # Because the location gives us the full address including
                     # the protocol and the domain, we remove them in order to
                     # get the relative url
-                    new_url = new_url.replace('http://', '').replace(domain, '')
+                    location = \
+                        location.replace('http://', '').replace(domain, '')
                     return self._perform_request(
-                        domain, new_url, data, type, is_redirection=True)
+                        domain, location, data, type, is_redirection=True)
+                else:
+                    logger.debug("No redirection was made.")
         except Exception as eX:
-            pass
+            logger.debug("Request flow failed: %s" % eX)
 
+        logger.debug("Response length is: %d" % len(response or ''))
         return response
 
     _instances = {}
@@ -139,11 +164,13 @@ class RequestsManager(object):
             ...
         InvalidProviderName: provider_name must be a string.
         """
+        logger.debug("Getting instance for: %s" % provider_name)
         if not provider_name:
             raise InvalidProviderName("provider_name can not be empty.")
         if not isinstance(provider_name, str):
             raise InvalidProviderName("provider_name must be a string.")
 
         if not provider_name in cls._instances:
+            logger.debug("Instance was yet to be created, creating one.")
             cls._instances[provider_name] = cls()
         return cls._instances[provider_name]
