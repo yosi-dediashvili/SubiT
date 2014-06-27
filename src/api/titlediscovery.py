@@ -14,5 +14,20 @@ def discover_title(query):
     If the function succeeds in discovering the title, a Title instance of the
     appropriate kind is returned (Movie or Series Title). If not, None is 
     returned.
+
+    >>> print discover_title("The Matrix")
+    <MovieTitle name='The Matrix', year=1999, imdb_id='tt0133093'>
+    >>> print discover_title("Lost S01E03")
+    <SeriesTitle name='Lost', season_number=1, episode_number=3, \
+        episode_name='Tabula Rasa', year=2004, imdb_id='tt0411008'>
+    >>> print discover_title("The.Matrix.1999.720p.HDDVD.DTS.x264-ESiR")
+    <MovieTitle name='The Matrix', year=1999, imdb_id='tt0133093'>
+    >>> print discover_title("the.big.bang.theory.s05e13.720p.hdtv.x264-orenji")
+    <SeriesTitle name='The Big Bang Theory', \
+        season_number=5, episode_number=13, \
+        episode_name='The Recombination Hypothesis', \
+        year=2012, imdb_id='tt0898266'>
+    >>> discover_title("afjbsdjfbkjab asjdvadvad")
+    None
     """
     pass
