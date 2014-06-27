@@ -32,6 +32,37 @@ the raw name, that is the name as it appears originally in the source (provider,
 IMDB, etc.). The second attribute will be a list of normalized name. It will 
 contain the raw name after a normalization process was applied to it as follows:
 
+#### Discovering Titles
+
+The first crucial step in the whole flow is to discover the title names. This 
+means that when we receive an input string, we need to find out what title 
+stands behind it.
+
+In order to do so, we'll use a title discovery module named `titlediscovery` 
+that will expose a single method named `discover_title`. The function will 
+receive a single string value which may be a simple string or a full path to 
+a file (movie/series). If the function will succeed in discovering the title, 
+it will return a Title instance (Movie or Series). If not, None will be returned.
+
+```python
+def discover_title(query): pass
+```
+
+###### Implementation
+
+The current version will use four methods for extracting the title (same as
+SubiT 2.x), all of them will work against OpenSubtitles:
+
+1. Sending the query to OpenSubtitles
+2. Sending the file hash to OpenSubtitles
+3. Sending the file name (no extension) to OpenSubtitles
+4. Sending the directory name to OpenSubtitles
+
+In the future, we'll probably add more methods, one, for example, will be 
+sending the query/file name/directory to www.torec.net, because they have a 
+search mechanism that is capable of discovering subtitles based on the release 
+name (which in a lot of cases, is the file name).
+
 #### Name normalization
 
 The normalized names will be stored in a list where each item is the previous 
