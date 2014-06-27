@@ -153,6 +153,7 @@ class ProviderVersion(Version):
             "rank_group=%(_rank_group)d>"
             % self.__dict__)
 
+
 def rank_version(input_version, provider_version, input_ratio):
     """
     Ranks the provider_version using the input_version. input_ratio should be
