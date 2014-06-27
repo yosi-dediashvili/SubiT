@@ -11,6 +11,10 @@ info for the Version.
 __all__ = ['Version', 'ProviderVersion', 'UKNOWN_NUM_OF_CDS', 'rank_version']
 
 
+import logging
+logger = logging.getLogger("subit.api.version")
+
+
 from exceptions import InvalidTitleValue
 from exceptions import InvalidNumOfCDs
 from exceptions import InvalidProviderValue
@@ -54,6 +58,9 @@ class Version(object):
         self.identifiers    = identifiers
         self.title          = title
         self.num_of_cds     = num_of_cds
+        # We might get called from a ProviderVersion instance, so we need to 
+        # explicitly call the Version's __repr__ method.
+        logger.debug("Created Version instance: %s" % Version.__repr__(self))
 
     def __str__(self):
         return repr(self)
@@ -102,7 +109,8 @@ class ProviderVersion(Version):
         self.language           = language
         self.attributes         = attributes
         self.version_string     = version_string
-        
+        logger.debug("Created ProviderVersion instance: %s" % self)
+
     @property
     def rank_group(self):
         """
@@ -173,15 +181,20 @@ def rank_version(input_version, provider_version, input_ratio):
     >>> rank_version(input_version, provider_version, 60)
     0.0...
     """
+    logger.debug(
+        "Ranking version %s against %s, with ration %d." % 
+        (provider_version, input_version, input_ratio))
     # Check num_of_cds values.
     if (UKNOWN_NUM_OF_CDS in 
         [input_version.num_of_cds, provider_version.num_of_cds]):
         pass
     elif input_version.num_of_cds != provider_version.num_of_cds:
+        logger.debug("num_of_cds failed in matching.")
         return 0.0
 
     # If one of them is empty.
     if not input_version.identifiers or not provider_version.identifiers:
+        logger.debug("Missing identifiers.")
         return 0.0
 
     input_identifiers = set(input_version.identifiers)
@@ -195,5 +208,10 @@ def rank_version(input_version, provider_version, input_ratio):
 
     ir = input_ratio
     pr = 100 - input_ratio
+    logger.debug(
+        "iic: %d, pic: %d, ioc: %d, poc: %d, ir: %d, pr: %d" %
+        (iic, pic, ioc, poc, ir, pr))
 
-    return 100 - ((ir * (ioc / iic)) + (pr * (poc / pic)))
+    rank = 100 - ((ir * (ioc / iic)) + (pr * (poc / pic)))
+    logger.debug("The rank value is: %d" % rank)
+    return rank
