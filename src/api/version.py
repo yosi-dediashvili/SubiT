@@ -210,9 +210,9 @@ def rank_version(input_version, provider_version, input_ratio):
     ir = input_ratio
     pr = 100 - input_ratio
     logger.debug(
-        "iic: %d, pic: %d, ioc: %d, poc: %d, ir: %d, pr: %d" %
+        "iic: %d, pic: %d, ioc: %.2f, poc: %.2f, ir: %d, pr: %d" %
         (iic, pic, ioc, poc, ir, pr))
 
     rank = 100 - ((ir * (ioc / iic)) + (pr * (poc / pic)))
-    logger.debug("The rank value is: %d" % rank)
+    logger.debug("The rank value is: %.2f" % rank)
     return rank
