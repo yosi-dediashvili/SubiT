@@ -1,1 +1,1 @@
-from .providernames import ProviderNames
+from .providersnames import ProvidersNames
