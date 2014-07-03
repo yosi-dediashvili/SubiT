@@ -67,7 +67,7 @@ The provider might not support all the languages it receives, but it will must
 not use other languages than those.
 
 ###### `get_titles_versions()`
-The function receive the new Input object, and returns a list of TitleVersions
+The function receives the new Input object, and returns a list of TitleVersions
 object.
 
 ###### `download_subtitle_buffer()`
@@ -95,10 +95,16 @@ for (i.e., the languages it was initialized with).
 A class attribute in each provider that returns a Language list that specify
 the languages that the provider can support.
 
+###### `provider_name`
+
+A read only property that returns the name of the provider. The name will be 
+one of the names that appears in the ProviderNames class.
+
 **To sum up, this is the basic structure:**
 ```python
 class IProvider:
     supported_languages = []
+    provider_name = None
     def __init__(self, languages, requests_manager): pass
     def get_titles_versions(self, input): pass
     def download_subtitle_buffer(self, provider_version): pass
