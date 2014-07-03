@@ -183,17 +183,23 @@ class RequestsManager:
 The provider factory will be implemented as a function within the providers 
 package, and will receive up to three arguments:
 
-**provider_name:** The name of the provider as it appears in the provider's 
+**provider_name:** The name of the provider as it appears in the ProviderNames 
 class.
 
-**languages (optional):** List of string that specify the languages that the
-provider will use. If omitted, the function will use the languages specified 
-in SubiT's configuration.
+**languages (optional):** List of Language objects that specify the languages 
+that the provider will use. If omitted, the function will use the languages 
+specified in SubiT's configuration.
 
 **requests_manager_factory (optional):** The factory function of the requests
 manager. We allow passing of the function in order for us to be able to bypass
 the default manager (for testing). If omitted, the function will use SubiT's
 default manager factory.
+
+When called, the factory will first request a RequestsManager instance from the
+`requests_manager_factory` by passing it the `provider_name` value, and then
+the factory will simply look for the provider class having the `provider_name` 
+value, and create an instance of it, passing it the `languages` and the 
+RequestsManager instance.
 
 ```python
 def get_provider_instance(
