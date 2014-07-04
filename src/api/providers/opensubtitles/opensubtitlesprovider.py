@@ -160,15 +160,36 @@ class OpenSubtitlesProvider(IProvider):
                 data['title'],
                 int(data['year']),
                 opensubtitles_id_format_for_imdb(data['id']))
-            logger.debug("Resulted title is: %s" % title)
+            logger.debug("Resulted movie title is: %s" % title)
             return title
         elif kind == "episode":
-            pass
+            try:
+                series_name, episode_name = \
+                    format_opensubtitles_episode_title_name(data['title'])
+            except Exception as eX:
+                logger.error(
+                    "Failed formatting the series title: %s" % data['title'])
+                return None
+            try:
+                series_imdb_id = opensubtitles_id_format_for_imdb(
+                    data['episodeof'].keys()[0].replace("_", ""))
+            except Exception as eX:
+                logger.error(
+                    "Failed formatting the series imdb id: %s" % data)
+                return None
+            title = SeriesTitle(
+                series_name, 
+                int(data['season']),
+                int(data['episode']),
+                opensubtitles_id_format_for_imdb(data['id']),
+                episode_name,
+                int(data['year']),
+                series_imdb_id)
+            logger.debug("Resulted series title is: %s" % title)
+            return title
         else:
             logger.error("Received invalid kind value: %s" % kind)
             return None
-
-
 
     def get_title_by_hash(self, file_hash, file_size = 0):
         """

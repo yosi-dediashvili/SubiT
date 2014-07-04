@@ -1,16 +1,14 @@
 import sys
 sys.path.append("..\\..")
 import os
-from api.providers.opensubtitles import OpenSubtitlesProvider
+from api.providers.opensubtitles import opensubtitlesprovider
+OpenSubtitlesProvider = opensubtitlesprovider.OpenSubtitlesProvider
 from api.languages import Languages
 from api.title import MovieTitle
 from api.title import SeriesTitle
 
 import unittest
-
-import logging
-logging.basicConfig()
-logging.getLogger("subit").setLevel(logging.DEBUG)
+import doctest
 
 AVI_FILE_PATH = os.path.join(os.path.dirname(__file__), "breakdance.avi")
 AVI_FILE_HASH = "8e245d9679d31e12"
@@ -89,6 +87,10 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(title.episode_name, "The Decoupling Fluctuation")
 
 def run_tests():
+    doctest.testmod(
+        opensubtitlesprovider, 
+        verbose=False, 
+        optionflags=doctest.NORMALIZE_WHITESPACE)
     unittest.TextTestRunner(verbosity=0).run(
         unittest.defaultTestLoader.loadTestsFromTestCase(
             TestOpenSubtitlesProvider))
