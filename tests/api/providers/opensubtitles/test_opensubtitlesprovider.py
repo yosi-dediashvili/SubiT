@@ -40,7 +40,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(title.episode_imdb_id, "tt2816136")
         self.assertEquals(title.season_number, 4)
         self.assertEquals(title.episode_number, 1)
-        self.assertEquals(title.episode_name = "Two Swords")
+        self.assertEquals(title.episode_name, "Two Swords")
 
     def test_get_title_by_query_movie(self):
         q = "enders.game.2013.720p.bluray.x264-sparks"
@@ -62,7 +62,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(title.episode_imdb_id, "tt2392630")
         self.assertEquals(title.season_number, 6)
         self.assertEquals(title.episode_number, 2)
-        self.assertEquals(title.episode_name = "The Decoupling Fluctuation")
+        self.assertEquals(title.episode_name, "The Decoupling Fluctuation")
 
 def run_tests():
     unittest.TextTestRunner(verbosity=0).run(
