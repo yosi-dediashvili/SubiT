@@ -55,10 +55,8 @@ class TestRequestsManagerAsyncOp(unittest.TestCase):
             SECONDS_BETWEEN_REQEUESTS * NUMBER_OF_THREADS)
 
 def run_tests():
-    doctest.testmod(
-        requestsmanager,
-        verbose=False,
-        optionflags=doctest.NORMALIZE_WHITESPACE)
-    unittest.TextTestRunner(verbosity=0).run(
-        unittest.defaultTestLoader.loadTestsFromTestCase(
-            TestRequestsManagerAsyncOp))
+    test_runner = unittest.TextTestRunner(verbosity=0)
+    tests = doctest.DocTestSuite(requestsmanager)
+    tests.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(
+        TestRequestsManagerAsyncOp))
+    test_runner.run(tests)

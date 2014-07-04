@@ -62,9 +62,10 @@ class TestProviderVersion(unittest.TestCase):
 
 
 def run_tests():
-    unittest.TextTestRunner(verbosity=0).run(
-        unittest.defaultTestLoader.loadTestsFromTestCase(TestProviderVersion))
-    doctest.testmod(
-        version, 
-        verbose=False, 
+    test_runner = unittest.TextTestRunner(verbosity=0)
+    tests = doctest.DocTestSuite(
+        version,
         optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS)
+    tests.addTests(
+        unittest.defaultTestLoader.loadTestsFromTestCase(TestProviderVersion))
+    test_runner.run(tests)

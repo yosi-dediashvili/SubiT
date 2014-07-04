@@ -97,10 +97,11 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertIsNone(title)
 
 def run_tests():
-    doctest.testmod(
+    test_runner = unittest.TextTestRunner(verbosity=0)
+    tests = doctest.DocTestSuite(
         opensubtitlesprovider, 
-        verbose=False, 
         optionflags=doctest.NORMALIZE_WHITESPACE)
-    unittest.TextTestRunner(verbosity=0).run(
+    tests.addTests(
         unittest.defaultTestLoader.loadTestsFromTestCase(
             TestOpenSubtitlesProvider))
+    test_runner.run(tests)
