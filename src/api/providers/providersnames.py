@@ -14,6 +14,11 @@ class ProvidersNames(object):
             self.full_name = full_name
             self.short_name = short_name
 
+        def __eq__(self, other):
+            return (
+                self.full_name == other.full_name and 
+                self.short_name == other.short_name)
+
         def __str__(self):
             return repr(self)
 
