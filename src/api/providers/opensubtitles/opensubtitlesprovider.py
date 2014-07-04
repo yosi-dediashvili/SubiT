@@ -42,7 +42,7 @@ class OpenSubtitlesServer(object):
                     try:
                         for c in range(1, max_retries + 1):
                             try:
-                                val = func(args, kwargs)
+                                val = func(self.token, *args, **kwargs)
                                 if val:
                                     break
                             except Exception as eX:
@@ -92,9 +92,42 @@ class OpenSubtitlesProvider(IProvider):
     def calculate_file_hash(self, file_path):
         """
         Calculates the hash value (OpenSubtitles algorithm) for the given file.
-        The result is encoded as lowercase hex string.
+        The result is encoded as lowercase hex string. On failures, None is 
+        returned.
         """
-        pass
+        import struct
+        from os.path import getsize
+        logger.debug("Calculating hash value for: %s" % file_path)
+        try:  
+            long_long_format = 'q'  # long long 
+            byte_size = struct.calcsize(long_long_format) 
+                    
+            file_size = getsize(file_path) 
+            logger.debug("File size is: %d" % file_size)
+            if file_size < 65536 * 2: 
+                raise BufferError("The file size is too small: %s" % filesize)
+
+            hash = file_size 
+            with open(file_path, "rb") as f:
+                for x in range(65536/byte_size): 
+                    buffer = f.read(byte_size) 
+                    (l_value,)= struct.unpack(long_long_format, buffer)  
+                    hash += l_value 
+                    hash = hash & 0xFFFFFFFFFFFFFFFF
+                     
+                f.seek(max(0,file_size-65536),0) 
+                for x in range(65536/byte_size): 
+                        buffer = f.read(byte_size) 
+                        (l_value,)= struct.unpack(long_long_format, buffer)  
+                        hash += l_value 
+                        hash = hash & 0xFFFFFFFFFFFFFFFF 
+
+            returned_hash =  "%016x" % hash 
+            logger.debug("Hash value is: %s" % returned_hash)
+            return returned_hash 
+        except Exception as eX:
+            logger.error("Failed calculating the hash: %s" % eX)
+            return None
 
     def get_title_by_hash(self, file_hash, file_size = 0):
         """

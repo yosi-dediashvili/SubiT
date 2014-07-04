@@ -8,6 +8,10 @@ from api.title import SeriesTitle
 
 import unittest
 
+import logging
+logging.basicConfig()
+logging.getLogger("subit").setLevel(logging.DEBUG)
+
 AVI_FILE_PATH = os.path.join(os.path.dirname(__file__), "breakdance.avi")
 AVI_FILE_HASH = "8e245d9679d31e12"
 
