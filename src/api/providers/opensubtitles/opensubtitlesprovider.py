@@ -1,6 +1,8 @@
 import logging
 logger = logging.getLogger("subit.api.providers.opensubtitles")
 
+from api.exceptions import InvalidIMDBIdFormat
+
 from api.providers.providersnames import ProvidersNames
 from api.providers.iprovider import IProvider
 from api.languages import Languages
@@ -133,7 +135,6 @@ class OpenSubtitlesProvider(IProvider):
             logger.error("Failed calculating the hash: %s" % eX)
             return None
 
-
     def get_title_by_imdb_id(self, imdb_id):
         """
         Queries OpenSubtitles using the imdb_id. The ID should be in the format
@@ -142,7 +143,6 @@ class OpenSubtitlesProvider(IProvider):
         depends on what was queried. On failures, None is returned.
         """
         pass
-
 
     def get_title_by_hash(self, file_hash, file_size = 0):
         """
@@ -160,3 +160,30 @@ class OpenSubtitlesProvider(IProvider):
         logic as the get_title_by_hash() method.
         """
         pass
+
+
+def imdb_id_format_for_opensubtitles(imdb_id):
+        """
+        Coverts from IMDB'd format to OpenSubtitles's. Removes any leading zero
+        also. Raises an exception if the imdb_id format is invalid.
+
+        >>> imdb_id_format_for_opensubtitles("tt2341621")
+        '2341621'
+        >>> imdb_id_format_for_opensubtitles("tt0013512")
+        '13512'
+        >>> imdb_id_format_for_opensubtitles("zzzzzz")
+        Traceback (most recent call last):
+            ...
+        InvalidIMDBIdFormat: The format is invalid: zzzzzz
+        >>> imdb_id_format_for_opensubtitles("1512351")
+        Traceback (most recent call last):
+            ...
+        InvalidIMDBIdFormat: The format is invalid: 1512351
+        """
+        import re
+        id_items = re.findall("(tt)(\d+)", imdb_id)
+        if len(id_items) != 1 or len(id_items[0]) != 2:
+            raise InvalidIMDBIdFormat("The format is invalid: %s" % imdb_id)
+
+        # We convert to int in order to remove any leading zeroes.
+        return str(int(id_items[0][1]))

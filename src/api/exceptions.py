@@ -12,3 +12,5 @@ class InvalidLanguageValue(Exception): pass
 class InvalidProviderName(Exception): pass
 
 class UnsupportedLanguage(Exception): pass
+
+class InvalidIMDBIdFormat(Exception): pass
