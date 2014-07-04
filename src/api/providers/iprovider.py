@@ -3,6 +3,7 @@ class IProvider(object):
     __metaclass__ = ABCMeta
 
     supported_languages = []
+    provider_name = None
 
     @abstractmethod
     def __init__(self, languages, requests_manager):
