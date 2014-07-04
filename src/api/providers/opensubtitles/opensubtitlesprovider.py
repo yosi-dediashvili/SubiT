@@ -45,7 +45,7 @@ class OpenSubtitlesServer(object):
                                 val = func(self.token, *args, **kwargs)
                                 if val:
                                     break
-                            except Exception as eX:
+                            except socket.error as eX:
                                 logger.debug("Call failed: %d:%s" % (c, eX))
                                 if c < max_retries:
                                     continue
