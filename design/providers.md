@@ -186,9 +186,8 @@ package, and will receive up to three arguments:
 **provider_name:** The name of the provider as it appears in the ProviderNames 
 class.
 
-**languages (optional):** List of Language objects that specify the languages 
-that the provider will use. If omitted, the function will use the languages 
-specified in SubiT's configuration.
+**languages:** List of Language objects that specify the languages 
+that the provider will use.
 
 **requests_manager_factory (optional):** The factory function of the requests
 manager. We allow passing of the function in order for us to be able to bypass
