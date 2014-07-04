@@ -15,12 +15,19 @@ class Languages(object):
 			self.full_name = full_name
 			self.iso_name = iso_name
 
+		def __eq__(self, other):
+			return (
+				self.full_name == other.full_name and 
+				self.iso_name == other.iso_name)
+
 		def __str__(self):
 			return repr(self)
 
 		def __repr__(self):
-			return "<Language full_name='%s', iso_name='%s'>" % \
-				(self.full_name, self.iso_name)
+			return (
+				"<Language full_name='%(full_name)s', "
+				"iso_name='%(iso_name)s'>" 
+				% self.__dict__)
 
 	class __metaclass__(type):
 		""" 
