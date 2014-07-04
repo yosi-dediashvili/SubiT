@@ -56,13 +56,18 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         title = self.provider.get_title_by_hash(h)
         self.assertIsNotNone(title)
         self.assertIsInstance(title, SeriesTitle)
-        self.assertEquals(title.name, "Games of Thrones")
+        self.assertEquals(title.name, "Game of Thrones")
         self.assertEquals(title.year, 2014)
         self.assertEquals(title.imdb_id, "tt0944947")
         self.assertEquals(title.episode_imdb_id, "tt2816136")
         self.assertEquals(title.season_number, 4)
         self.assertEquals(title.episode_number, 1)
         self.assertEquals(title.episode_name, "Two Swords")
+
+    def test_get_title_by_hash_none(self):
+        h = "2389562259175175112"
+        title = self.provider.get_title_by_hash(h)
+        self.assertIsNone(title)
 
     def test_get_title_by_query_movie(self):
         q = "enders.game.2013.720p.bluray.x264-sparks"
