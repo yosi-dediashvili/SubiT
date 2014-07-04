@@ -89,7 +89,7 @@ class OpenSubtitlesProvider(IProvider):
     def languages_in_use(self):
         return self._languages_in_use
 
-    def calculate_hash(self, file_path):
+    def calculate_file_hash(self, file_path):
         """
         Calculates the hash value (OpenSubtitles algorithm) for the given file.
         The result is encoded as lowercase hex string.
