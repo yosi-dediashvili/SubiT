@@ -31,6 +31,30 @@ def get_provider_instance(provider_name, languages,
     If none of the languages specified is supported in the provider specified,
     an UnsupportedLanguage exception will be raised.
     """
+    logger.debug(
+        "get_provider_instance called with: %s, %s" % provider_name, languages)
 
+    available_providers = {p.provider_name: p for p in providers}
+    if provider_name not in available_providers:
+        logger.error("Only available provider names are: %s" 
+            % available_providers.keys())
+        raise InvalidProviderName(
+            "No such provider_name was located in the providers: %s" 
+            % provider_name)
 
+    provider_class = available_providers[provider_name]
+    logger.debug("Found the provider: %s" % provider_class)
     
+    available_languages = list(
+        set(languages).intersection(set(provider_class.supported_languages)))
+    logger.debug("available_languages: %s" % available_languages)
+    if not available_languages:
+        logger.error("Not a single language is available in that provider.")
+        raise UnsupportedLanguage(
+            "The provider does not support any required language.")
+
+    requests_manager = requests_manager_factory(provider_name.full_name)
+    logger.debug("Received a RequestsManager: %s" % requests_manager)
+    provider = provider_class(languages, requests_manager)
+    logger.debug("Created a provider instance: %s" % provider)
+    return provider
