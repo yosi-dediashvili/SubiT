@@ -194,6 +194,10 @@ manager. We allow passing of the function in order for us to be able to bypass
 the default manager (for testing). If omitted, the function will use SubiT's
 default manager factory.
 
+**providers (optional):** A list of provider classes in which the matching 
+provider will be looked in. If omitted, the function uses the static list 
+of the providers. This parameter is useful for testing.
+
 When called, the factory will first request a RequestsManager instance from the
 `requests_manager_factory` by passing it the `provider_name` value, and then
 the factory will simply look for the provider class having the `provider_name` 
@@ -204,7 +208,8 @@ RequestsManager instance.
 def get_provider_instance(
     provider_name, 
     languages = None, 
-    requests_manager_factory = None): pass
+    requests_manager_factory = None,
+    providers = []): pass
 ```
 
 ### The Main provider instance
