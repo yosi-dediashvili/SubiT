@@ -14,3 +14,4 @@ class InvalidProviderName(Exception): pass
 class UnsupportedLanguage(Exception): pass
 
 class InvalidIMDBIdFormat(Exception): pass
+class InvalidOpenSubtitlesTitleFormat(Exception): pass

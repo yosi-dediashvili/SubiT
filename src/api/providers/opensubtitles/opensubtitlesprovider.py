@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger("subit.api.providers.opensubtitles")
 
 from api.exceptions import InvalidIMDBIdFormat
-
+from api.title import *
 from api.providers.providersnames import ProvidersNames
 from api.providers.iprovider import IProvider
 from api.languages import Languages
@@ -140,9 +140,34 @@ class OpenSubtitlesProvider(IProvider):
         Queries OpenSubtitles using the imdb_id. The ID should be in the format
         of IMDB, and not OpenSubtitles's one. i.e., 'tt<id>' and not '<id>'.
         If succeeded, the function returns either SeriesTitle or MovieTitle 
-        depends on what was queried. On failures, None is returned.
+        depends on what was queried. On failures, None is returned. If the 
+        imdb_id is malformed, exception is raised.
         """
-        pass
+        logger.debug("Getting title info with imdb id: %s" % imdb_id)
+        opensubtitles_id = imdb_id_format_for_opensubtitles(imdb_id)
+
+        response = self.server.GetIMDBMovieDetails(opensubtitles_id)
+        if not response:
+            logger.error("Got no response for the imdb id.")
+            return None
+
+        data = response['data']
+        kind = data['kind']
+        logger.debug("Movie kind is: %s" % kind)
+        if kind == 'movie':
+            title = MovieTitle(
+                data['title'],
+                int(data['year']),
+                opensubtitles_id_format_for_imdb(data['id']))
+            logger.debug("Resulted title is: %s" % title)
+            return title
+        elif kind == "episode":
+            pass
+        else:
+            logger.error("Received invalid kind value: %s" % kind)
+            return None
+
+
 
     def get_title_by_hash(self, file_hash, file_size = 0):
         """
@@ -161,51 +186,67 @@ class OpenSubtitlesProvider(IProvider):
         """
         pass
 
+def format_opensubtitles_episode_title_name(title_value):
+    """
+    Splits the title value in OpenSubtitles in case it's in the episode format,
+    which is '"<SeriesName>" <EpisodeName>', into a tuple of the same format.
+    Raises an exception if the value is not formed in that way.
+
+    >>> format_opensubtitles_episode_title_name(\
+        '"The Big Bang Theory" The Pork Chop Indeterminacy')
+    ('The Big Bang Theory', 'The Pork Chop Indeterminacy')
+    >>> format_opensubtitles_episode_title_name("The Big Bang Theory")
+    Traceback (most recent call last):
+        ...
+    InvalidOpenSubtitlesTitleFormat: \
+        The format is invalid: 'The Big Bang Theory'
+    """
+    pass
 
 def imdb_id_format_for_opensubtitles(imdb_id):
-        """
-        Coverts from IMDB'd format to OpenSubtitles's. Removes any leading zero
-        also. Raises an exception if the imdb_id format is invalid.
+    """
+    Coverts from IMDB'd format to OpenSubtitles's. Removes any leading zero
+    also. Raises an exception if the imdb_id format is invalid.
 
-        >>> imdb_id_format_for_opensubtitles("tt2341621")
-        '2341621'
-        >>> imdb_id_format_for_opensubtitles("tt0013512")
-        '13512'
-        >>> imdb_id_format_for_opensubtitles("zzzzzz")
-        Traceback (most recent call last):
-            ...
-        InvalidIMDBIdFormat: The format is invalid: zzzzzz
-        >>> imdb_id_format_for_opensubtitles("1512351")
-        Traceback (most recent call last):
-            ...
-        InvalidIMDBIdFormat: The format is invalid: 1512351
-        """
-        import re
-        id_items = re.findall("(tt)(\d+)", imdb_id)
-        if len(id_items) != 1 or len(id_items[0]) != 2:
-            raise InvalidIMDBIdFormat("The format is invalid: %s" % imdb_id)
+    >>> imdb_id_format_for_opensubtitles("tt2341621")
+    '2341621'
+    >>> imdb_id_format_for_opensubtitles("tt0013512")
+    '13512'
+    >>> imdb_id_format_for_opensubtitles("zzzzzz")
+    Traceback (most recent call last):
+        ...
+    InvalidIMDBIdFormat: The format is invalid: zzzzzz
+    >>> imdb_id_format_for_opensubtitles("1512351")
+    Traceback (most recent call last):
+        ...
+    InvalidIMDBIdFormat: The format is invalid: 1512351
+    """
+    import re
+    id_items = re.findall("(tt)(\d+)", imdb_id)
+    if len(id_items) != 1 or len(id_items[0]) != 2:
+        raise InvalidIMDBIdFormat("The format is invalid: %s" % imdb_id)
 
-        # We convert to int in order to remove any leading zeroes.
-        return str(int(id_items[0][1]))
+    # We convert to int in order to remove any leading zeroes.
+    return str(int(id_items[0][1]))
 
 def opensubtitles_id_format_for_imdb(opensubtitles_id):
-        """
-        Coverts from OpenSubtitles's imdb id format to IMDB's. Adds leading 
-        zeroes in order to generate a 7 chars ids. Raises an exception if the 
-        id value is larger than 7 digits.
+    """
+    Coverts from OpenSubtitles's imdb id format to IMDB's. Adds leading 
+    zeroes in order to generate a 7 chars ids. Raises an exception if the 
+    id value is larger than 7 digits.
 
-        >>> opensubtitles_id_format_for_imdb("2341621")
-        'tt2341621'
-        >>> opensubtitles_id_format_for_imdb("13512")
-        'tt0013512'
-        >>> opensubtitles_id_format_for_imdb(51223151)
-        Traceback (most recent call last):
-            ...
-        InvalidIMDBIdFormat: ID number is too large: 51223151
-        """
-        id_str = str(opensubtitles_id)
-        if len(id_str) > 7:
-            raise InvalidIMDBIdFormat("ID number is too large: %s" % id_str)
+    >>> opensubtitles_id_format_for_imdb("2341621")
+    'tt2341621'
+    >>> opensubtitles_id_format_for_imdb("13512")
+    'tt0013512'
+    >>> opensubtitles_id_format_for_imdb(51223151)
+    Traceback (most recent call last):
+        ...
+    InvalidIMDBIdFormat: ID number is too large: 51223151
+    """
+    id_str = str(opensubtitles_id)
+    if len(id_str) > 7:
+        raise InvalidIMDBIdFormat("ID number is too large: %s" % id_str)
 
-        id_str = id_str.rjust(7, "0")
-        return "tt" + id_str
+    id_str = id_str.rjust(7, "0")
+    return "tt" + id_str
