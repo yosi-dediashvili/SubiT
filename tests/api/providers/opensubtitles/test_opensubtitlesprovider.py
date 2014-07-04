@@ -44,7 +44,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
 
     def test_get_title_by_query_movie(self):
         q = "enders.game.2013.720p.bluray.x264-sparks"
-        title = provider.get_title_by_name(q)
+        title = provider.get_title_by_query(q)
         self.assertIsNotNone(title)
         self.assertIsInstance(title, MovieTitle)
         self.assertEquals(title.name, "Enter's Game")
@@ -53,7 +53,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
 
     def test_get_title_by_query_series(self):
         q = "The.Big.Bang.Theory.S06E02.720p.HDTV.X264-DIMENSION"
-        title = provider.get_title_by_name(q)
+        title = provider.get_title_by_query(q)
         self.assertIsNotNone(title)
         self.assertIsInstance(title, SeriesTitle)
         self.assertEquals(title.name, "The Big Bang Theory")
