@@ -18,16 +18,18 @@ class TestProvidersFactory(unittest.TestCase):
         from api.exceptions import UnsupportedLanguage
         providers = [HebrewOnlyProvider]
         languages = [Languages.ENGLISH]
-        self.assertRaises(UnsupportedLanguage, get_provider_instance, 
-            (MOCKED_PROVIDER_NAME, languages, lambda t: None, providers))
+        with self.assertRaises(UnsupportedLanguage):
+            get_provider_instance(
+                MOCKED_PROVIDER_NAME, languages, providers=providers)
 
     def test_invalid_provider_name(self):
         from api.exceptions import InvalidProviderName
         providers = [HebrewOnlyProvider]
         languages = [Languages.HEBREW]
-        provider_name = ProviderNames.ProviderName("fake_name", "fake")
-        self.assertRaises(InvalidProviderName, get_provider_instance, 
-            (provider_name, languages, lambda t: None, providers))
+        provider_name = ProvidersNames.ProviderName("fake_name", "fake")
+        with self.assertRaises(InvalidProviderName):
+            get_provider_instance(
+                provider_name, languages, providers=providers)
 
     def test_partial_language(self):
         providers = [HebrewOnlyProvider]

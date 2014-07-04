@@ -31,8 +31,8 @@ def get_provider_instance(provider_name, languages,
     If none of the languages specified is supported in the provider specified,
     an UnsupportedLanguage exception will be raised.
     """
-    logger.debug(
-        "get_provider_instance called with: %s, %s" % provider_name, languages)
+    logger.debug("get_provider_instance called with: %s, %s" 
+        % (provider_name, languages))
 
     available_providers = {p.provider_name: p for p in providers}
     if provider_name not in available_providers:
