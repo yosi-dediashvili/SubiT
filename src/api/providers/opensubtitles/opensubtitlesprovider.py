@@ -187,3 +187,25 @@ def imdb_id_format_for_opensubtitles(imdb_id):
 
         # We convert to int in order to remove any leading zeroes.
         return str(int(id_items[0][1]))
+
+def opensubtitles_id_format_for_imdb(opensubtitles_id):
+        """
+        Coverts from OpenSubtitles's imdb id format to IMDB's. Adds leading 
+        zeroes in order to generate a 7 chars ids. Raises an exception if the 
+        id value is larger than 7 digits.
+
+        >>> opensubtitles_id_format_for_imdb("2341621")
+        'tt2341621'
+        >>> opensubtitles_id_format_for_imdb("13512")
+        'tt0013512'
+        >>> opensubtitles_id_format_for_imdb(51223151)
+        Traceback (most recent call last):
+            ...
+        InvalidIMDBIdFormat: ID number is too large: 51223151
+        """
+        id_str = str(opensubtitles_id)
+        if len(id_str) > 7:
+            raise InvalidIMDBIdFormat("ID number is too large: %s" % id_str)
+
+        id_str = id_str.rjust(7, "0")
+        return "tt" + id_str
