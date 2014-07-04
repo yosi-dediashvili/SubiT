@@ -3,14 +3,17 @@ logger = logging.getLogger("subit.api.providers")
 
 from api.exceptions import UnsupportedLanguage
 from api.exceptions import InvalidProviderName
-
 from api.requestsmanager import RequestsManager
+from api.providers.providersnames import ProvidersNames
 
-__all__ = ['get_titles_versions']
+from api.providers.opensubtitles import OpenSubtitlesProvider
+
+
+__all__ = ['get_titles_versions', 'ProvidersNames']
 
 # The list will contain the classes (not instances) of all the providers that
 # SubiT knows of.
-PROVIDERS = []
+PROVIDERS = [OpenSubtitlesProvider]
 
 
 def get_provider_instance(provider_name, languages, 
