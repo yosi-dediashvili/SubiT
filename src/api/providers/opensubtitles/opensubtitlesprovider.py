@@ -113,7 +113,7 @@ class OpenSubtitlesProvider(IProvider):
             file_size = getsize(file_path) 
             logger.debug("File size is: %d" % file_size)
             if file_size < 65536 * 2: 
-                raise BufferError("The file size is too small: %s" % filesize)
+                raise BufferError("The file size is too small: %s" % file_size)
 
             hash = file_size 
             with open(file_path, "rb") as f:
