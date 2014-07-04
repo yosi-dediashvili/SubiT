@@ -115,22 +115,24 @@ class SeriesTitle(Title):
     the series.
     """
     def __init__(self, name, season_number = 0, episode_number = 0, 
-                 episode_name = "", year = 0, imdb_id = ""):
+                 episode_imdb_id = "", episode_name = "", year = 0, 
+                 imdb_id = ""):
         """
         The Series title is initialized with at least a name and either (season 
         + episode numbers) or episode_name. 
         """
         Title.__init__(self, name, year, imdb_id)
-        if not season_number and not episode_name:
+        if not episode_imdb_id and not season_number and not episode_name:
             raise InvalidSeasonNumber(
                 "season_number cannot be empty along with episode_name.")
-        if not episode_number and not episode_name:
+        if not episode_imdb_id and not episode_number and not episode_name:
             raise InvalidEpisodeNumber(
                 "episode_number cannot be empty along with episode_name.")
 
-        self.episode_name   = episode_name
-        self.season_number  = season_number
-        self.episode_number = episode_number
+        self.episode_name    = episode_name
+        self.season_number   = season_number
+        self.episode_number  = episode_number
+        self.episode_imdb_id = episode_imdb_id
         if episode_name:
             from namenormalization import normalize_name
             self.episode_normalized_names = normalize_name(self.episode_name)
@@ -156,6 +158,15 @@ class SeriesTitle(Title):
         """
         SeriesTitle equlity check.
 
+        >>> SeriesTitle("Lost", episode_imdb_id = "tt0994359") == \
+        SeriesTitle("Lost", episode_imdb_id = "tt0994359")
+        True
+        >>> SeriesTitle("Lost", episode_imdb_id = "tt0994351") == \
+        SeriesTitle("Lost", episode_imdb_id = "tt0994359")
+        False
+        >>> SeriesTitle("Lost", 3, 1, episode_imdb_id = "tt0994351") == \
+        SeriesTitle("Lost", 3, 1, episode_imdb_id = "tt0994359")
+        False
         >>> SeriesTitle("Lost", 5, 3) == SeriesTitle("Lost", 5, 4)
         False
         >>> SeriesTitle("Losts", 5, 3) == SeriesTitle("Lost", 5, 3)
@@ -175,8 +186,11 @@ class SeriesTitle(Title):
             return False
 
         logger.debug("Checking SeriesTitle equality: %s and %s" % (self, other))
-        # First, make sure that their not empty.
-        if (self.season_number and other.episode_number and 
+        # First, if both titles has episode id.
+        if (self.episode_imdb_id and other.episode_imdb_id):
+            return self.episode_imdb_id == other.episode_imdb_id
+        # If an id is missing.
+        elif (self.season_number and other.episode_number and 
             self.episode_number and other.episode_number):
 
             if (self.season_number == other.season_number and 
@@ -190,21 +204,23 @@ class SeriesTitle(Title):
 
     def __repr__(self):
         """
-        >>> print SeriesTitle("Lost", 1, 3, "Tabula Rasa", 2004, "tt0411008")
-        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
-        episode_name='Tabula Rasa', year=2004, imdb_id='tt0411008'>
-        >>> print SeriesTitle("Lost", 1, 3, "Tabula Rasa", 2004)
-        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
-        episode_name='Tabula Rasa', year=2004, imdb_id=''>
-        >>> print SeriesTitle("Lost", 1, 3, "Tabula Rasa")
-        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
-        episode_name='Tabula Rasa', year=0, imdb_id=''>
+        >>> print SeriesTitle("Lost", 1, 3, "", "Tabula Rasa", 2004, "tt0411008")
+        <SeriesTitle name='Lost', episode_imdb_id='', season_number=1, \
+        episode_number=3, episode_name='Tabula Rasa', year=2004, \
+        imdb_id='tt0411008'>
+        >>> print SeriesTitle("Lost", 1, 3, "tt1513512", "Tabula Rasa", 2004)
+        <SeriesTitle name='Lost', episode_imdb_id='tt1513512', season_number=1,\
+        episode_number=3, episode_name='Tabula Rasa', year=2004, imdb_id=''>
+        >>> print SeriesTitle("Lost", 1, 3, "tt1513512", "Tabula Rasa")
+        <SeriesTitle name='Lost', episode_imdb_id='tt1513512', season_number=1,\
+        episode_number=3, episode_name='Tabula Rasa', year=0, imdb_id=''>
         >>> print SeriesTitle("Lost", 1, 3)
-        <SeriesTitle name='Lost', season_number=1, episode_number=3, \
-        episode_name='', year=0, imdb_id=''>
+        <SeriesTitle name='Lost', episode_imdb_id='', season_number=1, \
+        episode_number=3, episode_name='', year=0, imdb_id=''>
         """
         return (
             "<SeriesTitle name='%(name)s', "
+            "episode_imdb_id='%(episode_imdb_id)s', "
             "season_number=%(season_number)d, "
             "episode_number=%(episode_number)d, "
             "episode_name='%(episode_name)s', "
