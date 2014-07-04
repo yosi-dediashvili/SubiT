@@ -129,6 +129,17 @@ class OpenSubtitlesProvider(IProvider):
             logger.error("Failed calculating the hash: %s" % eX)
             return None
 
+
+    def get_title_by_imdb_id(self, imdb_id):
+        """
+        Queries OpenSubtitles using the imdb_id. The ID should be in the format
+        of IMDB, and not OpenSubtitles's one. i.e., 'tt<id>' and not '<id>'.
+        If succeeded, the function returns either SeriesTitle or MovieTitle 
+        depends on what was queried. On failures, None is returned.
+        """
+        pass
+
+
     def get_title_by_hash(self, file_hash, file_size = 0):
         """
         Queries OpenSubtitles for title information using the hash value of the
@@ -144,4 +155,4 @@ class OpenSubtitlesProvider(IProvider):
         Sends the query as-is to OpenSubtitles, and after it, applies the same 
         logic as the get_title_by_hash() method.
         """
-        pass    
+        pass

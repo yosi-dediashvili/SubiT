@@ -23,6 +23,26 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         h = self.provider.calculate_file_hash(AVI_FILE_PATH)
         self.assertEqual(h.lower(), AVI_FILE_HASH)
 
+    def test_get_title_by_imdb_id_movie(self):
+        title = self.provider.get_title_by_imdb_id("tt0133093")
+        self.assertIsNotNone(title)
+        self.assertIsInstance(title, MovieTitle)
+        self.assertEquals(title.name, "The Matrix")
+        self.assertEquals(title.year, 1999)
+        self.assertEquals(title.imdb_id, "tt0133093")
+
+    def test_get_title_by_imdb_id_series(self):
+        title = self.provider.get_title_by_imdb_id("tt2392630")
+        self.assertIsNotNone(title)
+        self.assertIsInstance(title, SeriesTitle)
+        self.assertEquals(title.name, "The Big Bang Theory")
+        self.assertEquals(title.year, 2012)
+        self.assertEquals(title.imdb_id, "tt0898266")
+        self.assertEquals(title.episode_imdb_id, "tt2392630")
+        self.assertEquals(title.season_number, 6)
+        self.assertEquals(title.episode_number, 2)
+        self.assertEquals(title.episode_name, "The Decoupling Fluctuation")
+
     def test_get_title_by_hash_movie(self):
         h = "66ea24e3ad41fd47"
         size = 8425019199
