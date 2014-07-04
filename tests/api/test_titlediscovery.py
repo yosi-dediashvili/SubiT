@@ -27,8 +27,10 @@ def hash_matches():
     return sha1_val == MOVIE_FILE_SHA1
 
 def run_tests():
-    test_runner = unittest.TextTestRunner(verbosity=2)
-    tests = doctest.DocTestSuite(titlediscovery)
+    test_runner = unittest.TextTestRunner(verbosity=0)
+    tests = doctest.DocTestSuite(
+        titlediscovery, 
+        optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS)
     if os.path.exists(PATH_TO_MOVIE_FILE) and hash_matches():
         tests.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(
             TestTitleDiscovery))

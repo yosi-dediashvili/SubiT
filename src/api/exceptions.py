@@ -15,3 +15,5 @@ class UnsupportedLanguage(Exception): pass
 
 class InvalidIMDBIdFormat(Exception): pass
 class InvalidOpenSubtitlesTitleFormat(Exception): pass
+
+class FilePathDoesNotExists(Exception): pass
