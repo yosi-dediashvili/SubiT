@@ -91,11 +91,16 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(title.episode_number, 2)
         self.assertEquals(title.episode_name, "The Decoupling Fluctuation")
 
+    def test_get_title_by_query_none(self):
+        q = "hjsjdhgsdjhg2 23t9tjgs sdgsd"
+        title = self.provider.get_title_by_query(q)
+        self.assertIsNone(title)
+
 def run_tests():
     doctest.testmod(
         opensubtitlesprovider, 
         verbose=False, 
         optionflags=doctest.NORMALIZE_WHITESPACE)
-    unittest.TextTestRunner(verbosity=0).run(
+    unittest.TextTestRunner(verbosity=2).run(
         unittest.defaultTestLoader.loadTestsFromTestCase(
             TestOpenSubtitlesProvider))
