@@ -199,7 +199,15 @@ class OpenSubtitlesProvider(IProvider):
         construct a Title instance with parameters from the first result that
         was returned from the site.
         """
-        pass
+        logger.debug("Getting title info with hash: %s" % file_hash)
+        response = self.server.CheckMovieHash2([file_hash])
+        if not response:
+            logger.error("Failed getting response for the hash.")
+            return None
+
+        opensubtitles_id = response['data'][file_hash][0]['MovieImdbID']
+        return self.get_title_by_imdb_id(
+            opensubtitles_id_format_for_imdb(opensubtitles_id))
 
     def get_title_by_query(self, query):
         """
@@ -207,6 +215,7 @@ class OpenSubtitlesProvider(IProvider):
         logic as the get_title_by_hash() method.
         """
         pass
+
 
 def format_opensubtitles_episode_title_name(title_value):
     """
