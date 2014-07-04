@@ -114,9 +114,9 @@ The title will provide a method for comparing it to another title.
 Given two titles, the equality check will return ```True``` according in any of 
 the following cases:
 
-    * The IMDB's id is identical, and is not empty.
-    * The IMDB's id is empty in at least one title, the year matches (zero is 
-        acceptable), and the normalized names share at least one name.
+* The IMDB's id is identical, and is not empty.
+* The IMDB's id is empty in at least one title, the year matches (zero is 
+    acceptable), and the normalized names share at least one name.
 
 * * *
 We have two version of Title. The first is the MovieTitle, and the second is the
@@ -130,18 +130,20 @@ between movie and series.
 #### SeriesTitle
 
 Adds episode numbering to the title, and the episode name. The episode name has
-the same normalization mechanism as the Title's name.
+the same normalization mechanism as the Title's name. In this title, the `imdb_id`
+value specifies the id of the **Series**, and another value, `episode_imdb_id` 
+specifies the **Episode** id.
 
 ##### Comparing Series titles
 
 When two series titles are compared, the check will return ```True``` in any 
 of the following cases:
 
-
-    In any case, the Title's equality check should return True.
-    * The season and episode number matches, and are not equal to zero.
-    * The season and episode number equal to zero, and the episode's normalized 
-names share at least one name.
+* **In any case, the Title's equality check should return True**
+* The episode id is identical and is not empty.
+* The season and episode number matches, and are not equal to zero.
+* The season and episode number equal to zero, and the episode's normalized 
+    names share at least one name.
 
 * * *
 
@@ -158,6 +160,7 @@ class MovieTitle(Title):
     pass
 
 class SeriesTitle(Title):
+    episode_imdb_id = ""
     season_number = 0
     episode_number = 0
     episode_name = ""
