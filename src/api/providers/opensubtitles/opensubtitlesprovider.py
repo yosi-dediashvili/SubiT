@@ -9,6 +9,7 @@ from api.providers.iprovider import IProvider
 from api.languages import Languages
 
 from xmlrpclib import Server as XmlRpcServer
+from xmlrpclib import Error as XmlRpcError
 
 
 __all__ = ['OpenSubtitlesProvider']
@@ -49,7 +50,7 @@ class OpenSubtitlesServer(object):
                                 val = func(self.token, *args, **kwargs)
                                 if val:
                                     break
-                            except socket.error as eX:
+                            except (socket.error, XmlRpcError) as eX:
                                 logger.debug("Call failed: %d:%s" % (c, eX))
                                 if c < max_retries:
                                     continue
@@ -61,7 +62,7 @@ class OpenSubtitlesServer(object):
                     except Exception as eX:
                         logger.error("Failed calling %s: %s" % (name, eX))
                         return None
-                    logger.debug("Succeeded calling %s: %s" % (name, val))
+                    logger.debug("Succeeded calling %s." % name)
                     return val
                 return func_exec
             attr = getattr(object.__getattribute__(self, 'server'), name)
@@ -211,10 +212,42 @@ class OpenSubtitlesProvider(IProvider):
 
     def get_title_by_query(self, query):
         """
-        Sends the query as-is to OpenSubtitles, and after it, applies the same 
-        logic as the get_title_by_hash() method.
+        Sends the query as-is to OpenSubtitles. Then, it iterates over all the 
+        results, and looks for the imdb id in each one, and selects the id that
+        appears the most, and sends it to the get_title_by_imdb_id method.
         """
-        pass
+        logger.debug("Getting title info with query: %s" % query)
+        response = self.server.SearchSubtitles([{"query":query}])
+        if not response or not response['data']:
+            logger.error("Failed getting response for the query.")
+            return None
+
+        data = response['data']
+        # A dictionary of {IMDB_ID:Appearances}
+        imdb_ids = {}
+        # Iterate over all the results, and count id appearances.
+        for movie in data:
+            if not 'IDMovieImdb' in movie:
+                logger.debug("The movie is missing the ID tag, skipping.")
+                continue
+            imdb_id = movie['IDMovieImdb']
+            if imdb_id not in imdb_ids:
+                imdb_ids[imdb_id] = 1
+            else:
+                imdb_ids[imdb_id] += 1
+
+        if not imdb_ids:
+            logger.error("None of the movies has ID tag.")
+            return None
+
+        logger.debug("ID appearances is: %s" % imdb_ids)
+        # Select the id with most appearances.
+        ids_sorted = \
+            sorted(imdb_ids.iteritems(), key=lambda i: i[1], reverse=True)
+        logger.debug("Sorted result is: %s" % ids_sorted)
+        selected_id = ids_sorted[0][0]
+        imdb_id = opensubtitles_id_format_for_imdb(selected_id)
+        return self.get_title_by_imdb_id(imdb_id)
 
 
 def format_opensubtitles_episode_title_name(title_value):

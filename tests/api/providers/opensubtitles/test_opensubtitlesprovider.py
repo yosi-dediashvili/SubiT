@@ -74,7 +74,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         title = self.provider.get_title_by_query(q)
         self.assertIsNotNone(title)
         self.assertIsInstance(title, MovieTitle)
-        self.assertEquals(title.name, "Enter's Game")
+        self.assertEquals(title.name, "Ender's Game")
         self.assertEquals(title.year, 2013)
         self.assertEquals(title.imdb_id, "tt1731141")
 
@@ -101,6 +101,6 @@ def run_tests():
         opensubtitlesprovider, 
         verbose=False, 
         optionflags=doctest.NORMALIZE_WHITESPACE)
-    unittest.TextTestRunner(verbosity=2).run(
+    unittest.TextTestRunner(verbosity=0).run(
         unittest.defaultTestLoader.loadTestsFromTestCase(
             TestOpenSubtitlesProvider))
