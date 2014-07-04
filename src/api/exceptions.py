@@ -10,3 +10,5 @@ class InvalidRankValue(Exception): pass
 class InvalidLanguageValue(Exception): pass
 
 class InvalidProviderName(Exception): pass
+
+class UnsupportedLanguage(Exception): pass
