@@ -2,6 +2,7 @@ import logging
 logger = logging.getLogger("subit.api.providers.opensubtitles")
 
 from api.exceptions import InvalidIMDBIdFormat
+from api.exceptions import InvalidOpenSubtitlesTitleFormat
 from api.title import *
 from api.providers.providersnames import ProvidersNames
 from api.providers.iprovider import IProvider
@@ -201,7 +202,13 @@ def format_opensubtitles_episode_title_name(title_value):
     InvalidOpenSubtitlesTitleFormat: \
         The format is invalid: 'The Big Bang Theory'
     """
-    pass
+    import re
+    results = re.findall('"(.+?)" (.+)', title_value)
+    if len(results) != 1 or len(results[0]) != 2:
+        raise InvalidOpenSubtitlesTitleFormat(
+            "The format is invalid: '%s'" % title_value)
+
+    return results[0]
 
 def imdb_id_format_for_opensubtitles(imdb_id):
     """
