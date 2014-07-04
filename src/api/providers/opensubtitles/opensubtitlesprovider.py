@@ -12,6 +12,7 @@ __all__ = ['OpenSubtitlesProvider']
 
 API_URL = 'http://api.opensubtitles.org/xml-rpc'
 USER_AGENT = "SubiTApp 3.0.0"
+OK_STATUS = "200 OK"
 
 
 class OpenSubtitlesServer(object):
@@ -51,6 +52,9 @@ class OpenSubtitlesServer(object):
                                     continue
                                 else:
                                     raise eX
+                        if val and val['status'] != OK_STATUS:
+                            raise Exception("OpenSubtitles returned error: %s" 
+                                % val['status'])
                     except Exception as eX:
                         logger.error("Failed calling %s: %s" % (name, eX))
                         return None
