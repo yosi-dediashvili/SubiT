@@ -202,7 +202,7 @@ class OpenSubtitlesProvider(IProvider):
         """
         logger.debug("Getting title info with hash: %s" % file_hash)
         response = self.server.CheckMovieHash2([file_hash])
-        if not response:
+        if not response or not response['data']:
             logger.error("Failed getting response for the hash.")
             return None
 
