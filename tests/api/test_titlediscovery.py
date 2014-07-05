@@ -17,6 +17,10 @@ PATH_TO_BAD_FILE_NAME = os.path.join(
     os.path.dirname(__file__), 
     'Tears of Steel', 
     'bad_file_name_zzzzzzzz.mock')
+PATH_TO_BAD_DIR_AND_FILE_NAME = os.path.join(
+    os.path.dirname(__file__), 
+    'bad_directory_name_zzzzzzzz', 
+    'bad_file_name_zzzzzzzz.mock')
 
 MOVIE_FILE_SHA1 = "3f2b0a7ed4bca05a5e5aa9095368ef1b0d856861"
 
@@ -49,6 +53,11 @@ class TestTitleDiscovery(unittest.TestCase):
         self.assertEquals(title.name, "Tears of Steel")
         self.assertEquals(title.year, 2012)
         self.assertEquals(title.imdb_id, "tt2285752")
+
+    def test_no_results(self):
+        title = titlediscovery.discover_title(PATH_TO_BAD_DIR_AND_FILE_NAME)
+        self.assertIsNone(title)
+
 
 def hash_matches():
     sha1_val = sha1(open(PATH_TO_MOVIE_FILE, "rb").read()).hexdigest()
