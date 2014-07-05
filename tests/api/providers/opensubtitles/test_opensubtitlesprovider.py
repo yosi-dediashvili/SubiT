@@ -65,7 +65,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(title.episode_name, "Two Swords")
 
     def test_get_title_by_hash_none(self):
-        h = "2389562259175175112"
+        h = "51512252523fe123"
         title = self.provider.get_title_by_hash(h)
         self.assertIsNone(title)
 
