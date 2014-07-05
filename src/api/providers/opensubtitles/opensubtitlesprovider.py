@@ -212,11 +212,16 @@ class OpenSubtitlesProvider(IProvider):
 
     def get_title_by_query(self, query):
         """
-        Sends the query as-is to OpenSubtitles. Then, it iterates over all the 
-        results, and looks for the imdb id in each one, and selects the id that
+        Replaces any dot in the query with space (in order to avoid OS's search
+        bug where they think that certain strings are extensions, for example, 
+        if a string contains 'something.movie.something', it will think that the
+        '.movie' is actually a '.mov' extension, and thus, remove it), and then 
+        sends the query as-is to OpenSubtitles. Then, it iterates over all the 
+        results, and looks for the imdb id in each one, and selects the id that 
         appears the most, and sends it to the get_title_by_imdb_id method.
         """
         logger.debug("Getting title info with query: %s" % query)
+        query = query.replace(".", " ")
         response = self.server.SearchSubtitles([{"query":query}])
         if not response or not response['data']:
             logger.error("Failed getting response for the query.")

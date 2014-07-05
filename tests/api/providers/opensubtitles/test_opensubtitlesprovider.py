@@ -91,6 +91,15 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(title.episode_number, 2)
         self.assertEquals(title.episode_name, "The Decoupling Fluctuation")
 
+    def test_get_title_by_query_os_buggy(self):
+        q = "The.Lego.Movie.2014.720p.BluRay.DD5.1.x264-HiDt"
+        title = self.provider.get_title_by_query(q)
+        self.assertIsNotNone(title)
+        self.assertIsInstance(title, MovieTitle)
+        self.assertEquals(title.name, "The Lego Movie")
+        self.assertEquals(title.year, 2014)
+        self.assertEquals(title.imdb_id, "tt1490017")
+
     def test_get_title_by_query_none(self):
         q = "hjsjdhgsdjhg2 23t9tjgs sdgsd"
         title = self.provider.get_title_by_query(q)
