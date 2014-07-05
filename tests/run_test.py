@@ -2,7 +2,9 @@ import sys
 from os.path import *
 from os import getcwd, chdir
 import argparse
+import logging
 
+logging.disable(logging.CRITICAL)
 sys.path.append(join(abspath(dirname(__file__)), r"..\src"))
 
 parser = argparse.ArgumentParser(
