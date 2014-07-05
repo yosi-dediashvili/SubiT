@@ -184,18 +184,19 @@ Input object), and what is present in each provider.
 The identifiers attribute within the version object will contain all the 
 strings (in lower-case format), that represent the version.
 
-In order to collect the identifiers, we introduce a new mechanism: 
-**IdentifiersExtractors** The mechanism will use one or more implementation of 
-an interface called IIDentifersExtractor. The goal of an implementation is to 
-supply identification string given an Input class.
+We'll have a module that its sole purpose is to extract identifiers for inputs.
+The module name will be **IdentifierExtractor**, and it will expose a single 
+method, named `extract_identifiers`, that will receive a `Title` instance and 
+a query string which might be a full path to a movie file, or just a movie 
+release name.
 
-For starters, the implementations will be:
-* OpenSubtitlesIdentifiersExtractor - Extracts identifiers by sending the file 
-* hash / file name to OpenSubtitle's service.
-* FileNameIdentifiersExtractor - All the strings in the file name excepts for 
-* the title and year.
-* DirectoryNameIdentifiersExtractor - All the strings in the directory name 
-excepts for the title and year.
+Within it, the module will have several methods for extracting identifiers.
+
+The first step of the extraction will be to decide what will be the input for
+the algorithm, the options are:
+1. The query itself
+2. The directory name, if the query is path to a movie file
+3. The release name from OpenSubtitles after querying for the file hash/query
 
 In the future, we might add some more sophisticated implementation like
 extracting the video and sound quality by parsing the file headers etc.
