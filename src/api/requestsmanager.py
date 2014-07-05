@@ -128,7 +128,7 @@ class RequestsManager(object):
                 else:
                     logger.debug("No redirection was made.")
         except Exception as eX:
-            logger.debug("Request flow failed: %s" % eX)
+            logger.error("Request flow failed: %s" % eX)
 
         logger.debug("Response length is: %d" % len(response or ''))
         return response
