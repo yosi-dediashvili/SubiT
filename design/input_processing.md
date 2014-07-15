@@ -242,6 +242,16 @@ of the query for title:
 2. The episode name (optionally)
 3. Some format of the season and episode name
 
+The first two points are easy to handle, the 3rd is tricky. In order to handle
+it, we'll have an helper method, that receives a series and episode numbers,
+and some string, and looks for some known episode numbering patterns in the 
+string that matches the series and episode numbers, and returns the matching 
+string.
+
+After performing the above, we'll concatenate the three strings, and apply the 
+normalization method to it. After that, we'll proceed with the same logic as
+if it was a movie title.
+
 **The basic structure of the Version will look like this:**
 ```python
 class Version:
