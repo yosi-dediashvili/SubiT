@@ -28,8 +28,8 @@ def extract_identifiers(title, queries):
     >>> title = SeriesTitle("The Big Bang Theory", 1, 4, "tt1091291", \
     "The Luminous Fish Effect", 2007, "tt0898266")
     >>> extract_identifiers(title, \
-    ["The.Big.Bang.Theory.1x04.The.Luminous.Fish.Effect.720p.HDTV.x264.AC3-CTU"])
-    ['720p', 'hdtv', 'x264', 'ac3', 'ctu']
+    ["The.Big.Bang.Theory.1x04.The.Luminous.Fish.Effect.720p.HDTV.AC3-CTU"])
+    ['720p', 'hdtv', 'ac3', 'ctu']
     >>> extract_identifiers(title, \
     ["The.Big.Bang.Theory.1x04.cd1", "The.Big.Bang.Theory.1x04.cd2"])
     Traceback (most recent call last):
