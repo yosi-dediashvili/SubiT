@@ -42,16 +42,19 @@ def extract_identifiers(title, queries):
         "C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd2.mkv"])
     >>> sorted(ids)
     ['dvdrip', 'ac3']
+
     >>> title = SeriesTitle("The Big Bang Theory", 5, 13, "tt2139151", \
         "The Recombination Hypothesis", 2012, "tt0898266")
-    >>> extract_identifiers(\
+    >>> ids = extract_identifiers(\
         title, ["the.big.bang.theory.s05e13.720p.hdtv.x264-orenji"])
-    ['720p', 'hdtv', 'x264', 'orenji']
+    >>> sorted(ids)
+    ['720p', 'hdtv', 'orenji', 'x264']
     >>> title = SeriesTitle("The Big Bang Theory", 1, 4, "tt1091291", \
         "The Luminous Fish Effect", 2007, "tt0898266")
-    >>> extract_identifiers(title, \
+    >>> ids = extract_identifiers(title, \
         ["The.Big.Bang.Theory.1x04.The.Luminous.Fish.Effect.720p.HDTV.AC3-CTU"])
-    ['720p', 'hdtv', 'ac3', 'ctu']
+    >>> sorted(ids)
+    ['720p', 'ac3', 'ctu', 'hdtv']
     >>> extract_identifiers(title, \
         ["The.Big.Bang.Theory.1x04.cd1", "The.Big.Bang.Theory.1x04.cd2"])
     Traceback (most recent call last):
@@ -70,13 +73,16 @@ def extract_identifiers(title, queries):
     logger.debug("The identifiers are: %s" % idetifiers)
     return idetifiers
 
-def _extract_identifiers(normalized_title, normalized_query):
+def _extract_identifiers(normalized_title, queries):
     """
+    # The mcmxcix is 1999 in latin.
+    >>> normalized_title = ["the", "matrix", "1999", 'mcmxcix']
     >>> ids = _extract_identifiers(\
-        ["the", "matrix", "1999"], ["the", "matrix", "1999", "720p", "dts"])
+        normalized_title, ["the.matrix.1999.720p.dts"])
     >>> sorted(ids)
     ['720p', 'dts']
     """
+    normalized_query = normalize_queries(queries)
     return list(set(normalized_query).difference(set(normalized_title)))
 
 def extract_identifiers_series(title, queries):
@@ -84,12 +90,25 @@ def extract_identifiers_series(title, queries):
         raise InvalidQueriesValue(
             "Multiple queries is allowed only for MovitTitle.")
 
+    from seriesutils import get_series_numbering_string
+    series_numbering_string = get_series_numbering_string(
+        queries[0], title.season_number, title.episode_number)
+
+    normalized_title = title.name
+    if title.episode_name:
+        normalized_title += (" " + title.episode_name)
+    if series_numbering_string:
+        normalized_title += (" " + series_numbering_string)
+
+    normalized_title = normalize_query(normalized_title)
+    return _extract_identifiers(normalized_title, queries)
+
 def extract_identifiers_movie(title, queries):
     normalized_title = title.name
     if title.year:
         normalized_title += (" " + str(title.year))
     normalized_title = normalize_query(normalized_title)
-    return _extract_identifiers(normalized_title, normalize_queries(queries))
+    return _extract_identifiers(normalized_title, queries)
 
 def normalize_query(query):
     """
