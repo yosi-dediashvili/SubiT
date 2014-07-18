@@ -33,6 +33,15 @@ def extract_identifiers(title, queries):
         ["The.Matrix.cd1.dvdrip.ac3", "The.Matrix.cd2.dvdrip.ac3"])
     >>> sorted(ids)
     ['ac3', 'dvdrip']
+    >>> ids = extract_identifiers(title, \
+        ["C:\\The.Matrix.1999.720p.dts\\movie.mkv"])
+    >>> sorted(ids)
+    ['720p', 'dts']
+    >>> ids = extract_identifiers(title, \
+        ["C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd1.mkv", \
+        "C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd2.mkv"])
+    >>> sorted(ids)
+    ['dvdrip', 'ac3']
     >>> title = SeriesTitle("The Big Bang Theory", 5, 13, "tt2139151", \
         "The Recombination Hypothesis", 2012, "tt0898266")
     >>> extract_identifiers(\
@@ -64,7 +73,7 @@ def extract_identifiers(title, queries):
 def _extract_identifiers(normalized_title, normalized_query):
     """
     >>> ids = _extract_identifiers(\
-    ["the", "matrix", "1999"], ["the", "matrix", "1999", "720p", "dts"])
+        ["the", "matrix", "1999"], ["the", "matrix", "1999", "720p", "dts"])
     >>> sorted(ids)
     ['720p', 'dts']
     """
