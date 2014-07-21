@@ -219,8 +219,16 @@ First, we'll define four places from which we'll take our input:
     - The implementation of receiving the release name will be implemented 
     inside the OpenSubtitles provider.
 
-We'll apply the following algorithm on the inputs above starting from the first.
-We'll stop when we manage to receive identifiers for the input.
+We'll apply the following algorithm on the inputs above starting from the first,
+and append all the results to the identifiers list.
+
+###### Deciding whether some string is candidate for containing identifiers
+For a given string (might be the directory name or file name), we'll say that 
+it might contain identifiers if:
+
+1. it contains only ascii letters
+2. After applying the normalization method, and splitting the output with 
+underscore, we get more than one element
 
 **1. Normalize the queries input:**
 
