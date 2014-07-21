@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger("subit.api.identifiersextractor")
+import os
 
 from exceptions import InvalidQueriesValue
 from title import SeriesTitle
@@ -18,52 +19,61 @@ def extract_identifiers(title, queries):
 
     >>> from title import MovieTitle, SeriesTitle
     >>> title = MovieTitle("The Matrix", 1999)
-    >>> ids = extract_identifiers(\
-        title, ["The.Matrix.1999.720p.HDDVD.DTS.x264-ESiR"])
-    >>> sorted(ids)
+    >>> sorted(extract_identifiers(\
+        title, ["The.Matrix.1999.720p.HDDVD.DTS.x264-ESiR"]))
     ['720p', 'dts', 'esir', 'hddvd', 'x264']
     >>> extract_identifiers(title, ["The.Matrix.1999"])
     []
     >>> extract_identifiers(title, ["The.Matrix"])
     []
-    >>> ids = extract_identifiers(title, ["720p.HDDVD.DTS"])
-    >>> sorted(ids)
+    >>> sorted(extract_identifiers(title, ["720p.HDDVD.DTS"]))
     ['720p', 'dts', 'hddvd']
-    >>> ids = extract_identifiers(title, \
-        ["The.Matrix.cd1.dvdrip.ac3", "The.Matrix.cd2.dvdrip.ac3"])
-    >>> sorted(ids)
+    >>> sorted(extract_identifiers(title, \
+        ["The.Matrix.cd1.dvdrip.ac3", "The.Matrix.cd2.dvdrip.ac3"]))
     ['ac3', 'dvdrip']
-    >>> ids = extract_identifiers(title, \
-        ["C:\\The.Matrix.1999.720p.dts\\movie.mkv"])
-    >>> sorted(ids)
+    >>> sorted(extract_identifiers(title, \
+        ["C:\\The.Matrix.1999.720p.dts\\movie.mkv"]))
     ['720p', 'dts']
-    >>> ids = extract_identifiers(title, \
+    >>> sorted(extract_identifiers(title, \
         ["C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd1.mkv", \
-        "C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd2.mkv"])
-    >>> sorted(ids)
+        "C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd2.mkv"]))
     ['dvdrip', 'ac3']
+    >>> extract_identifiers(title, \
+        ["C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd1.mkv", \
+        "movie.cd2"])
+    Traceback (most recent call last):
+        ...
+    InvalidQueriesValue: All the queries must be either full paths or simple.
 
     >>> title = SeriesTitle("The Big Bang Theory", 5, 13, "tt2139151", \
         "The Recombination Hypothesis", 2012, "tt0898266")
-    >>> ids = extract_identifiers(\
-        title, ["the.big.bang.theory.s05e13.720p.hdtv.x264-orenji"])
-    >>> sorted(ids)
+    >>> sorted(extract_identifiers(\
+        title, ["the.big.bang.theory.s05e13.720p.hdtv.x264-orenji"]))
     ['720p', 'hdtv', 'orenji', 'x264']
     >>> title = SeriesTitle("The Big Bang Theory", 1, 4, "tt1091291", \
         "The Luminous Fish Effect", 2007, "tt0898266")
-    >>> ids = extract_identifiers(title, \
-        ["The.Big.Bang.Theory.1x04.The.Luminous.Fish.Effect.720p.HDTV.AC3-CTU"])
-    >>> sorted(ids)
+    >>> sorted(extract_identifiers(title, \
+        ["The.Big.Bang.Theory.1x04.The.Luminous.Fish.Effect.720p.HDTV.AC3-CTU"]))
     ['720p', 'ac3', 'ctu', 'hdtv']
     >>> extract_identifiers(title, \
         ["The.Big.Bang.Theory.1x04.cd1", "The.Big.Bang.Theory.1x04.cd2"])
     Traceback (most recent call last):
         ...
-    InvalidQueriesValue: Multiple queries is allowed only for MovitTitle.
+    InvalidQueriesValue: Multiple queries is allowed only for MovieTitle.
     """
     
     logger.debug("extract_identifiers got called with title: {0} queries: {1}"
         .format(title, queries))
+
+    # Make sure that they all either full paths or just names
+    full_paths = filter(lambda q: os.path.isabs(q), queries)
+    if full_paths and full_paths != queries:
+        raise InvalidQueriesValue(
+            "All the queries must be either full paths or simple.")
+
+    # If full paths, for the first try, extract the file names (not extension).
+    if full_paths:
+        queries = map(lambda p: os.path.splitext(p)[0], full_paths)
 
     if isinstance(title, MovieTitle):
         idetifiers = extract_identifiers_movie(title, queries)
@@ -88,7 +98,7 @@ def _extract_identifiers(normalized_title, queries):
 def extract_identifiers_series(title, queries):
     if len(queries) != 1:
         raise InvalidQueriesValue(
-            "Multiple queries is allowed only for MovitTitle.")
+            "Multiple queries is allowed only for MovieTitle.")
 
     from seriesutils import get_series_numbering_string
     series_numbering_string = get_series_numbering_string(

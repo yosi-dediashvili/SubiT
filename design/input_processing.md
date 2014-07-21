@@ -216,6 +216,9 @@ First, we'll define four places from which we'll take our input:
 3. The queries themselves
 4. The release name from OpenSubtitles after querying for the file hash/query
     - File hash will be used only if the queries are full paths.
+    - If after normalization the query turns out to be equal to the title 
+    normalization, we'll not send the query to OpenSubtitles because it will
+    simply return all the results for the title.
     - The implementation of receiving the release name will be implemented 
     inside the OpenSubtitles provider.
 
