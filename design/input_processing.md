@@ -206,14 +206,15 @@ and the second, will be for title. They'll share some of the logic.
 
 ##### Extracting identifiers for movie titles
 
-First, we'll define three places from which we'll take our input:
+First, we'll define four places from which we'll take our input:
 
-1. The queries themselves
-2. The directory name, if the queries are paths to a movie file
+1. The file name (without extension), if the queries are paths to a file
+2. The directory name, if the queries are paths to a file
     - If the queries contained several items, we'll convert it to a single query
     that contains the directory name only (both files should be under the same 
     directory)
-3. The release name from OpenSubtitles after querying for the file hash/query
+3. The queries themselves
+4. The release name from OpenSubtitles after querying for the file hash/query
     - File hash will be used only if the queries are full paths.
     - The implementation of receiving the release name will be implemented 
     inside the OpenSubtitles provider.
