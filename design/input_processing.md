@@ -204,34 +204,30 @@ Within it, the module will have several methods for extracting identifiers.
 We'll have two different algorithm for the extraction. The first is for movies,
 and the second, will be for title. They'll share some of the logic.
 
-##### Extracting identifiers for movie titles
+##### Distinguishing between simple queries and file queries
 
-First, we'll define four places from which we'll take our input:
+The input to the inner identifiers extraction implementation will distinguish 
+between full paths and simple queries, and will use different method for each:
 
-1. The file name (without extension), if the queries are paths to a file
-2. The directory name, if the queries are paths to a file
-    - If the queries contained several items, we'll convert it to a single query
-    that contains the directory name only (both files should be under the same 
-    directory)
-3. The queries themselves
-4. The release name from OpenSubtitles after querying for the file hash/query
-    - File hash will be used only if the queries are full paths.
-    - If after normalization the query turns out to be equal to the title 
-    normalization, we'll not send the query to OpenSubtitles because it will
-    simply return all the results for the title.
-    - The implementation of receiving the release name will be implemented 
-    inside the OpenSubtitles provider.
+When a list of queries is passed, they all must be from the same type, 
+otherwise the module will throw exception.
 
-We'll apply the following algorithm on the inputs above starting from the first,
-and append all the results to the identifiers list.
+###### For full paths
+If the queries are full paths, the module goal is to convert the queries to 
+simple queries, and then, pass the result to the simple queries algorithm. For 
+paths, the module will:
 
-###### Deciding whether some string is candidate for containing identifiers
-For a given string (might be the directory name or file name), we'll say that 
-it might contain identifiers if:
+1. Extract the file names (without the extension)
+2. Extract the directories names
 
-1. it contains only ascii letters
-2. After applying the normalization method, and splitting the output with 
-underscore, we get more than one element
+For both the module will treat the strings as simple queries (described bellow). 
+If using the above values as queries failed to return identifiers, the module 
+will take the full path and use opensubtitles with the file hash in order to 
+receive the release name for the files, and pass it as simple query.
+
+###### For simple queries
+
+###### Extracting identifiers for movie titles
 
 **1. Normalize the queries input:**
 
@@ -303,6 +299,17 @@ string.
 After performing the above, we'll concatenate the three strings, and apply the 
 normalization method to it. After that, we'll proceed with the same logic as
 if it was a movie title.
+
+##### Deciding whether some string is candidate for containing identifiers
+For a given string (might be the directory name or file name), we'll say that 
+it might contain identifiers if:
+
+1. it contains only ascii letters
+2. After applying the normalization method, and splitting the output with 
+underscore, we get more than one element
+
+If the string does not fulfills the rules, an empty identifiers list will be 
+returned.
 
 **The basic structure of the Version will look like this:**
 ```python
