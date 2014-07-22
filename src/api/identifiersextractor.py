@@ -6,9 +6,15 @@ from exceptions import InvalidQueriesValue
 from title import SeriesTitle
 from title import MovieTitle
 from namenormalization import normalize_name
+from api.providers import get_provider_instance
+from api.providers import ProvidersNames
+from api.languages import Languages
 
 
 __all__ = ['extract_identifiers']
+
+opensubtitles_provider = \
+    get_provider_instance(ProvidersNames.OPEN_SUBTITLES, [Languages.ENGLISH])
 
 
 def extract_identifiers(title, queries):
@@ -144,12 +150,6 @@ def _normalize_queries(queries):
     return list(normalized_queries)
 
 def _yield_queries(queries):
-    """
-    >>> list(_yield_queries(["abc"]))
-    [['abc']]
-    >>> sorted(list(_yield_queries(["C:\\\\bla\\\\abc"]))[:2])
-    [['abc'], ['bla']]
-    """
     # Make sure that they all either full paths or just names
     full_paths = filter(lambda q: os.path.isabs(q), queries)
     if full_paths and full_paths != queries:
@@ -173,6 +173,17 @@ def _yield_queries(queries):
         yield queries
 
 def _get_release_name_using_opensubtitles_hash(files_paths):
+    try:
+        for file_path in files_paths:
+            file_hash = opensubtitles_provider.calculate_file_hash(file_path)
+            file_size = os.stat(file_path).st_size
+            release_name = opensubtitles_provider.get_release_name_by_hash(
+                file_hash, file_size)
+            if release_name:
+                return [release_name]
+    except Exception as ex:
+        logging.error("Failed getting release name with hash: %s" % ex)
+        
     return []
 
 def _extract_identifiers(normalized_title, queries):

@@ -15,7 +15,7 @@ from xmlrpclib import Error as XmlRpcError
 __all__ = ['OpenSubtitlesProvider']
 
 API_URL = 'http://api.opensubtitles.org/xml-rpc'
-USER_AGENT = "SubiTApp 3.0.0"
+USER_AGENT = "subit-api 1.0.0"
 OK_STATUS = "200 OK"
 
 
@@ -192,6 +192,28 @@ class OpenSubtitlesProvider(IProvider):
             logger.error("Received invalid kind value: %s" % kind)
             return None
 
+    def get_release_name_by_hash(self, file_hash, file_size):
+        """
+        Queries OpenSubtitles for release name information using the hash value 
+        of the file, and the size, in bytes of the same file. If no result is 
+        returned from the site, None is returned. Otherwise, the function 
+        extracts all the MovieReleaseName values from the response, lower() all 
+        of them, and returns the one appearing most.
+        """
+        logger.debug("Getting title info with hash: %s" % file_hash)
+
+        release_names = self._sum_search_results(
+            self._do_search_subtitles_with_hash(file_hash, file_size), 
+            'MovieReleaseName',
+            lambda v: v.strip().lower())
+
+        logger.debug("release_names appearances is: %s" % release_names)
+        # Select the release with most appearances.
+        release_names_sorted = \
+            sorted(release_names.iteritems(), key=lambda i: i[1], reverse=True)
+        logger.debug("Sorted result is: %s" % release_names_sorted)
+        return release_names_sorted[0][0]
+
     def get_title_by_hash(self, file_hash, file_size = 0):
         """
         Queries OpenSubtitles for title information using the hash value of the
@@ -212,34 +234,15 @@ class OpenSubtitlesProvider(IProvider):
 
     def get_title_by_query(self, query):
         """
-        Replaces any dot in the query with space (in order to avoid OS's search
-        bug where they think that certain strings are extensions, for example, 
-        if a string contains 'something.movie.something', it will think that the
-        '.movie' is actually a '.mov' extension, and thus, remove it), and then 
-        sends the query as-is to OpenSubtitles. Then, it iterates over all the 
+         Then, it iterates over all the 
         results, and looks for the imdb id in each one, and selects the id that 
         appears the most, and sends it to the get_title_by_imdb_id method.
         """
         logger.debug("Getting title info with query: %s" % query)
-        query = query.replace(".", " ")
-        response = self.server.SearchSubtitles([{"query":query}])
-        if not response or not response['data']:
-            logger.error("Failed getting response for the query.")
-            return None
-
-        data = response['data']
+        
         # A dictionary of {IMDB_ID:Appearances}
-        imdb_ids = {}
-        # Iterate over all the results, and count id appearances.
-        for movie in data:
-            if not 'IDMovieImdb' in movie:
-                logger.debug("The movie is missing the ID tag, skipping.")
-                continue
-            imdb_id = movie['IDMovieImdb']
-            if imdb_id not in imdb_ids:
-                imdb_ids[imdb_id] = 1
-            else:
-                imdb_ids[imdb_id] += 1
+        imdb_ids = self._sum_search_results(
+            self._do_search_subtitles_with_query(query), 'IDMovieImdb')
 
         if not imdb_ids:
             logger.error("None of the movies has ID tag.")
@@ -254,6 +257,48 @@ class OpenSubtitlesProvider(IProvider):
         imdb_id = opensubtitles_id_format_for_imdb(selected_id)
         return self.get_title_by_imdb_id(imdb_id)
 
+    def _do_search_subtitles_with_hash(self, file_hash, file_size):
+        return self._do_search_subtitles(
+            {"moviehash" : file_hash, "moviebytesize" : str(file_size)})
+
+    def _do_search_subtitles_with_query(self, query):
+        """
+        Replaces any dot in the query with space (in order to avoid OS's search
+        bug where they think that certain strings are extensions, for example, 
+        if a string contains 'something.movie.something', it will think that the
+        '.movie' is actually a '.mov' extension, and thus, remove it), and then 
+        sends the query as-is to OpenSubtitles.
+        """
+        query = query.replace(".", " ")
+        return self._do_search_subtitles({"query":query})
+
+    def _do_search_subtitles(self, params):
+        logger.debug("Sending query to SearchSubtitles: %s" % params)
+        response = self.server.SearchSubtitles([params])
+        if not response or not response['data']:
+            logger.error("Failed getting response for the query.")
+            return None
+
+        data = response['data']
+        logger.debug("Received %d results from the query." % len(data))
+        return data
+
+    def _sum_search_results(self, results, key, value_func=lambda v: v):
+        keys_appearences = {}
+        if not results:
+            return keys_appearences
+
+        for result in results:
+            if key not in result:
+                logger.debug("The key [%s] is missing from the results: %s" 
+                    % (key, result))
+                continue
+            value = value_func(result[key])
+            if value not in keys_appearences:
+                keys_appearences[value] = 1
+            else:
+                keys_appearences[value] += 1
+        return keys_appearences
 
 def format_opensubtitles_episode_title_name(title_value):
     """

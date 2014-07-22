@@ -105,6 +105,14 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         title = self.provider.get_title_by_query(q)
         self.assertIsNone(title)
 
+    def test_get_release_name_by_hash(self):
+        release_name = self.provider.get_release_name_by_hash(
+            "66ea24e3ad41fd47", "8425019199")
+        self.assertIsNotNone(release_name)
+        self.assertEquals(
+            release_name, "the.matrix.1999.720p.hddvd.dts.x264-esir")
+        
+
 def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)
     tests = doctest.DocTestSuite(
