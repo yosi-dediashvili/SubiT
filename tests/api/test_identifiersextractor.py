@@ -43,6 +43,15 @@ class TestIdentifiersExtractor(unittest.TestCase):
             self._title, ["C:\\The.Matrix.1999.720p.dts\\movie.mkv"])
         self.assertItemsEqual(identifiers, ['720p', 'dts'])
 
+    def test_single_file_hash_no_other_query(self):
+        identifiersextractor.opensubtitles_provider = \
+            MockedOpenSubtitlesProvider(
+                "345878fce3115", "the.matrix.1999.dvdrip.ac3")
+
+        identifiers = identifiersextractor.extract_identifiers(
+            self._title, ["C:\\movie.mkv"])
+        self.assertItemsEqual(identifiers, ['ac3', 'dvdrip'])
+
     def test_multiple_file_hash_cd_in_file_name(self):
         identifiersextractor.opensubtitles_provider = \
             MockedOpenSubtitlesProvider(
