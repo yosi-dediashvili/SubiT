@@ -37,23 +37,12 @@ def extract_identifiers(title, queries):
     >>> sorted(extract_identifiers(title, \
         ["The.Matrix.cd1.dvdrip.ac3", "The.Matrix.cd2.dvdrip.ac3"]))
     ['ac3', 'dvdrip']
-    >>> sorted(extract_identifiers(title, \
-        ["C:\\The.Matrix.1999.720p.dts\\movie.mkv"]))
-    ['720p', 'dts']
-    >>> sorted(extract_identifiers(title, \
-        ["C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd1.mkv", \
-        "C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd2.mkv"]))
-    ['ac3', 'dvdrip', 'movie']
     >>> extract_identifiers(title, \
         ["C:\\The.Matrix.1999.dvdrip.ac3\\movie.cd1.mkv", \
         "movie.cd2"])
     Traceback (most recent call last):
         ...
     InvalidQueriesValue: All the queries must be either full paths or simple.
-    >>> sorted(extract_identifiers(title, \
-        ["C:\\The.Matrix.1999.dvdrip.ac3.cd1\\movie.mkv", \
-        "C:\\The.Matrix.1999.dvdrip.ac3.cd2\\movie.mkv"]))
-    ['ac3', 'dvdrip']
 
     >>> title = SeriesTitle("The Big Bang Theory", 5, 13, "tt2139151", \
         "The Recombination Hypothesis", 2012, "tt0898266")
@@ -116,8 +105,6 @@ def _normalize_query(query):
     """
     >>> _normalize_query("a.b.c.d.d.d_z")
     ['a', 'b', 'c', 'd', 'z']
-    >>> _normalize_query("a")
-    []
     """
     normalized_query = normalize_name(query)
     output = []
@@ -131,45 +118,62 @@ def _normalize_query(query):
 def _normalize_queries(queries):
     """
     Created a list of all the normalized string contained in all the queries 
-    passed in the queries list.
+    passed in the queries list. If after the normalization, the list contains
+    a single string, the result is dropped, and an empty list is returned.
 
     >>> sorted(_normalize_queries(["a.b.c.d", "a.b.c.e"]))
     ['a', 'b', 'c']
+    >>> sorted(_normalize_queries(["a", "a"]))
+    []
+    >>> sorted(_normalize_queries(["a.a", "a.b"]))
+    []
     """
     # Create a list that will contain all the normalized forms. 
     normalized_queries = set()
 
     for query in queries:
         normalized_query = set(_normalize_query(query))
-        # If the set is empty, just put the result
+        # If the set is empty, just put the result.
         if not normalized_queries:
             normalized_queries.update(normalized_query)
         else:
             normalized_queries.intersection_update(normalized_query)
 
+    if len(normalized_queries) == 1:
+        logger.debug(
+            "normalized_queries contains only single string, dropping: %s"
+            % normalized_queries)
+        return []
     return list(normalized_queries)
 
 def _yield_queries(queries):
-    # Make sure that they all either full paths or just names
+    # Make sure that they all either full paths or just names.
     full_paths = filter(lambda q: os.path.isabs(q), queries)
     if full_paths and full_paths != queries:
         raise InvalidQueriesValue(
             "All the queries must be either full paths or simple.")
 
     if full_paths:
-        # First, yield the file names
+        # First, yield the file names.
         files_names = \
             map(lambda p: os.path.splitext(os.path.basename(p))[0], full_paths)
+        logger.debug("yielding files_names: %s" % files_names)
         yield files_names
 
-        # Then, yield the directories
+        # Then, yield the directories.
         directories_names = \
             map(lambda p: os.path.basename(os.path.dirname(p)), queries)
+        logger.debug("yielding directories_names: %s" % directories_names)
         yield directories_names
 
-        # Finally, if we got called for the 3rd time, use the hash
-        yield _get_release_name_using_opensubtitles_hash(queries)
+        # Finally, if we got called for the 3rd time, use the hash.
+        release_name = _get_release_name_using_opensubtitles_hash(queries)
+        # The result might be None.
+        release_name = [release_name] if release_name else []
+        logger.debug("yielding release_name: %s" % release_name)
+        yield release_name
     else:
+        logger.debug("yielding queries: %s" % queries)
         yield queries
 
 def _get_release_name_using_opensubtitles_hash(files_paths):
@@ -180,20 +184,20 @@ def _get_release_name_using_opensubtitles_hash(files_paths):
             release_name = opensubtitles_provider.get_release_name_by_hash(
                 file_hash, file_size)
             if release_name:
-                return [release_name]
+                return release_name
     except Exception as ex:
         logging.error("Failed getting release name with hash: %s" % ex)
-        
-    return []
+    return None
 
 def _extract_identifiers(normalized_title, queries):
     """
     # The mcmxcix is 1999 in latin.
     >>> normalized_title = ["the", "matrix", "1999", 'mcmxcix']
-    >>> ids = _extract_identifiers(\
-        normalized_title, ["the.matrix.1999.720p.dts"])
-    >>> sorted(ids)
+    >>> sorted(_extract_identifiers(\
+        normalized_title, ["the.matrix.1999.720p.dts"]))
     ['720p', 'dts']
+    >>> _extract_identifiers(normalized_title, ["movie"])
+    []
     """
     normalized_query = _normalize_queries(queries)
     return list(set(normalized_query).difference(set(normalized_title)))

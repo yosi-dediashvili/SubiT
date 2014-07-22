@@ -11,7 +11,9 @@ SERIES_REGEXES = [
     # foo.Season.05.Episode.06.HDTV
     r'season[ \.\-\_]?(?P<season>\d{1,2})[ \.\-\_]?episode[ \.\-\_]?(?P<episode>\d{1,2})',   
     # foo.4x15.HDTV
-    r'(?P<season>\d{1,2})x(?P<episode>\d{1,2})'
+    r'(?P<season>\d{1,2})x(?P<episode>\d{1,2})',
+    # foo.415.HDTV, foo.105.HDTV
+    r'(?<=[ \.\-\_])(?P<season>\d)(?P<episode>\d{2})(?=[ \.\-\_])'
 ]
 
 
@@ -23,7 +25,17 @@ def get_series_numbering(query):
 
     >>> get_series_numbering("foo.s03e12.hdtv")
     (3, 12)
+    >>> get_series_numbering("foo.season.3.episode.12.hdtv")
+    (3, 12)
+    >>> get_series_numbering("foo.3x12.hdtv")
+    (3, 12)
+    >>> get_series_numbering("foo.3x12.hdtv")
+    (3, 12)
+    >>> get_series_numbering("foo.312.hdtv")
+    (3, 12)
     >>> get_series_numbering("foo.hdtv")
+    ()
+    >>> get_series_numbering("foo.1112.hdtv")
     ()
     """
     query = query.lower()
@@ -59,6 +71,10 @@ def get_series_numbering_string(query, season_number, episode_number):
     's03e12'
     >>> get_series_numbering_string("foo.3x12.hdtv", 3, 12)
     '3x12'
+    >>> get_series_numbering_string("foo.season.3.episode.12.hdtv", 3, 12)
+    'season.3.episode.12'
+    >>> get_series_numbering_string("foo.312.hdtv", 3, 12)
+    '312'
     >>> print get_series_numbering_string("foo.hdtv", 3, 12)
     None
     """
