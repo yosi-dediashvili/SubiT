@@ -18,7 +18,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.provider = OpenSubtitlesProvider([Languages.ENGLISH], None)
 
     def test_calculate_hash(self):
-        h = self.provider.calculate_file_hash(AVI_FILE_PATH)
+        h, s = self.provider.calculate_file_hash(AVI_FILE_PATH)
         self.assertEqual(h.lower(), AVI_FILE_HASH)
 
     def test_get_title_by_imdb_id_movie(self):

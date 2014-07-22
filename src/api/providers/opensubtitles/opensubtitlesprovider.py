@@ -100,7 +100,8 @@ class OpenSubtitlesProvider(IProvider):
     def calculate_file_hash(self, file_path):
         """
         Calculates the hash value (OpenSubtitles algorithm) for the given file.
-        The result is encoded as lowercase hex string. On failures, None is 
+        The result is encoded as lowercase hex string. On failures, a tuple
+        (None, None) is returned. On success, a tuple of (hash, file size) is
         returned.
         """
         import struct
@@ -132,10 +133,10 @@ class OpenSubtitlesProvider(IProvider):
 
             returned_hash =  "%016x" % hash 
             logger.debug("Hash value is: %s" % returned_hash)
-            return returned_hash 
+            return (returned_hash, file_size)
         except Exception as eX:
             logger.error("Failed calculating the hash: %s" % eX)
-            return None
+            return (None, None)
 
     def get_title_by_imdb_id(self, imdb_id):
         """

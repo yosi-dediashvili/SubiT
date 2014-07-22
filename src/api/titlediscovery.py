@@ -61,7 +61,7 @@ def discover_title(query):
         return discover_title_from_query(query)
 
 def discover_title_from_file_path(file_path):
-    file_hash = opensubtitles_provider.calculate_file_hash(file_path)
+    file_hash, file_size = opensubtitles_provider.calculate_file_hash(file_path)
     title = opensubtitles_provider.get_title_by_hash(file_hash)
     logger.debug("Title by hash is: %s" % title)
     if title:

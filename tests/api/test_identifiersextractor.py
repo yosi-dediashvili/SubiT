@@ -13,7 +13,7 @@ class MockedOpenSubtitlesProvider(IProvider):
         self._release_name = release_name
 
     def calculate_file_hash(self, file_path):
-        return self._hash_value
+        return (self._hash_value, 0)
 
     def get_release_name_by_hash(self, file_hash, file_size):
         return self._release_name

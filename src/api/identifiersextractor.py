@@ -179,8 +179,8 @@ def _yield_queries(queries):
 def _get_release_name_using_opensubtitles_hash(files_paths):
     try:
         for file_path in files_paths:
-            file_hash = opensubtitles_provider.calculate_file_hash(file_path)
-            file_size = os.stat(file_path).st_size
+            file_hash, file_size  = \
+                opensubtitles_provider.calculate_file_hash(file_path)
             release_name = opensubtitles_provider.get_release_name_by_hash(
                 file_hash, file_size)
             if release_name:
