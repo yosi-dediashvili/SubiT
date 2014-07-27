@@ -67,8 +67,8 @@ The provider might not support all the languages it receives, but it will must
 not use other languages than those.
 
 ###### `get_titles_versions()`
-The function receives the new Input object, and returns a list of TitleVersions
-object.
+The function receives a Title instance and a Version instance, and will return
+a list of TitleVersions object for each title it got from the search.
 
 ###### `download_subtitle_buffer()`
 The function receive a single version from the versions that was retrieved with
@@ -77,12 +77,11 @@ that was downloaded from the servers and the buffer (Bytes) itself that is
 the downloaded zip/srt file. It's not the provider's responsibility to deploy
 the subtitle. 
 
-With that said, if the there might be providers that will need to 
-perform some logic in this phase, because the archive files that will get 
-downloaded might contain several subtitles for several versions. In such cases,
-the provider will need to perform the action of extracting the right subtitle
-from the archive and returning it as the buffer (or putting it in another 
-archive).
+With that said, if there might be providers that will need to perform some 
+logic in this phase, because the archive files that will get downloaded might 
+contain several subtitles for several versions. In such cases, the provider will 
+need to perform the action of extracting the right subtitle from the archive and 
+returning it as the buffer (or putting it in another archive).
 
 ###### `languages_in_use`
 
@@ -106,7 +105,7 @@ class IProvider:
     supported_languages = []
     provider_name = None
     def __init__(self, languages, requests_manager): pass
-    def get_titles_versions(self, input): pass
+    def get_titles_versions(self, title, version): pass
     def download_subtitle_buffer(self, provider_version): pass
     @property
     def languages_in_use(self): pass
@@ -121,8 +120,10 @@ receive the response. The function call will be a blocking call, and will not
 return until the request was actually sent to the server, and the response got
 back.
 
-The manager's function will much like the PerformRequest that is used in the
-current version of SubiT.
+The manager's will expose the perform_request method that will use python's 
+urrlib2 module internally, and will return the content return from the request
+un-encoded. This means that the method will serve both for returning html pages
+and also for file content (when downloading subtitles for instance).
 
 In order to allow only a single session against some server, the manager will
 use a mutex that will get locked when `perform_request()` is called. Each 
@@ -141,8 +142,8 @@ preserving the synchronous mode.
 
 ```python
 class RequestsManager:
-    def perform_request(domain, url, data, type, more_headers): pass
-    def perform_request_next(domain, url, data, type, more_headers): pass
+    def perform_request(url, data = None, more_headers = None): pass
+    def perform_request_next(url, data = None, more_headers = None): pass
 ```
 
 ### Factories
@@ -169,13 +170,12 @@ The algorithm for the factory will be:
         + return `R`
 
 
-The factory will be implemented as a classmethod inside the RequestsManager. 
+The factory will be implemented as a module method inside the `requestsmanager`
+module.
 
 **The factory method look like this:**
 ```python
-class RequestsManager:
-    @classmethod
-    def get_instance(provider_name): pass
+def get_manager_instance(provider_name): pass
 ```
 
 #### The providers factory
