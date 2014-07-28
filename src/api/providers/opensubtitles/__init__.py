@@ -1,1 +1,2 @@
 from opensubtitlesprovider import OpenSubtitlesProvider
+from opensubtitlesprovider import OpenSubtitlesRequestsManager

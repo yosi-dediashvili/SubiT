@@ -28,8 +28,7 @@ class TestRequestsManagerAsyncOp(unittest.TestCase):
 
     def test_multithreaded_perform_request(self):
         start_time = time.time()
-        requests_manager = \
-            TimeDiffCheckerRequestsManager.get_instance("async_test")
+        requests_manager = TimeDiffCheckerRequestsManager()
         requests_manager.test_case = self
         self.threads_pool.map(
             lambda idx: requests_manager.perform_request("a", "a"),
@@ -44,8 +43,7 @@ class TestRequestsManagerAsyncOp(unittest.TestCase):
 
     def test_multithreaded_perform_request_next(self):
         start_time = time.time()
-        requests_manager = \
-            NoTimeDiffCheckerRequestsManager.get_instance("async_test_next")
+        requests_manager = NoTimeDiffCheckerRequestsManager()
         self.threads_pool.map(
             lambda idx: requests_manager.perform_request_next("a", "a"),
             range(NUMBER_OF_THREADS))
@@ -56,7 +54,9 @@ class TestRequestsManagerAsyncOp(unittest.TestCase):
 
 def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)
-    tests = doctest.DocTestSuite(requestsmanager)
+    tests = doctest.DocTestSuite(
+        requestsmanager, 
+        optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS)
     tests.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(
         TestRequestsManagerAsyncOp))
     test_runner.run(tests)

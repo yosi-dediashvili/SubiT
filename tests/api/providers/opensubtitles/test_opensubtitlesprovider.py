@@ -2,6 +2,7 @@ import sys
 sys.path.append("..\\..")
 import os
 from api.providers.opensubtitles import opensubtitlesprovider
+from api.providers.opensubtitles import OpenSubtitlesRequestsManager
 OpenSubtitlesProvider = opensubtitlesprovider.OpenSubtitlesProvider
 from api.languages import Languages
 from api.title import MovieTitle
@@ -15,7 +16,8 @@ AVI_FILE_HASH = "8e245d9679d31e12"
 
 class TestOpenSubtitlesProvider(unittest.TestCase):
     def setUp(self):
-        self.provider = OpenSubtitlesProvider([Languages.ENGLISH], None)
+        self.provider = OpenSubtitlesProvider(
+            [Languages.ENGLISH], OpenSubtitlesRequestsManager())
 
     def test_calculate_hash(self):
         h, s = self.provider.calculate_file_hash(AVI_FILE_PATH)

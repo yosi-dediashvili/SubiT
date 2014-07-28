@@ -1,4 +1,4 @@
-__all__ = ['RequestsManager']
+__all__ = ['RequestsManager', 'get_manager_instance']
 
 
 import logging
@@ -16,6 +16,12 @@ class RequestsManager(object):
     def __init__(self):
         from threading import Lock
         self._requests_mutex = Lock()
+
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return '<%s>' % type(self).__name__
 
     def perform_request(self, domain, url,
         data = '', type = HttpRequestTypes.GET, more_headers = {}):
@@ -133,44 +139,59 @@ class RequestsManager(object):
         logger.debug("Response length is: %d" % len(response or ''))
         return response
 
-    _instances = {}
-    @classmethod
-    def get_instance(cls, provider_name):
-        """
-        A RequestsManager factory that given the same provider name will return
-        the same RequestsManager instance.
+_instances = {}
+def get_manager_instance(provider_name):
+    """
+    A RequestsManager factory that given the same provider name will return
+    the same RequestsManager instance.
 
-        This currently isn't a thread safe factory, so in case where to
-        different threads trying to receive a RequestsManager for a
-        provider_name that hasn't already been initialzied, will get in to a
-        race condition, in which they might end up with different instances.
+    If OpenSubtitles's provider is given, OpenSubtitles's request manager 
+    instances is returned, and not the default RequestManager.
 
-        >>> a = RequestsManager.get_instance("a")
-        >>> b = RequestsManager.get_instance("a")
-        >>> id(a) == id(b)
-        True
-        >>> b = RequestsManager.get_instance("b")
-        >>> id(b) == id(a)
-        False
-        >>> b = RequestsManager.get_instance("a")
-        >>> id(a) == id(b)
-        True
-        >>> RequestsManager.get_instance("")
-        Traceback (most recent call last):
-            ...
-        InvalidProviderName: provider_name can not be empty.
-        >>> RequestsManager.get_instance(1)
-        Traceback (most recent call last):
-            ...
-        InvalidProviderName: provider_name must be a string.
-        """
-        logger.debug("Getting instance for: %s" % provider_name)
-        if not provider_name:
-            raise InvalidProviderName("provider_name can not be empty.")
-        if not isinstance(provider_name, str):
-            raise InvalidProviderName("provider_name must be a string.")
+    This currently isn't a thread safe factory, so in case where to
+    different threads trying to receive a RequestsManager for a
+    provider_name that hasn't already been initialized, will get in to a
+    race condition, in which they might end up with different instances.
 
-        if not provider_name in cls._instances:
-            logger.debug("Instance was yet to be created, creating one.")
-            cls._instances[provider_name] = cls()
-        return cls._instances[provider_name]
+    >>> a = get_manager_instance("a")
+    >>> b = get_manager_instance("a")
+    >>> id(a) == id(b)
+    True
+    >>> b = get_manager_instance("b")
+    >>> id(b) == id(a)
+    False
+    >>> b = get_manager_instance("a")
+    >>> id(a) == id(b)
+    True
+    >>> get_manager_instance("")
+    Traceback (most recent call last):
+        ...
+    InvalidProviderName: provider_name can not be empty.
+    >>> get_manager_instance(1)
+    Traceback (most recent call last):
+        ...
+    InvalidProviderName: provider_name must be a string.
+    >>> from api.providers import ProvidersNames
+    >>> get_manager_instance(ProvidersNames.OPEN_SUBTITLES.full_name)
+    <OpenSubtitlesRequestsManager ...>
+    >>> get_manager_instance("some_name")
+    <RequestsManager>
+    """
+    logger.debug("Getting instance for: %s" % provider_name)
+    if not provider_name:
+        raise InvalidProviderName("provider_name can not be empty.")
+    if not isinstance(provider_name, str):
+        raise InvalidProviderName("provider_name must be a string.")
+
+    global _instances
+    if not provider_name in _instances:
+        logger.debug("Instance was yet to be created, creating one.")
+        from api.providers import ProvidersNames
+        if provider_name == ProvidersNames.OPEN_SUBTITLES.full_name:
+            from api.providers.opensubtitles import OpenSubtitlesRequestsManager
+            cls_type = OpenSubtitlesRequestsManager
+        else:
+            cls_type = RequestsManager
+        logger.debug("Creating request manager instance of type: %s" % cls_type)
+        _instances[provider_name] = cls_type()
+    return _instances[provider_name]

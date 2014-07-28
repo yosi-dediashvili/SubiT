@@ -3,7 +3,7 @@ logger = logging.getLogger("subit.api.providers")
 
 from api.exceptions import UnsupportedLanguage
 from api.exceptions import InvalidProviderName
-from api.requestsmanager import RequestsManager
+from api.requestsmanager import get_manager_instance
 from api.providers.providersnames import ProvidersNames
 
 from api.providers.opensubtitles import OpenSubtitlesProvider
@@ -17,7 +17,7 @@ PROVIDERS = [OpenSubtitlesProvider]
 
 
 def get_provider_instance(provider_name, languages, 
-    requests_manager_factory = RequestsManager.get_instance, 
+    requests_manager_factory = get_manager_instance, 
     providers = PROVIDERS):
     """
     Factory method for creating Provider instances. The provider_name value 

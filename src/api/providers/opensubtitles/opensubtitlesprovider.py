@@ -7,6 +7,7 @@ from api.title import *
 from api.providers.providersnames import ProvidersNames
 from api.providers.iprovider import IProvider
 from api.languages import Languages
+from api.requestsmanager import RequestsManager
 
 from xmlrpclib import Server as XmlRpcServer
 from xmlrpclib import Error as XmlRpcError
@@ -19,16 +20,25 @@ USER_AGENT = "subit-api 1.0.0"
 OK_STATUS = "200 OK"
 
 
-class OpenSubtitlesServer(object):
+class OpenSubtitlesRequestsManager(RequestsManager):
     """
     A small wrapper for the XmlRpcServer. We store the token, and before each 
     call to a server method, we increase the default socket timeout, and also,
     apply a retry mechanism up to 3 failures.
     """
     def __init__(self):
+        super(RequestsManager, self).__init__()
         self.server = XmlRpcServer(API_URL)
         self.token = self.server.LogIn(0, 0, 0, USER_AGENT)['token']
 
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return ("<OpenSubtitlesRequestsManager "
+                "server='%(server)s', token='%(token)s'>" % 
+                object.__getattribute__(self, '__dict__'))
+            
     def __getattribute__(self, name):
         """
         Once called, we check if it's a specific names, if not, we assume that
@@ -37,7 +47,9 @@ class OpenSubtitlesServer(object):
         it to the user. Once he calls the function, our wrapper gets called.
         """
         import socket
-        if name not in ['server', 'token']:
+        if name not in [
+            'server', 'token', 'perform_request', 'perform_request_next', 
+            '_perform_request', '_requests_mutex']:
             logger.debug("Returning a wrapper for: %s" % name)
             def func_wrapper(func):
                 def func_exec(*args, **kwargs):
@@ -84,7 +96,7 @@ class OpenSubtitlesProvider(IProvider):
         self._languages_in_use = list(
             set(OpenSubtitlesProvider.supported_languages)
             .intersection(set(languages)))
-        self.server = OpenSubtitlesServer()
+        self.server = requests_manager
 
     def get_title_versions(self, input):
         raise NotImplementedError(
