@@ -4,7 +4,7 @@ Some guidelines for the development
 
 ## Naming
 
-We'll follow [python's guide](http://legacy.python.org/dev/peps/pep-0008/):
+We'll follow [python's guide]( http://legacy.python.org/dev/peps/pep-0008 ):
 
 1. Module/File names: All lowercase, no underscore between words
 
