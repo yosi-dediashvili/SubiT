@@ -164,12 +164,36 @@ def GetSubtitlesExtensions(with_dot = True):
 
 def GetMoviesExtensions(with_dot = True):
     """Return all the extensions associated to movie files as it apear in 
-    the config file. Extensions are in lower case."""
+    the config file. Extensions are in lower case.
+    @rtype : list[str]
+    """
     from Settings.Config import SubiTConfig
     _ext = SubiTConfig.Singleton().Association.extensions_keys
     if not with_dot:
         _ext = list(map(lambda e: e.lstrip('.'), _ext))
     return _ext
+
+def GetLoweredMoviesExtensions():
+    """
+    @rtype : list[str]
+    """
+    DoesMoviesExtensionsContains("kuk")
+    return [extension.lower() for extension in GetMoviesExtensions()]
+
+def DoesFileExtIncludedInMoviesExtensions(file_path):
+    """
+    @param file_path : str
+    @rtype : bool
+    """
+    file_ext = os.path.splitext(file_path)[1].lower()
+    #todo : maybe add here check for file without extensions?
+    return file_ext in GetLoweredMoviesExtensions()
+
+def DoesMoviesExtensionsContains(extension):
+    """
+    @param extension : str
+    """
+    return extension.lower() in GetLoweredMoviesExtensions()
 
         
 def PerformRequest(domain, url, data = '', type = HttpRequestTypes.GET, 
