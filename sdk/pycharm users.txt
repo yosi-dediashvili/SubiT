@@ -1,0 +1,4 @@
+if you are using pycharm,
+i advice to add the 'src' folder under the current version to the project root folder.
+you can do that like that : 
+file - > settings - > project structure - > ( select your project ) -> add (%currectVersion)\src to Content Root.
