@@ -1,5 +1,5 @@
 import os
-from Utils import GetMoviesExtensions
+from Utils import DoesMoviesExtensionsContains
 from Utils import GetSubtitlesExtensions
 from Utils import WriteDebug
 
@@ -8,18 +8,10 @@ def IsMovieFile(file_full_path):
         function return True when the file extension matches the list in the
         config (by calling GetMoviesExtesions), otherwise, False.
     """
+    #todo : all that function is one big WriteDebug :) , can be replaced with DoesMoviesExtensionsContains(file_full_path)?
     WriteDebug('Checking if the file is a movie file: %s' % file_full_path)
-    file, extension = os.path.splitext(file_full_path)
-    if not extension:
-        WriteDebug('file has no extension, returning False')
-        return False
 
-    movie_extensions = GetMoviesExtensions()
-    # Convert to lower in order to match the casing of the movie_extensions.
-    extension = extension.lower()
-
-    WriteDebug('The extension is: %s' % extension)
-    is_movie_ext = extension in movie_extensions
+    is_movie_ext = DoesMoviesExtensionsContains(file_full_path)
     if is_movie_ext:
         WriteDebug('The extension is in the movie_extensions list.')
     else:
