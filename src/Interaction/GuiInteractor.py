@@ -19,10 +19,11 @@ from Logs import DIRECTION, INFO, FINISH
 from Logs import GUI_SPECIAL as GUI_SPECIAL_LOGS
 
 import Utils
+from Utils import DoesFileExtIncludedInMoviesExtensions , GetLoweredMoviesExtensions
 from PySide.QtGui import QApplication
 
 WriteDebug = Utils.WriteDebug
-    
+
 class UPDATE_STATUS:
     """ Enum of update status for logs purposes """
     ERROR       = 0
@@ -60,11 +61,11 @@ class ChoiceTypes:
         and with that enum we mark ourself the selection type.
     """
     # In case of failure, we use this value
-    UNKNOWN = -1 
+    UNKNOWN = -1
     # MovieSubStage got selected
-    MOVIE   = 0  
+    MOVIE   = 0
     # VersionSubStage got selected
-    VERSION = 1  
+    VERSION = 1
 
 class GuiInteractor(IInteractor.IInteractor):
     """ GUI implementation of the IInteractor. Serves SubiT in the GUI mode. 
@@ -83,7 +84,7 @@ class GuiInteractor(IInteractor.IInteractor):
         self.mutex          = QtCore.QMutex()
 
         self.messages_signals = Signals()
-        
+
         # Define all the signals connection
         self.messages_signals._logSignal.connect(self._writeLog)
         self.messages_signals._movieSignal.connect(self._getMovieChoice)
@@ -140,11 +141,11 @@ class GuiInteractor(IInteractor.IInteractor):
     @staticmethod
     def IsLoaded():
         return GuiInteractor.IS_LOADED
-    
+
     def writeLog(self, logMsg):
         """Write message to log"""
         self.messages_signals._logSignal.emit(logMsg)
-    
+
     def _set_log_image(self, msg_type):
         """ Will set the log image to the relevant one. The msg_type is the
             value of the _TYPE_ variable of the message's class.
@@ -153,7 +154,7 @@ class GuiInteractor(IInteractor.IInteractor):
             if not self.subitMainWindow.directionLogsIconLabel.movie():
                 _movie = QtGui.QMovie()
                 self.subitMainWindow.directionLogsIconLabel.setMovie(_movie)
-            
+
             self.subitMainWindow.directionLogsIconLabel.movie().stop()
             self.subitMainWindow.directionLogsIconLabel\
                 .movie().setFileName(img_path)
@@ -195,32 +196,32 @@ class GuiInteractor(IInteractor.IInteractor):
                 dots_count = 3
             else:
                 dots_count = 1
-            
+
             msg = MessageString(DIRECTION.LOADING_PLEASE_WAIT) +\
                 (_dot * dots_count)
             self.subitMainWindow.directionLogsLabel.setText(msg)
 
         logItem = QtGui.QListWidgetItem(real_message)
         logItem.setBackground(QtGui.QBrush(QtGui.QColor(color)))
-        
+
         #Insert log message, and scroll to latest line
-        self.subitMainWindow.logListWidget.addItem(logItem)        
-        self.subitMainWindow.logListWidget.setCurrentItem(logItem)            
+        self.subitMainWindow.logListWidget.addItem(logItem)
+        self.subitMainWindow.logListWidget.setCurrentItem(logItem)
         self.subitMainWindow.logListWidget.scrollToItem\
-            (logItem, QtGui.QAbstractItemView.ScrollHint.EnsureVisible)        
+            (logItem, QtGui.QAbstractItemView.ScrollHint.EnsureVisible)
         self.subitMainWindow.logListWidget.clearFocus()
-    
+
     def getSearchInput(self, logMsg = None):
-        if logMsg: 
+        if logMsg:
             self.writeLog(logMsg)
-            
+
         self.mutex.unlock()
         self.waitCondition.wakeAll()
         self.mutex.lock()
         self.messages_signals._searchSignal.emit()
         self.waitCondition.wait(self.mutex)
         return self.subitMainWindow.movieNameLineEdit.displayText()
-    
+
     def _onMovieNameGoButtonClicked(self):
         self.subitMainWindow.movieNameBrowseToolButton.setEnabled(False)
         self.subitMainWindow.movieNameGoToolButton.setEnabled(False)
@@ -231,14 +232,18 @@ class GuiInteractor(IInteractor.IInteractor):
     def _onMovieNameBrowseButtonClicked(self):
         from Utils import GetMoviesExtensions
         # Take all the extension, without the directory
-        extensions = filter\
+        #directory was taken always , the check was against upperCase str , does it matter?
+        '''extensions = filter\
             (lambda i: i.lower() != 'Directory', GetMoviesExtensions())
-        extensions_filter = ' *'.join(extensions)
+        '''
 
-        new_name = QtGui.QFileDialog.getOpenFileName\
-            (None, 'Movie Selection', '', 'Movies (*%s)' % extensions_filter)
-        WriteDebug('User file selection is: %s' % new_name)
-        self.subitMainWindow.movieNameLineEdit.setText(new_name[0])
+        extensions_filter = ' *'.join(GetLoweredMoviesExtensions())
+
+        file_name = QtGui.QFileDialog.getOpenFileName\
+            (None, 'Movie Selection', '', 'Movies (*%s)' % extensions_filter)[0]
+        WriteDebug('User file selection is: {fileName}'.format(fileName=file_name))
+        self.subitMainWindow.movieNameLineEdit.setText(file_name)
+
 
     @QtCore.Slot()
     def _getSearchInput(self):
@@ -252,16 +257,16 @@ class GuiInteractor(IInteractor.IInteractor):
         self.subitMainWindow.movieNameLineEdit.selectAll()
 
     def getDestinationDirectoryInput(self, default_directory, logMsg = None):
-        if logMsg: 
+        if logMsg:
             self.writeLog(logMsg)
-    
+
         self.download_directory = default_directory
         self.mutex.unlock()
         self.mutex.lock()
         self.messages_signals._directorySignal.emit(default_directory)
         self.waitCondition.wait(self.mutex)
         return self.download_directory
-    
+
     @QtCore.Slot(object)
     def _getDestinationDirectoryInput(self, default_directory):
         new_value = QtGui.QFileDialog.getExistingDirectory\
@@ -273,7 +278,7 @@ class GuiInteractor(IInteractor.IInteractor):
         else:
             WriteDebug('The path is invalid, ignoring the value')
         self.waitCondition.wakeAll()
-        
+
     # ======================================================================== #
     # MovieSubStage And VersionSubStage selections
     # ======================================================================== #
@@ -286,9 +291,9 @@ class GuiInteractor(IInteractor.IInteractor):
             WriteDebug('A Version got chosen')
         elif self.choiceType == ChoiceTypes.MOVIE:
             WriteDebug('A Movie got chosen')
-            
+
         return self.choiceType
-        
+
     def _notifyChoice(self, choiceType):
         """ Notify that the user chose a SubStage. We're setting the global 
             choice type to the one that got selected, and releasing the motex.
@@ -314,12 +319,12 @@ class GuiInteractor(IInteractor.IInteractor):
 
         list_widget_item = QtGui.QListWidgetItem(icon_of_png, text)
         list_widget_item.setToolTip(provider_name)
-        
+
         return list_widget_item
 
     def getVersionChoice(self, subVersions, subMovies, logMsg = None):
         """Get the user selection for the given SubVersions."""
-        if logMsg: 
+        if logMsg:
             self.writeLog(logMsg)
 
         self.mutex.unlock()
@@ -341,7 +346,7 @@ class GuiInteractor(IInteractor.IInteractor):
     def _getVersionChoice(self, subVersions, subMovies):
         from SubProviders import getSubProviderByName
         from Interaction import ImagesResources
-        
+
         self.subitMainWindow.versionsListWidget.clear()
 
         for version in subVersions:
@@ -365,9 +370,9 @@ class GuiInteractor(IInteractor.IInteractor):
 
     def getMovieChoice(self, subMovies, logMsg = None):
         """Get the user selection for the given SubMovies."""
-        if logMsg: 
+        if logMsg:
             self.writeLog(logMsg)
-        
+
         self.mutex.unlock()
         self.mutex.lock()
         self.messages_signals._movieSignal.emit(subMovies)
@@ -400,10 +405,10 @@ class GuiInteractor(IInteractor.IInteractor):
 
             movie_list_widget_item = self._list_widget_item_with_provider_icon\
                 (provider_png, provider_name, formatted_name)
-            
+
             self.subitMainWindow.moviesListWidget.addItem\
                 (movie_list_widget_item)
-            
+
         self.subitMainWindow.moviesListWidget.setEnabled(True)
     # ======================================================================== #
     # ======================================================================== #
@@ -432,11 +437,10 @@ class GuiInteractor(IInteractor.IInteractor):
                 WriteDebug("_path: %s" % _path)
                 if Utils.IsWindowPlatform():
                     _path = _path.replace('/', '\\')
-                if os.path.splitext(_path)[1].lower() in \
-                    Utils.GetMoviesExtensions():
+                if DoesFileExtIncludedInMoviesExtensions(_path):
                     e.accept()
                     return _show_accepted()
-        _show_ignored()        
+        _show_ignored()
         e.accept()
 
     def _onMovieFileDragLeaveEvent(self, e):
@@ -453,8 +457,7 @@ class GuiInteractor(IInteractor.IInteractor):
         if Utils.IsWindowPlatform():
             file_path = file_path.replace('/', '\\')
 
-        if os.path.splitext(file_path)[1].lower() in \
-            Utils.GetMoviesExtensions():
+        if DoesFileExtIncludedInMoviesExtensions(file_path):
             self.subitMainWindow.movieNameLineEdit.setText(file_path)
         else:
             e.ignore()
@@ -482,14 +485,14 @@ class GuiInteractor(IInteractor.IInteractor):
             ('<a href="%s">%s</a>' % (new_version_link, new_version_link))
 
     def _set_version_status_in_label\
-        (self, status_label, status, text_label, text):        
+        (self, status_label, status, text_label, text):
         """ Set the status and text under the given status label and text_label.
             The status should be taken from the Enum of UPDATE_STATUS in order
             to match with the UPDATE_STATUS_IMAGES dict
         """
         if status not in UPDATE_STATUS_IMAGES.keys():
             status = UPDATE_STATUS.ERROR
-        
+
         status_label.setPixmap(QtGui.QPixmap(UPDATE_STATUS_IMAGES[status]))
         text_label.setText(text)
 
@@ -511,28 +514,28 @@ class GuiInteractor(IInteractor.IInteractor):
         if updater:
             (is_latest, latest_ver, latest_url) = updater.IsLatestVersion(True)
             if not is_latest:
-                _log(UPDATE_STATUS.NEW_VERSION, 
+                _log(UPDATE_STATUS.NEW_VERSION,
                      'New version of SubiT is avaliable (%s)' % latest_ver)
                 if should_notify:
                     self.notifyNewVersion\
                         (updater.CurrentVersion(), latest_ver, latest_url)
             else:
-                _log(UPDATE_STATUS.LATEST, 
+                _log(UPDATE_STATUS.LATEST,
                      'SubiT is up to date (%s)' % updater.CurrentVersion())
         # We assume that the reason we got None for the updater is because we
         # dont have any for the current platform
         else:
-            _log(UPDATE_STATUS.ERROR, 
+            _log(UPDATE_STATUS.ERROR,
                  'No updater is not avaliable for this platform')
 
     def _onCheckForUpdateFiredInAbout(self):
         self._onCheckForUpdateFired\
-            (self.subitAboutDialog.versionStatusIconLabel, 
+            (self.subitAboutDialog.versionStatusIconLabel,
              self.subitAboutDialog.versionStatusTextLabel, False)
 
     def _onCheckForUpdateFiredInSettings(self):
         self._onCheckForUpdateFired\
-            (self.subitSettingsDialog.versionStatusIconLabel, 
+            (self.subitSettingsDialog.versionStatusIconLabel,
              self.subitSettingsDialog.versionStatusTextLabel, False)
     # ======================================================================== #
     # ======================================================================== #
@@ -555,7 +558,7 @@ class GuiInteractor(IInteractor.IInteractor):
             (None, 'Default Directory', '', QtGui.QFileDialog.ShowDirsOnly)
         if new_value and os.path.isdir(new_value):
             self.subitSettingsDialog.defaultDirectoryLineEdit.setText(new_value)
-        
+
     def _onOkPushButtonClicked(self):
         """ Will save the config """
         from Settings import DEFAULT_DIRECTORY_DEFAULT_VAL
@@ -590,7 +593,7 @@ class GuiInteractor(IInteractor.IInteractor):
             .findItems('.*', QtCore.Qt.MatchFlag.MatchRegExp)
         # We take only the checked once, and return their text() value
         languages_order = Utils.myfilter\
-            (lambda i: i.checkState() == QtCore.Qt.CheckState.Checked, 
+            (lambda i: i.checkState() == QtCore.Qt.CheckState.Checked,
              languages_items,
              lambda i: i.text())
 
@@ -599,8 +602,8 @@ class GuiInteractor(IInteractor.IInteractor):
             .findItems('.*', QtCore.Qt.MatchFlag.MatchRegExp)
         # We take only the checked once, and return their text() value
         providers_order = Utils.myfilter\
-            (lambda i: i.checkState() == QtCore.Qt.CheckState.Checked, 
-             providers_items, 
+            (lambda i: i.checkState() == QtCore.Qt.CheckState.Checked,
+             providers_items,
              lambda i: i.text())
 
         do_properties_based_ranks = self.subitSettingsDialog\
@@ -626,12 +629,12 @@ class GuiInteractor(IInteractor.IInteractor):
                 .interactionTypeSelectionComboBox.currentText()
             # Take the interaction_type of the selected item in the combobox
             interaction_type = myfilter\
-                (lambda i: i[1] == interaction_desc, 
-                 InteractionTypes.InteractionTypeDescriptions.items(), 
-                 lambda i: i[0], 
+                (lambda i: i[1] == interaction_desc,
+                 InteractionTypes.InteractionTypeDescriptions.items(),
+                 lambda i: i[0],
                  True)
 
-        
+
         # Now we finally save the settings
         SubiTConfig.Singleton().setValue\
             ('Global', 'close_on_finish', close_on_finish)
@@ -671,7 +674,7 @@ class GuiInteractor(IInteractor.IInteractor):
                 getAssociator().SetAssociation()
             else:
                 getAssociator().RemoveAssociation()
-        
+
         # Restart subit, with the user input if there was any, otherwise, we
         # restart we the original sys.argv values
         movie_name_query = self.subitMainWindow.movieNameLineEdit.displayText()
@@ -679,11 +682,11 @@ class GuiInteractor(IInteractor.IInteractor):
             Utils.restart(movie_name_query)
         else:
             Utils.restart()
-        
+
     def _onExtensionsAddToolButtonClicked(self):
         newExtItem = QtGui.QListWidgetItem('<new extension>')
-        newExtItem.setFlags(QtCore.Qt.ItemIsSelectable    | 
-                            QtCore.Qt.ItemIsEnabled       | 
+        newExtItem.setFlags(QtCore.Qt.ItemIsSelectable    |
+                            QtCore.Qt.ItemIsEnabled       |
                             QtCore.Qt.ItemIsEditable)
         self.subitSettingsDialog.extensionsListWidget.addItem(newExtItem)
         self.subitSettingsDialog.extensionsListWidget.setCurrentItem(newExtItem)
@@ -712,7 +715,7 @@ class GuiInteractor(IInteractor.IInteractor):
             new_index = current_index - 1
             listWidget.insertItem(new_index, current_item)
             listWidget.setCurrentRow(new_index)
-     
+
     def showSettings(self):
         self.settingsDialog = QtGui.QDialog\
             (self.mainWindow, QtCore.Qt.WindowSystemMenuHint)
@@ -820,7 +823,7 @@ class GuiInteractor(IInteractor.IInteractor):
         #============================================
         from Settings.Config import SubiTConfig
         from Settings.Updaters import getUpdater
-        
+
         version = SubiTConfig.Singleton().getStr\
             ('Global', 'version', 'Failed getting the vesion')
         close_on_finish = SubiTConfig.Singleton().getBoolean\
@@ -898,7 +901,7 @@ class GuiInteractor(IInteractor.IInteractor):
         self.subitSettingsDialog.languageUpToolButton.clicked.connect\
             (lambda: (self._onUpToolButtonClicked
                       (self.subitSettingsDialog.advancedLanguageListWidget)))
-        
+
 
         providers_order = SubiTConfig.Singleton().getList\
             ('Providers', 'providers_order')
@@ -976,7 +979,7 @@ class GuiInteractor(IInteractor.IInteractor):
 
             from Interaction import getDefaultInteractorByConfig
             from Interaction import InteractionTypes
-            
+
             interaction_type = getDefaultInteractorByConfig()
             self.subitSettingsDialog.interactionTypeSelectionComboBox.addItem\
                 (InteractionTypes.InteractionTypeDescriptions[interaction_type])
@@ -992,7 +995,7 @@ class GuiInteractor(IInteractor.IInteractor):
 
         self._onCheckForUpdateFiredInSettings()
 
-    def finilizeSubiTMainGuiWidgets(self, mainWindow, subitMainGui):        
+    def finilizeSubiTMainGuiWidgets(self, mainWindow, subitMainGui):
         # Input scope
         self.subitMainWindow.movieNameLineEdit.dragEnterEvent = \
             self._onMovieFileDragEnterEvent
@@ -1036,7 +1039,7 @@ class GuiInteractor(IInteractor.IInteractor):
         self.subitMainWindow.downloadVersionToolButton.clicked.connect\
             (lambda: self._notifyChoice(ChoiceTypes.VERSION))
 
-        
+
 
         # Tools menu
         self.menu = QtGui.QMenu(self.subitMainWindow.toolsToolButton)
@@ -1055,7 +1058,7 @@ class GuiInteractor(IInteractor.IInteractor):
         self.settings_action.setIconVisibleInMenu(True)
         self.settings_action.triggered.connect(self.showSettings)
         self.menu.addAction(self.settings_action)
-        
+
         self.about_action = QtGui.QAction(QtGui.QIcon(QtGui.QPixmap\
             (":/MainWindow/icon-main-about.png")), 'About', self.menu)
         self.about_action.setIconVisibleInMenu(True)
