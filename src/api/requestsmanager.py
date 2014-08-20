@@ -8,11 +8,6 @@ from exceptions import InvalidProviderName
 
 
 class RequestsManager(object):
-    class HttpRequestTypes:
-        GET  = 'GET'
-        POST = 'POST'
-        HEAD = 'HEAD'
-
     def __init__(self):
         from threading import Lock
         self._requests_mutex = Lock()
@@ -23,8 +18,7 @@ class RequestsManager(object):
     def __repr__(self):
         return '<%s>' % type(self).__name__
 
-    def perform_request(self, domain, url,
-        data = '', type = HttpRequestTypes.GET, more_headers = {}):
+    def perform_request(self, url, data = '', more_headers = {}):
         """
         Locks the requests mutex, and after that, sends the request. If the
         mutex is already lock, the function will block until the mutex is
@@ -32,67 +26,57 @@ class RequestsManager(object):
         """
         logger.debug("perform_request got called.")
         with self._requests_mutex:
-            return self._perform_request(domain, url, data, type, more_headers)
+            return self._perform_request(url, data, more_headers)
 
-    def perform_request_next(self, domain, url,
-        data = '', type = HttpRequestTypes.GET, more_headers = {}):
+    def perform_request_next(self, url, data = '', more_headers = {}):
         """
         Perform a request without locking the mutex.
         """
         logger.debug("perform_request_next got called.")
-        return self._perform_request(domain, url, data, type, more_headers)
+        return self._perform_request(url, data, more_headers)
 
-    def _perform_request(self, domain, url, data, type, more_headers = {},
-        retry = False, is_redirection = False):
+    def _perform_request(self, url, data = '', more_headers = {}):
         """
-        Performs http requests. We are using fake user-agents. Use the data arg
-        in case you send a "POST" request. Also, you can specify more headers
-        by supplying a dict in the more_headers arg
+        Performs a simple http requests. We are using fake user-agents. If the
+        data arg is provided, a POST request will be sent instead of GET. Also, 
+        you can specify more headers by supplying a dict in the more_headers 
+        arg. 
 
-        Url should start with "/". If not, the function adds it.
+        The data is returned as-is using the urllib2.
         """
         logger.debug(
-            "_perform_request got called with: '%s', '%s', %s, %s, %s, %s, %s" % 
-            (domain, url, data, type, more_headers, retry, is_redirection))
+            "_perform_request got called with: '%s', '%s', %s" % 
+            (url, data, more_headers))
         from useragents import get_agent
-        import httplib
+        import urllib2
 
-        response = ''
-        if not url.startswith("/"):
-            url = "/" + url
         try:
-            httpcon = httplib.HTTPConnection(domain, timeout = 10)
-
-            headers = {'User-Agent' : get_agent()}
-            # Each packet we send will have this params (good for hiding)
-            if not retry:
-                headers.update({
-                    'Connection'        : r'keep-alive',
-                    'X-Requested-With'  : r'XMLHttpRequest',
-                    'Content-Type'      : r'application/x-www-form-urlencoded',
-                    'Accept-Charset'    : r'utf-8;q=0.7,*;q=0.3',
-                    'Accept-Language'   : r'en-US,en;q=0.8',
-                    'Cache-Control'     : r'max-age=0'})
+            request = urllib2.Request(url)
+            request.add_header("User-Agent", get_agent())
+            request.add_header('Connection'      , r'keep-alive')
+            request.add_header('X-Requested-With', r'XMLHttpRequest')
+            request.add_header('Content-Type'    , r'application/x-www-form-urlencoded')
+            request.add_header('Accept-Charset'  , r'utf-8;q=0.7,*;q=0.3')
+            request.add_header('Accept-Language' , r'en-US,en;q=0.8')
+            request.add_header('Cache-Control'   , r'max-age=0')
 
             # In case of specifiyng more headers, we add them
-            if (len(more_headers)):
-                headers.update(more_headers)
-            logger.debug("Request headers: %s" % headers)
+            for name, value in more_headers.iteritems():
+                request.add_header(name, value)
 
-            got_response = None
-            response    = None
+            logger.debug("Request headers: %s" % request.headers)
+
+            if data:
+                request.add_data(data)
+
+            response = ''
             # Try 3 times.
             for error_count in range(1, 4):
                 try:
                     logger.debug(
                         "Sending request for the %d time." % error_count)
-                    # Before each request, we need to try and connect, because
-                    # we're probably not connected (that's way the exception
-                    # that we're catching was raised).
-                    httpcon.connect()
-                    httpcon.request(type, url, str(data), headers)
-                    got_response = httpcon.getresponse()
-                    response = got_response.read()
+                    response_obj = urllib2.urlopen(request, timeout=10)
+                    response = response_obj.read()
                     # If we got the response, break the loop.
                     break
                 except Exception as error:
@@ -100,43 +84,11 @@ class RequestsManager(object):
                     # Sleep some time before we request it again.
                     from time import sleep
                     sleep(2)
-                    # Close it (we're calling connect() again inside the try).
-                    httpcon.close()
 
-
-            # In order to avoid decoding problems, we just convert the bytes to
-            # str. The problem is that when we do that, the str preserve the
-            # preceding 'b' of the bytes type, so we remove it, and the single
-            # quotes and the start and the end of the string
-            if got_response:
-                try:
-                    response = response.decode('utf-8', errors='replace')
-                except:
-                    response = str(response)[2:-1]
-                response = response.replace('\r', '').replace('\n', '')
-            # When we get and empty response, it might be a sign that we got a
-            # redirection and therefor we check the current url against the
-            # requested one. Also, if is_redirection is true, it means that we
-            # already got redirection, and therefor we stop the procedure
-            if got_response and not response and not is_redirection:
-                logger.debug("Got no response, checking if it's redirection.")
-                location = got_response.msg.dict['location']
-                logger.debug("location value is: %s" % location)
-                if url not in location or url == '/':
-                    logger.debug("url is different, redirecting.")
-                    # Because the location gives us the full address including
-                    # the protocol and the domain, we remove them in order to
-                    # get the relative url
-                    location = \
-                        location.replace('http://', '').replace(domain, '')
-                    return self._perform_request(
-                        domain, location, data, type, is_redirection=True)
-                else:
-                    logger.debug("No redirection was made.")
         except Exception as eX:
             logger.error("Request flow failed: %s" % eX)
 
-        logger.debug("Response length is: %d" % len(response or ''))
+        logger.debug("Response length is: %d" % len(response))
         return response
 
 _instances = {}
