@@ -86,8 +86,8 @@ class TestPerformRequestContent(unittest.TestCase):
         from hashlib import sha1
         self.assertEquals(sha1_value, sha1(html_content).digest())
         self.assertTrue(header_name in response_headers)
-        self.assertEquals(len(response_headers, 1))
-        self.assertEquals(response_headers[header_name] == "73")
+        self.assertEquals(len(response_headers), 1)
+        self.assertEquals(response_headers[header_name], "73")
 
     def test_with_only_missing_response_headers(self):
         header_name = "No-Such-Header"
@@ -98,7 +98,7 @@ class TestPerformRequestContent(unittest.TestCase):
         sha1_value = "57b1c1bfae35dea72cb9c2ddea997b7107da75a2".decode("hex")
         from hashlib import sha1
         self.assertEquals(sha1_value, sha1(html_content).digest())
-        self.assertTrue(len(response_headers)==0)
+        self.assertEquals(len(response_headers), 0)
 
     def test_with_partially_missing_response_headers(self):
         real_header_name = "Content-Length"
@@ -110,8 +110,8 @@ class TestPerformRequestContent(unittest.TestCase):
         sha1_value = "57b1c1bfae35dea72cb9c2ddea997b7107da75a2".decode("hex")
         from hashlib import sha1
         self.assertEquals(sha1_value, sha1(html_content).digest())
-        self.assertTrue(len(response_headers)==1)
-        self.assertEquals(response_headers[real_header_name] == "73")
+        self.assertEquals(len(response_headers), 1)
+        self.assertEquals(response_headers[real_header_name], "73")
 
 def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)

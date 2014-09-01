@@ -18,7 +18,8 @@ class RequestsManager(object):
     def __repr__(self):
         return '<%s>' % type(self).__name__
 
-    def perform_request(self, url, data = '', more_headers = {}):
+    def perform_request(
+        self, url, data = '', more_headers = {}, response_headers = []):
         """
         Locks the requests mutex, and after that, sends the request. If the
         mutex is already lock, the function will block until the mutex is
@@ -28,14 +29,16 @@ class RequestsManager(object):
         with self._requests_mutex:
             return self._perform_request(url, data, more_headers)
 
-    def perform_request_next(self, url, data = '', more_headers = {}):
+    def perform_request_next(
+        self, url, data = '', more_headers = {}, response_headers = []):
         """
         Perform a request without locking the mutex.
         """
         logger.debug("perform_request_next got called.")
         return self._perform_request(url, data, more_headers)
 
-    def _perform_request(self, url, data = '', more_headers = {}):
+    def _perform_request(
+        self, url, data = '', more_headers = {}, response_headers = []):
         """
         Performs a simple http requests. We are using fake user-agents. If the
         data arg is provided, a POST request will be sent instead of GET. Also, 
@@ -70,6 +73,7 @@ class RequestsManager(object):
                 request.add_data(data)
 
             response = ''
+            returned_headers = {}
             # Try 3 times.
             for error_count in range(1, 4):
                 try:
@@ -77,6 +81,13 @@ class RequestsManager(object):
                         "Sending request for the %d time." % error_count)
                     response_obj = urllib2.urlopen(request, timeout=10)
                     response = response_obj.read()
+                    response_info = response_obj.info()
+                    for header in response_headers:
+                        if header in response_info:
+                            header_value = response_info[header]
+                            logger.debug("Adding response header: %s=%s" 
+                                % (header, header_value))
+                            returned_headers[header] = header_value
                     # If we got the response, break the loop.
                     break
                 except Exception as error:
@@ -89,7 +100,11 @@ class RequestsManager(object):
             logger.error("Request flow failed: %s" % eX)
 
         logger.debug("Response length is: %d" % len(response))
-        return response
+
+        if not response_headers:
+            return response
+        else:
+            return (response, returned_headers)
 
 _instances = {}
 def get_manager_instance(provider_name):
