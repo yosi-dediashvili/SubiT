@@ -77,10 +77,41 @@ class TestPerformRequestContent(unittest.TestCase):
         self.assertEquals(sha1_value, sha1(binary_content).digest())
 
     def test_with_response_headers(self):
-        self.assertFalse(True)
+        header_name = "Content-Length"
+        html_content, response_headers = self.manager._perform_request(
+            "http://subit-app.sf.net/tests/html_file.html",
+            response_headers=[header_name])
 
-    def test_with_missing_response_headers(self):
-        self.assertFalse(True)
+        sha1_value = "57b1c1bfae35dea72cb9c2ddea997b7107da75a2".decode("hex")
+        from hashlib import sha1
+        self.assertEquals(sha1_value, sha1(html_content).digest())
+        self.assertTrue(header_name in response_headers)
+        self.assertEquals(len(response_headers, 1))
+        self.assertEquals(response_headers[header_name] == "73")
+
+    def test_with_only_missing_response_headers(self):
+        header_name = "No-Such-Header"
+        html_content, response_headers = self.manager._perform_request(
+            "http://subit-app.sf.net/tests/html_file.html",
+            response_headers=[header_name])
+
+        sha1_value = "57b1c1bfae35dea72cb9c2ddea997b7107da75a2".decode("hex")
+        from hashlib import sha1
+        self.assertEquals(sha1_value, sha1(html_content).digest())
+        self.assertTrue(len(response_headers)==0)
+
+    def test_with_partially_missing_response_headers(self):
+        real_header_name = "Content-Length"
+        missing_header_name = "No-Such-Header"
+        html_content, response_headers = self.manager._perform_request(
+            "http://subit-app.sf.net/tests/html_file.html",
+            response_headers=[real_header_name, missing_header_name])
+
+        sha1_value = "57b1c1bfae35dea72cb9c2ddea997b7107da75a2".decode("hex")
+        from hashlib import sha1
+        self.assertEquals(sha1_value, sha1(html_content).digest())
+        self.assertTrue(len(response_headers)==1)
+        self.assertEquals(response_headers[real_header_name] == "73")
 
 def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)
