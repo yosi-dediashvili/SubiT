@@ -115,6 +115,22 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
             release_name, "the.matrix.1999.720p.hddvd.dts.x264-esir")
         
 
+    def test_get_title_versions_no_results(self):
+        self.assertFalse(True)
+
+    def test_get_title_versions_series(self):
+        self.assertFalse(True)
+
+    def test_get_title_versions_movie(self):
+        self.assertFalse(True)
+
+    def test_download_subtitle_buffer_bad_version(self):
+        self.assertFalse(True)
+
+    def test_download_subtitle_buffer_good_version(self):
+        self.assertFalse(True)
+
+
 def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)
     tests = doctest.DocTestSuite(
