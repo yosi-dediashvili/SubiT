@@ -147,8 +147,8 @@ preserving the synchronous mode.
 
 ```python
 class RequestsManager:
-    def perform_request(url, data = None, more_headers = {}, response_headers = {}): pass
-    def perform_request_next(url, data = None, more_headers = {}, response_headers = {}): pass
+    def perform_request(url, data = None, more_headers = {}, response_headers = []): pass
+    def perform_request_next(url, data = None, more_headers = {}, response_headers = []): pass
 ```
 
 ### Factories
