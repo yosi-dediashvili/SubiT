@@ -10,7 +10,7 @@ class IProvider(object):
         pass
 
     @abstractmethod
-    def get_title_versions(self, input):
+    def get_title_versions(self, title, version):
         pass
 
     @abstractmethod
