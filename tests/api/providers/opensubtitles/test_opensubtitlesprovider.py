@@ -7,6 +7,7 @@ OpenSubtitlesProvider = opensubtitlesprovider.OpenSubtitlesProvider
 from api.languages import Languages
 from api.title import MovieTitle
 from api.title import SeriesTitle
+from api.version import ProviderVersion
 
 import unittest
 import doctest
@@ -125,10 +126,42 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertFalse(True)
 
     def test_download_subtitle_buffer_bad_version(self):
-        self.assertFalse(True)
+        version = ProviderVersion(
+            [],
+            MovieTitle("The Matrix Revolution", 2003, "tt0242653"),
+            Languages.ENGLISH,
+            self.provider,
+            attributes = {
+                # Incorrect link.
+                "ZipDownloadLink" : "http://dl.opensubtitles.org/en/download/subad/src-api/vrf-293106cf48/468615"})
+
+        from api.exceptions import FailedDownloadingSubtitleBuffer
+        with self.assertRaises(FailedDownloadingSubtitleBuffer):
+            file_name, subtitle_buffer = \
+                self.provider.download_subtitle_buffer(version)
 
     def test_download_subtitle_buffer_good_version(self):
-        self.assertFalse(True)
+        version = ProviderVersion(
+            [],
+            MovieTitle("The Matrix Revolution", 2003, "tt0242653"),
+            Languages.ENGLISH,
+            self.provider,
+            attributes = {
+                "ZipDownloadLink" : "http://dl.opensubtitles.org/en/download/subad/src-api/vrf-293106cf48/4686151"})
+
+        file_name, subtitle_buffer = \
+            self.provider.download_subtitle_buffer(version)
+        self.assertEquals(
+            file_name, 
+            "the.matrix.revolutions.(2003).eng.1cd.(4686151).zip")
+
+        from hashlib import sha1
+        download_sha1 = sha1(content).hexdigest()
+        self.assertEquals(
+            sha1(subtitle_buffer).hexdigest(),
+            "4d48620132c490b392f98edcfc2c39f765a51698")
+
+
 
 
 def run_tests():

@@ -19,3 +19,5 @@ class InvalidOpenSubtitlesTitleFormat(Exception): pass
 class FilePathDoesNotExists(Exception): pass
 
 class InvalidQueriesValue(Exception): pass
+
+class FailedDownloadingSubtitleBuffer(Exception): pass
