@@ -123,7 +123,12 @@ back.
 The manager's will expose the perform_request method that will use python's 
 urrlib2 module internally, and will return the content return from the request
 un-encoded. This means that the method will serve both for returning html pages
-and also for file content (when downloading subtitles for instance).
+and also for file content (when downloading subtitles for instance). Also, if
+specified, the function will return a dictionary of response headers to the 
+caller along with the content. If no response headers are requested from the 
+caller, the function returns the content as-is, otherwise, the return value is 
+a tuple of (content, response_headers). If a requested response header is 
+missing from the response, it's silently ignored.
 
 In order to allow only a single session against some server, the manager will
 use a mutex that will get locked when `perform_request()` is called. Each 
@@ -142,8 +147,8 @@ preserving the synchronous mode.
 
 ```python
 class RequestsManager:
-    def perform_request(url, data = None, more_headers = None): pass
-    def perform_request_next(url, data = None, more_headers = None): pass
+    def perform_request(url, data = None, more_headers = {}, response_headers = {}): pass
+    def perform_request_next(url, data = None, more_headers = {}, response_headers = {}): pass
 ```
 
 ### Factories
