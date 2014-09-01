@@ -76,6 +76,12 @@ class TestPerformRequestContent(unittest.TestCase):
         from hashlib import sha1
         self.assertEquals(sha1_value, sha1(binary_content).digest())
 
+    def test_with_response_headers(self):
+        self.assertFalse(True)
+
+    def test_with_missing_response_headers(self):
+        self.assertFalse(True)
+
 def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)
     tests = doctest.DocTestSuite(
