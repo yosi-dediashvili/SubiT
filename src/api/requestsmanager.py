@@ -27,7 +27,8 @@ class RequestsManager(object):
         """
         logger.debug("perform_request got called.")
         with self._requests_mutex:
-            return self._perform_request(url, data, more_headers)
+            return self._perform_request(
+                url, data, more_headers, response_headers)
 
     def perform_request_next(
         self, url, data = '', more_headers = {}, response_headers = []):
@@ -35,7 +36,7 @@ class RequestsManager(object):
         Perform a request without locking the mutex.
         """
         logger.debug("perform_request_next got called.")
-        return self._perform_request(url, data, more_headers)
+        return self._perform_request(url, data, more_headers, response_headers)
 
     def _perform_request(
         self, url, data = '', more_headers = {}, response_headers = []):
