@@ -8,6 +8,7 @@ from api.providers.providersnames import ProvidersNames
 from api.providers.iprovider import IProvider
 from api.languages import Languages
 from api.requestsmanager import RequestsManager
+from api import utils
 
 from xmlrpclib import Server as XmlRpcServer
 from xmlrpclib import Error as XmlRpcError
@@ -103,8 +104,26 @@ class OpenSubtitlesProvider(IProvider):
             "OpenSubtitlesProvider.get_title_versions")
 
     def download_subtitle_buffer(self, provider_version):
-        raise NotImplementedError(
-            "OpenSubtitlesProvider.download_subtitle_buffer")
+        logger.debug("Trying to download version: %s" % provider_version)
+        download_url = provider_version.attributes["ZipDownloadLink"]
+        
+        content, headers = self.server.perform_request_next(
+            download_url,
+            response_headers = ["Content-Disposition"])
+        if content == "Incorrect download parameters detected":
+            from api.exceptions import FailedDownloadingSubtitleBuffer
+            raise FailedDownloadingSubtitleBuffer(
+                "Failed downloading: %s" % download_url)
+
+        file_name = ""
+        if not "Content-Disposition" in headers:
+            logger.debug("Failed getting the file name for the zip.")
+        else:
+            file_name = utils.take_first(utils.get_regex_results(
+                "(?<=filename\=\").*(?=\")", 
+                headers["Content-Disposition"]))
+            logger.debug("Downloaded file name is: %s" % file_name)
+        return (file_name, content)
 
     def languages_in_use(self):
         return self._languages_in_use

@@ -156,7 +156,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
             "the.matrix.revolutions.(2003).eng.1cd.(4686151).zip")
 
         from hashlib import sha1
-        download_sha1 = sha1(content).hexdigest()
+        download_sha1 = sha1(subtitle_buffer).hexdigest()
         self.assertEquals(
             sha1(subtitle_buffer).hexdigest(),
             "4d48620132c490b392f98edcfc2c39f765a51698")
