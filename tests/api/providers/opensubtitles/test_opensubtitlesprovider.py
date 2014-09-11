@@ -133,7 +133,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
             self.provider,
             attributes = {
                 # Incorrect link.
-                "ZipDownloadLink" : "http://dl.opensubtitles.org/en/download/subad/src-api/vrf-293106cf48/468615"})
+                "ZipDownloadLink" : "http://dl.opensubtitles.or/en/download/subad/src-api/vrf-293106cf48/468615"})
 
         from api.exceptions import FailedDownloadingSubtitleBuffer
         with self.assertRaises(FailedDownloadingSubtitleBuffer):
@@ -155,11 +155,10 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
             file_name, 
             "the.matrix.revolutions.(2003).eng.1cd.(4686151).zip")
 
-        from hashlib import sha1
-        download_sha1 = sha1(subtitle_buffer).hexdigest()
-        self.assertEquals(
-            sha1(subtitle_buffer).hexdigest(),
-            "4d48620132c490b392f98edcfc2c39f765a51698")
+        # It seems that OpenSubtitles returns a different zip for each download
+        # that even differ in size. It's at least 32390 bytes for that specific
+        # file.
+        self.assertGreater(len(subtitle_buffer), 32390)
 
 
 

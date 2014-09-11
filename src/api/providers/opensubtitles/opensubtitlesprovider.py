@@ -110,11 +110,15 @@ class OpenSubtitlesProvider(IProvider):
         content, headers = self.server.perform_request_next(
             download_url,
             response_headers = ["Content-Disposition"])
-        if content == "Incorrect download parameters detected":
+
+        # Either we receive None for the content, or OpenSubtitles's error 
+        # message.
+        if not content or content == "Incorrect download parameters detected":
             from api.exceptions import FailedDownloadingSubtitleBuffer
             raise FailedDownloadingSubtitleBuffer(
                 "Failed downloading: %s" % download_url)
 
+        # Extract the file name from the headers.
         file_name = ""
         if not "Content-Disposition" in headers:
             logger.debug("Failed getting the file name for the zip.")
@@ -123,6 +127,7 @@ class OpenSubtitlesProvider(IProvider):
                 "(?<=filename\=\").*(?=\")", 
                 headers["Content-Disposition"]))
             logger.debug("Downloaded file name is: %s" % file_name)
+
         return (file_name, content)
 
     def languages_in_use(self):
