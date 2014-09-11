@@ -68,7 +68,9 @@ not use other languages than those.
 
 ###### `get_titles_versions()`
 The function receives a Title instance and a Version instance, and will return
-a list of TitleVersions object for each title it got from the search.
+a list of TitleVersions object for each title it got from the search. Note that
+version is passed mostly in order for it to pass it to the ProviderVersion
+constructor in order to rank the versions.
 
 ###### `download_subtitle_buffer()`
 The function receive a single version from the versions that was retrieved with
