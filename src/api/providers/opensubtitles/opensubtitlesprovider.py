@@ -99,7 +99,7 @@ class OpenSubtitlesProvider(IProvider):
             .intersection(set(languages)))
         self.server = requests_manager
 
-    def get_title_versions(self, input):
+    def get_title_versions(self, title, version):
         raise NotImplementedError(
             "OpenSubtitlesProvider.get_title_versions")
 

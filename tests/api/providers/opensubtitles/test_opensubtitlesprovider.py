@@ -8,6 +8,7 @@ from api.languages import Languages
 from api.title import MovieTitle
 from api.title import SeriesTitle
 from api.version import ProviderVersion
+from api.version import Version
 
 import unittest
 import doctest
@@ -117,13 +118,27 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         
 
     def test_get_title_versions_no_results(self):
-        self.assertFalse(True)
+        fake_title = MovieTitle("Blaaa Blasaa", 1812)
+        fake_version = Version(["identifier"], fake_title)
+
+        title_versions = \
+            self.provider.get_title_versions(fake_title, fake_version)
+
+        self.assertEquals(len(title_versions.versions), 0)
 
     def test_get_title_versions_series(self):
         self.assertFalse(True)
 
     def test_get_title_versions_movie(self):
-        self.assertFalse(True)
+        title = MovieTitle("The Matrix", 1999, "tt0133093")
+        fake_version = Version(["identifier"], title)
+
+        titles_versions = self.provider.get_title_versions(title, fake_version)
+        # We expect to see only a single TitleVersion instance in the list.
+        self.assertEquals(len(titles_versions), 1)
+        self.assertEquals(len(titles_versions[0].versions), 1)
+        self.assertGreater(\
+            len(titles_versions[0].versions[Languages.ENGLISH]), 0)
 
     def test_download_subtitle_buffer_bad_version(self):
         version = ProviderVersion(
