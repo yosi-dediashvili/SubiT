@@ -124,12 +124,12 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         title_versions = \
             self.provider.get_title_versions(fake_title, fake_version)
 
-        self.assertEquals(len(title_versions.versions), 0)
+        self.assertEquals(len(title_versions), 0)
 
     def test_get_title_versions_series(self):
         self.assertFalse(True)
 
-    def test_get_title_versions_movie(self):
+    def test_get_title_versions_movie_single_langugage(self):
         title = MovieTitle("The Matrix", 1999, "tt0133093")
         fake_version = Version(["identifier"], title)
 
@@ -139,6 +139,25 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(len(titles_versions[0].versions), 1)
         self.assertGreater(\
             len(titles_versions[0].versions[Languages.ENGLISH]), 0)
+
+    def test_get_title_versions_movie_two_langugages(self):
+        two_lang_provider = OpenSubtitlesProvider(
+            [Languages.ENGLISH, Languages.HEBREW],
+            OpenSubtitlesRequestsManager())
+        title = MovieTitle("The Matrix", 1999, "tt0133093")
+        fake_version = Version(["identifier"], title)
+
+        titles_versions = \
+            two_lang_provider.provider.get_title_versions(title, fake_version)
+        
+        self.assertEquals(len(titles_versions), 1)
+        # Two languages expected.
+        self.assertEquals(len(titles_versions[0].versions), 2)
+
+        self.assertGreater(\
+            len(titles_versions[0].versions[Languages.ENGLISH]), 0)
+        self.assertGreater(\
+            len(titles_versions[0].versions[Languages.HEBREW]), 0)
 
     def test_download_subtitle_buffer_bad_version(self):
         version = ProviderVersion(
