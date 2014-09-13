@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..\\..")
 import os
-from api.providers.opensubtitles import opensubtitlesprovider
+from api.providers.opensubtitles import provider as opensubtitlesprovider
 from api.providers.opensubtitles import OpenSubtitlesRequestsManager
 OpenSubtitlesProvider = opensubtitlesprovider.OpenSubtitlesProvider
 from api.languages import Languages
