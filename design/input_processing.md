@@ -134,6 +134,9 @@ the same normalization mechanism as the Title's name. In this title, the `imdb_i
 value specifies the id of the **Series**, and another value, `episode_imdb_id` 
 specifies the **Episode** id.
 
+Also, in the scope of SeriesTitle, the `year` attribute specify the episode's
+year, and not the series's one.
+
 ##### Comparing Series titles
 
 When two series titles are compared, the check will return ```True``` in any 
