@@ -127,7 +127,18 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(len(title_versions), 0)
 
     def test_get_title_versions_series(self):
-        self.assertFalse(True)
+        title = SeriesTitle(
+            "The Big Bang Theory", 6, 5, "tt2411582", 
+            "The Holographic Excitation", 2012, "tt0898266")
+        fake_version = Version(["identifier"], title)
+
+        titles_versions = self.provider.get_title_versions(title, fake_version)
+
+        self.assertEquals(len(titles_versions), 1)
+        self.assertEquals(len(titles_versions[0].versions), 1)
+
+        self.assertGreater(\
+            len(titles_versions[0].versions[Languages.ENGLISH]), 0)
 
     def test_get_title_versions_movie_single_langugage(self):
         title = MovieTitle("The Matrix", 1999, "tt0133093")
