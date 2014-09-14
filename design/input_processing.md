@@ -457,41 +457,71 @@ versions from all the providers, and not just portion of it.
 ### TitleVersions
 
 In this version, we're dropping the stages mechanism. In order to receive 
-versions from the providers, we'll pass them the Input object. And in return, we
-will get a list of **TitleVersions** instances, that is a simple structure that 
-unites several **ProviderVersion** under a single **Title**.
+versions from the providers, we'll pass them a Title and a Version object. And 
+in return, we will get **TitlesVersions** instance, that is a simple structure 
+that unites several **ProviderVersion** under a single **Title**.
 
 When a provider returns us a list of versions that might match the input that 
 was passed to it, it will group the versions by title, thus, we'll have **Zero**
 or more titles for each input, and under each title, it will have **One** or 
 more **ProviderVersions**.
 
-The **versions** attribute will be a dictionary that its keys are the languages
-and the values are also dictionary that is keys are the rank group and the 
-values are tuples of the provider rank and the provider version falling under 
-that group.
+The object will expose the `iterable` interface, that returns a tuple of `Title`
+and a `dict` of languages.
+
+```python
+for title, versions in titles_versions:
+    pass    
+```
+
+
+The object will have a `titles` attributes that will be of type `dict`. Under
+it, the keys will be a title instances, and the values will be another `dict`.
+In that `dict`, the keys are the languages, and the values are another `dict`
+that maps ranks to `ProviderVersion`, so it will have ranks as keys, and a list
+of versions under each rank.
+
+Visualized, it looks like this:
+
+```python
+{
+    <MovieTitle> : 
+        [
+            <Languages.English> : 
+                {
+                    # Rank groups
+                    9 : 
+                        [
+                            <ProviderVersion>,
+                            <ProviderVersion>,
+                            ...
+                        ],
+                    ...
+                },
+            ...
+        ],
+    <MovieTitle> : 
+        [...],
+    ...
+}
+```
 
 Notice that the provider will not drop version because they come from a 
 different title. That's not its job.
 
-A TitleVersions will be constructed using a single Title instance, and zero or
-more ProviderVersion instances (the list does not need to be sorted). Each 
-version passed, will be inserted to the dictionary using the `add_version` 
-method, with the default provider_rank value.
-
-The class will expose a function named `add_version` which inserts a 
-provider_version to the versions dictionary in the appropriate position. The 
-function will receive an optional parameter `provider_rank` that defaults to 1,
-and can be changed (will be different when the MainProvider will create its 
-TitleVersions). The algorithm for the function is described later.
+The object will be constructed with an optional `ProviderVersions` list, that 
+will construct the whole structure. Additionally, the class will expose a 
+method named `add_version` which inserts a `ProviderVersion` to the dictionary 
+in the appropriate position. The method will receive an optional parameter 
+`provider_rank` that defaults to 1, and can be changed (will be different when 
+the MainProvider will create its TitleVersions). The algorithm for the function 
+is described later.
 
 **The basic structure of the TitleVersions will look like that:**
 ```python
 class TitleVersions:
-    title = None
-    # {language, {rank_group: [(provider_rank, provider_version), ...]}}
-    versions = {"" : [None]}
-    def __init__(title, versions = []): pass
+    titles = {}
+    def __init__(versions = []): pass
     def add_version(provider_version, provider_rank = 1): pass
 ```
 
