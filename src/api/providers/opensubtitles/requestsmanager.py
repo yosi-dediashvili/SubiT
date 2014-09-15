@@ -58,7 +58,7 @@ class OpenSubtitlesRequestsManager(RequestsManager):
                                     break
                             except (socket.error, XmlRpcError) as eX:
                                 logger.debug("Call failed: %d:%s" % (c, eX))
-                                if c < max_retries:
+                                if c <= max_retries:
                                     continue
                                 else:
                                     raise eX
