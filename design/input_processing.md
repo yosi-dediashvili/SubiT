@@ -466,12 +466,19 @@ was passed to it, it will group the versions by title, thus, we'll have **Zero**
 or more titles for each input, and under each title, it will have **One** or 
 more **ProviderVersions**.
 
-The object will expose the `iterable` interface, that returns a tuple of `Title`
+The object will expose an iteration interface, that returns a tuple of `Title`
 and a `dict` of languages.
 
 ```python
 for title, versions in titles_versions:
     pass    
+```
+
+Also, accessing by index will be possible too. In such cases, a tuple will be
+returned on access:
+
+```python
+title, versions = titles_versions[0]
 ```
 
 

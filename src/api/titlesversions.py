@@ -1,11 +1,11 @@
-__all__ = ['TitleVersion']
+__all__ = ['TitlesVersion']
 
 
 import logging
-logger = logging.getLogger("subit.api.titleversions")
+logger = logging.getLogger("subit.api.titlesversions")
 
 
-class TitleVersions(object):
+class TitlesVersions(object):
     def __init__(self, title, versions = []):
         """
         Constructs new instance, the versions will be inserted with the 
