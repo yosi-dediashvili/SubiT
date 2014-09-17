@@ -14,9 +14,9 @@ class TestTitleVersions(unittest.TestCase):
     def test_single_title_same_rank_different_language(self):
         title = MovieTitle("The Matrix", 1999)
         heb_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=80)
+            [], title, Languages.HEBREW, MockedProvider(), rank=80)
         eng_version = ProviderVersion(
-            [], self.title, Languages.ENGLISH, MockedProvider(), rank=80)
+            [], title, Languages.ENGLISH, MockedProvider(), rank=80)
 
         self.titles_versions.add_version(heb_version)
         self.titles_versions.add_version(eng_version)
@@ -44,9 +44,9 @@ class TestTitleVersions(unittest.TestCase):
     def test_single_title_same_language_different_rank_group(self):
         title = MovieTitle("The Matrix", 1999)
         a_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=80)
+            [], title, Languages.HEBREW, MockedProvider(), rank=80)
         b_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=65)
+            [], title, Languages.HEBREW, MockedProvider(), rank=65)
 
         self.titles_versions.add_version(a_version)
         self.titles_versions.add_version(b_version)
@@ -71,9 +71,9 @@ class TestTitleVersions(unittest.TestCase):
     def test_single_title_same_rank_group_different_rank(self):
         title = MovieTitle("The Matrix", 1999)
         a_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=82)
+            [], title, Languages.HEBREW, MockedProvider(), rank=82)
         b_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=81)
+            [], title, Languages.HEBREW, MockedProvider(), rank=81)
 
         self.titles_versions.add_version(a_version)
         self.titles_versions.add_version(b_version)
@@ -106,9 +106,9 @@ class TestTitleVersions(unittest.TestCase):
     def test_single_title_same_rank_different_provider_rank(self):
         title = MovieTitle("The Matrix", 1999)
         a_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=80)
+            [], title, Languages.HEBREW, MockedProvider(), rank=80)
         b_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=80)
+            [], title, Languages.HEBREW, MockedProvider(), rank=80)
 
         self.titles_versions.add_version(a_version, provider_rank=1)
         self.titles_versions.add_version(b_version, provider_rank=3)
@@ -141,9 +141,9 @@ class TestTitleVersions(unittest.TestCase):
     def test_single_title_opposite_provider_and_version_rank(self):
         title = MovieTitle("The Matrix", 1999)
         a_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=85)
+            [], title, Languages.HEBREW, MockedProvider(), rank=85)
         b_version = ProviderVersion(
-            [], self.title, Languages.HEBREW, MockedProvider(), rank=87)
+            [], title, Languages.HEBREW, MockedProvider(), rank=87)
 
         self.titles_versions.add_version(a_version, provider_rank=1)
         self.titles_versions.add_version(b_version, provider_rank=3)
@@ -189,20 +189,21 @@ class TestTitleVersions(unittest.TestCase):
         self.assertEqual(len(self.titles_versions), 2)
 
     def test_iteration(self):
-        versions = []
-        versions.append(ProviderVersion(
+        versions_list = []
+        versions_list.append(ProviderVersion(
             [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
 
-        versions.append(ProviderVersion(
+        versions_list.append(ProviderVersion(
             [], MovieTitle("Titanic"), Languages.ENGLISH, MockedProvider()))
 
-        versions.append(ProviderVersion(
+        versions_list.append(ProviderVersion(
             [], MovieTitle("Gladiator"), Languages.ENGLISH, MockedProvider()))
 
         # Just make sure it works, and we got the titles.
-        titles_versions = TitlesVersions(versions)
+        titles_versions = TitlesVersions(versions_list)
+        titles = map(lambda v: v.title, versions_list)
         for title, versions in titles_versions:
-            self.assertIn(title, versions)
+            self.assertIn(title, titles)
 
 def run_tests():
     unittest.TextTestRunner(verbosity=0).run(
