@@ -116,7 +116,6 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         self.assertEquals(
             release_name, "the.matrix.1999.720p.hddvd.dts.x264-esir")
         
-
     def test_get_title_versions_no_results(self):
         fake_title = MovieTitle("Blaaa Blasaa", 1812)
         fake_version = Version(["identifier"], fake_title)
@@ -159,7 +158,7 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         fake_version = Version(["identifier"], title)
 
         titles_versions = \
-            two_lang_provider.provider.get_title_versions(title, fake_version)
+            two_lang_provider.get_title_versions(title, fake_version)
         
         self.assertEquals(len(titles_versions), 1)
         # Two languages expected.
