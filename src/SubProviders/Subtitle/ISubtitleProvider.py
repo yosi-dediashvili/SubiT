@@ -24,8 +24,8 @@ class SUBTITLE_PAGES:
     SERIES_EPISODE      = '/viewseries.php?id=%s&m=subtitles&s=%s&e=%s' # SeriesId & SeasonId & EpisodeId
     DOWNLOAD            = '/downloadsubtitle.php?id=%s'
     LANGUAGE            = None
-    USER                = "372162"
-    PASS                = "CC4F66x00DFB69tt15C150amAC1391xeFDCE875nE6"
+    USER                = "545143"
+    PASS                = "CC4F66hk0DFB69tw15C1505xAC1391nuFDCE87ykE6"
     CRED                = "slcoo_user_id=%s; slcoo_user_pass=%s;" % (USER, PASS) # The credentials that should be sent with requests as cookies.
 
 class SUBTITLE_REGEX:
