@@ -60,6 +60,9 @@ SubiT is written in python, with one exception which is the ContextMenuHandler (
 
 
 ##Changelog:
+* Version 2.2.5 - 
+  * Updated several providers due to changes performed in the sites (www.addic7ed.com, www.subscene.com and SubsCenter).
+
 * Version 2.2.4 -
   * Added Bulgarian language support for www.subscene.com, www.addic7ed.com and www.opensubtitles.com
 
