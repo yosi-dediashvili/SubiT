@@ -59,9 +59,9 @@ class SUBSCENE_REGEX:
     # Parses the results returned from entering a specific result from the
     # MOVIES_PARSER.
     VERSIONS_PARSER = \
-        '(?<=\<td class=\"a1\"\>\<a href\=\")(?P<VersionCode>.*?)\"\>'  \
-        '\<div class\=\"visited\"\>\<span.*?\<\/span\>\<span\>'         \
-        '(?P<VersionSum>.*?) \<\/span\>\<\/div\>\<\/a\>'
+        '(?<=\<td class=\"a1\"\>\<a href\=\")(?P<VersionCode>.*?)\"\>'    \
+        '\<span class\=\".+?"\>.*?\<\/span\>\<span\>(?P<VersionSum>.*?) ' \
+        '\<\/span\>\<\/a\>\<\/td\>'
 
     # Parses the url to the subtitle file in the version's page.
     SUBTITLE_URL_PARSER = \

@@ -14,7 +14,7 @@ class Test_heb_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			"A Little Bit of Heaven",
+			"How To Train Your Dragon",
 			"Lost S06E16")
 
 class Test_eng_Addic7edProviderTest(
@@ -24,7 +24,7 @@ class Test_eng_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			"The Dark Knight",
+			"Anna",
 			"The Big Bang Theory S04E12")
 
 class Test_nor_Addic7edProviderTest(
@@ -34,7 +34,7 @@ class Test_nor_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			"24: Redemption",
+			"Batman: Assault on Arkham",
 			"24 S08E17")
 
 class Test_rus_Addic7edProviderTest(
@@ -44,7 +44,7 @@ class Test_rus_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			"A Scanner Darkly",
+			"Cuban Fury",
 			"Gossip Girl S02E05")
 
 class Test_spa_Addic7edProviderTest(
@@ -54,7 +54,7 @@ class Test_spa_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			"The Dark Knight",
+			"Bad Asses",
 			"How I Met Your Mother S08E02")
 
 class Test_tur_Addic7edProviderTest(
@@ -84,7 +84,7 @@ class Test_cze_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			"Barbie of Swan Lake",
+			"How To Train Your Dragon",
 			"The Big Bang Theory S03E04")
 
 class Test_bul_Addic7edProviderTest(
@@ -94,6 +94,6 @@ class Test_bul_Addic7edProviderTest(
 		BaseSubProviderTest.BaseSubProviderTest.__init__(
 			self, 
 			Addic7edProvider.Addic7edProvider(),
-			"2011 MTV Movie Awards",
+			"A Million Ways To Die In The West",
 			"Lost S05E11")
 		
