@@ -7,6 +7,7 @@ from api.title import *
 from api.providers.providersnames import ProvidersNames
 from api.providers.iprovider import IProvider
 from api.languages import Languages
+from api.identifiersextractor import extract_identifiers
 
 from api import utils
 
@@ -30,8 +31,58 @@ class OpenSubtitlesProvider(IProvider):
         self.server = requests_manager
 
     def get_title_versions(self, title, version):
-        raise NotImplementedError(
-            "OpenSubtitlesProvider.get_title_versions")
+
+        # First, format the dictionary that will be sent to the server.
+        query_params = {}
+        query_params["query"]         = title.name
+        query_params["imdbid"]        = title.imdb_id
+        query_params["sublanguageid"] = \
+            ','.join([l.iso_name for l in self.langauges])
+
+        if isinstance(title, SeriesTitle):
+            if title.season_number and title.episode_number:
+                query_params["season"]    = title.season_number
+                query_params["episode"]   = title.episode_number
+            else:
+                query_params["query"] += " %s" % title.episode_name
+
+        subtitle_results = self.server.SearchSubtitles([query_params])
+        if not subtitle_results or not subtitle_results['data']:
+            logger.error("Failed querying for title %s." % title)
+            return None
+
+        subtitle_results = subtitle_results['data']
+
+        # For each result, construct a ProviderVersion instance.
+        for subtitle_result in subtitle_result:
+            imdb_id = subtitle_result["IDMovieImdb"]
+            imdb_id = opensubtitles_id_format_for_imdb(imdb_id)
+            name = subtitle_result["MovieName"]
+            year = subtitle_result["MovieYear"]
+
+            if subtitle_result["kind"] == "movie":
+                title = MovieTitle(name, year, imdb_id)
+            elif subtitle_result["kind"] == "episode":
+                season_number = int(subtitle_result["SeriesSeason"])
+                episode_number = int(subtitle_result["SeriesEpisode"])
+                episode_imdb_id = imdb_id
+                imdb_id = subtitle_result["SeriesIMDBParent"]
+                imdb_id = \
+                    opensubtitles_id_format_for_imdb(series_imdb_id)
+                name, episode_name = \
+                    format_opensubtitles_episode_title_name(name)
+                title = SeriesTitle(
+                    name, season_number, episode_number, episode_imdb_id, 
+                    episode_name, year, imdb_id)
+
+            version_string = subtitle_result["MovieReleaseName"]
+            identifiers = extract_identifiers(title, version_string)
+            num_of_cds = int(subtitle_result["SubActualCD"])
+            attributes = {
+                "ZipDownloadLink" : subtitle_result["ZipDownloadLink"]
+            }
+
+
 
     def download_subtitle_buffer(self, provider_version):
         logger.debug("Trying to download version: %s" % provider_version)

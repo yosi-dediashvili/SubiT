@@ -47,14 +47,20 @@ class Languages(object):
 		which might be either the iso code or the full language name. Returns
 		None when no such language exists in the list.
 
-		>>> Languages.locate_language("blabla)
+		>>> print Languages.locate_language("blabla")
 		None
-		>>> Languages.locate_language("English")
-		<Language ... >
-		>>> Languages.locate_language("heb")
-		<Language ... >
+		>>> print Languages.locate_language("English")
+		<Language ...>
+		>>> print Languages.locate_language("heb")
+		<Language ...>
 		"""
-		pass
+		language_string = language_string.lower()
+		for language in Languages:
+			if language.full_name.lower() == language_string:
+				return language
+			elif language.iso_name.lower() == language_string:
+				return language
+		return None
 
 	HEBREW = Language("Hebrew", "heb")
 	ENGLISH = Language("English", "eng")

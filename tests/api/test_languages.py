@@ -5,4 +5,4 @@ def run_tests():
     doctest.testmod(
         languages, 
         verbose=False, 
-        optionflags=doctest.NORMALIZE_WHITESPACE)
+        optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS)
