@@ -89,4 +89,7 @@ def get_series_numbering_string(query, season_number, episode_number):
     # result. The first will be the string itself that matched, and the other
     # two will be the series numbering.
     wrapped_regex = map(lambda r: "(%s)" % r, SERIES_REGEXES)
-    return get_regex_match(query, wrapped_regex)[0]
+    try:
+        return get_regex_match(query, wrapped_regex)[0]
+    except TypeError:
+        return None
