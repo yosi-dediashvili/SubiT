@@ -140,6 +140,10 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
             len(titles_versions[0].versions[Languages.ENGLISH]), 0)
 
     def test_get_title_versions_movie_single_langugage(self):
+        import logging
+        logger = logging.getLogger("subit")
+        logging.basicConfig()
+        logger.setLevel(logging.DEBUG)
         title = MovieTitle("The Matrix", 1999, "tt0133093")
         fake_version = Version(["identifier"], title)
 
