@@ -40,6 +40,22 @@ class Languages(object):
 				if isinstance(value, Languages.Language):
 					yield value
 	
+	@staticmethod
+	def locate_language(language_string):
+		""" 
+		Will try to retrieve a language instance based on the provided string
+		which might be either the iso code or the full language name. Returns
+		None when no such language exists in the list.
+
+		>>> Languages.locate_language("blabla)
+		None
+		>>> Languages.locate_language("English")
+		<Language ... >
+		>>> Languages.locate_language("heb")
+		<Language ... >
+		"""
+		pass
+
 	HEBREW = Language("Hebrew", "heb")
 	ENGLISH = Language("English", "eng")
 
