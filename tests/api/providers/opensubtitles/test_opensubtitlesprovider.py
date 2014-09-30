@@ -134,10 +134,10 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         titles_versions = self.provider.get_title_versions(title, fake_version)
 
         self.assertEquals(len(titles_versions), 1)
-        self.assertEquals(len(titles_versions[0].versions), 1)
+        self.assertEquals(len(titles_versions[0][1]), 1)
 
         self.assertGreater(\
-            len(titles_versions[0].versions[Languages.ENGLISH]), 0)
+            len(titles_versions[0][1][Languages.ENGLISH]), 0)
 
     def test_get_title_versions_movie_single_langugage(self):
         import logging
@@ -150,9 +150,9 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         titles_versions = self.provider.get_title_versions(title, fake_version)
         # We expect to see only a single TitleVersion instance in the list.
         self.assertEquals(len(titles_versions), 1)
-        self.assertEquals(len(titles_versions[0].versions), 1)
+        self.assertEquals(len(titles_versions[0][1]), 1)
         self.assertGreater(\
-            len(titles_versions[0].versions[Languages.ENGLISH]), 0)
+            len(titles_versions[0][1][Languages.ENGLISH]), 0)
 
     def test_get_title_versions_movie_two_langugages(self):
         two_lang_provider = OpenSubtitlesProvider(
@@ -166,12 +166,12 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
         
         self.assertEquals(len(titles_versions), 1)
         # Two languages expected.
-        self.assertEquals(len(titles_versions[0].versions), 2)
+        self.assertEquals(len(titles_versions[0][1]), 2)
 
         self.assertGreater(\
-            len(titles_versions[0].versions[Languages.ENGLISH]), 0)
+            len(titles_versions[0][1][Languages.ENGLISH]), 0)
         self.assertGreater(\
-            len(titles_versions[0].versions[Languages.HEBREW]), 0)
+            len(titles_versions[0][1][Languages.HEBREW]), 0)
 
     def test_download_subtitle_buffer_bad_version(self):
         version = ProviderVersion(
@@ -204,10 +204,9 @@ class TestOpenSubtitlesProvider(unittest.TestCase):
             "the.matrix.revolutions.(2003).eng.1cd.(4686151).zip")
 
         # It seems that OpenSubtitles returns a different zip for each download
-        # that even differ in size. It's at least 32390 bytes for that specific
+        # that even differ in size. It's at least 32000 bytes for that specific
         # file.
-        self.assertGreater(len(subtitle_buffer), 32390)
-
+        self.assertGreater(len(subtitle_buffer), 32000)
 
 
 
