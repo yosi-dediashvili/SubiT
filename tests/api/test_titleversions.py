@@ -188,6 +188,20 @@ class TestTitleVersions(unittest.TestCase):
         # Check that we have two titles
         self.assertEqual(len(self.titles_versions), 2)
 
+    def test_same_title_different_instance(self):
+        title_a = MovieTitle("The Matrix Reloaded", 2003)
+        title_b = MovieTitle("The Matrix Reloaded", 2003)
+
+        a_version = ProviderVersion(
+            [], title_a, Languages.HEBREW, MockedProvider(), rank=85)
+        b_version = ProviderVersion(
+            [], title_b, Languages.HEBREW, MockedProvider(), rank=87)
+
+        self.titles_versions.add_version(a_version)
+        self.titles_versions.add_version(b_version)
+
+        self.assertEqual(len(self.titles_versions), 1)
+
     def test_iteration(self):
         versions_list = []
         versions_list.append(ProviderVersion(
