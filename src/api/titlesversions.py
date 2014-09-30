@@ -25,9 +25,17 @@ class TitlesVersions(object):
             (provider_rank, provider_version))
 
         title = provider_version.title
-        if not title in self.titles:
+        # We need to locate the instance of the title this way, because the
+        # dictionary looks for keys using the key's __hash__ value. The Title
+        # object does not override the method (too complicated), instead, we
+        # keep a single title in the dictionary by extracting the appropriate
+        # key manually, and then, accessing it's value.
+        stored_title = filter(lambda t: t == title, self.titles.keys())
+        if not stored_title:
             logger.debug("The title is missing, adding it: %s" % title)
             self.titles[title] = {}
+        else:
+            title = stored_title[0]
 
         title_languages = self.titles[title]
         language = provider_version.language
