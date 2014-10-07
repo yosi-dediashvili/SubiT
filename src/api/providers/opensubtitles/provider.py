@@ -18,7 +18,20 @@ __all__ = ['OpenSubtitlesProvider']
 
 class OpenSubtitlesProvider(IProvider):
     provider_name = ProvidersNames.OPEN_SUBTITLES
-    supported_languages = [Languages.ENGLISH]
+    supported_languages = [
+        Languages.HEBREW,
+        Languages.ENGLISH,
+        Languages.SPANISH,
+        Languages.ARABIC,
+        Languages.BULGARIAN,
+        Languages.SLOVAK,
+        Languages.TURKISH,
+        Languages.CZECH,
+        Languages.RUSSIAN,
+        Languages.NORWEGIAN,
+        Languages.SWEDISH,
+        Languages.FRENCH
+    ]
 
     def __init__(self, languages, requests_manager):
         """
@@ -75,10 +88,10 @@ class OpenSubtitlesProvider(IProvider):
                 name, episode_name = \
                     format_opensubtitles_episode_title_name(name)
                 title = SeriesTitle(
-                    name, season_number, episode_number, episode_imdb_id, 
+                    name, season_number, episode_number, episode_imdb_id,
                     episode_name, year, imdb_id)
             else:
-                logger.debug("Got strange 'kind' value: %s" 
+                logger.debug("Got strange 'kind' value: %s"
                     % subtitle_result["kind"])
                 continue
 
@@ -92,12 +105,12 @@ class OpenSubtitlesProvider(IProvider):
             language_string = subtitle_result["SubLanguageID"]
             language = Languages.locate_language(language_string)
             if not language:
-                logger.debug("Received an unsupported language: %s" 
+                logger.debug("Received an unsupported language: %s"
                     % language_string)
                 continue
 
             provider_version = ProviderVersion(
-                identifiers, title, language, self, version_string, 
+                identifiers, title, language, self, version_string,
                 attributes, num_of_cds=num_of_cds)
             titles_versions.add_version(provider_version)
 
@@ -106,12 +119,12 @@ class OpenSubtitlesProvider(IProvider):
     def download_subtitle_buffer(self, provider_version):
         logger.debug("Trying to download version: %s" % provider_version)
         download_url = provider_version.attributes["ZipDownloadLink"]
-        
+
         content, headers = self.server.perform_request_next(
             download_url,
             response_headers = ["Content-Disposition"])
 
-        # Either we receive None for the content, or OpenSubtitles's error 
+        # Either we receive None for the content, or OpenSubtitles's error
         # message.
         if not content or content == "Incorrect download parameters detected":
             from api.exceptions import FailedDownloadingSubtitleBuffer
@@ -124,7 +137,7 @@ class OpenSubtitlesProvider(IProvider):
             logger.debug("Failed getting the file name for the zip.")
         else:
             file_name = utils.take_first(utils.get_regex_results(
-                "(?<=filename\=\").*(?=\")", 
+                "(?<=filename\=\").*(?=\")",
                 headers["Content-Disposition"]))
             logger.debug("Downloaded file name is: %s" % file_name)
 
@@ -143,31 +156,31 @@ class OpenSubtitlesProvider(IProvider):
         import struct
         from os.path import getsize
         logger.debug("Calculating hash value for: %s" % file_path)
-        try:  
-            long_long_format = 'q'  # long long 
-            byte_size = struct.calcsize(long_long_format) 
-                    
-            file_size = getsize(file_path) 
+        try:
+            long_long_format = 'q'  # long long
+            byte_size = struct.calcsize(long_long_format)
+
+            file_size = getsize(file_path)
             logger.debug("File size is: %d" % file_size)
-            if file_size < 65536 * 2: 
+            if file_size < 65536 * 2:
                 raise BufferError("The file size is too small: %s" % file_size)
 
-            hash = file_size 
+            hash = file_size
             with open(file_path, "rb") as f:
-                for x in range(65536/byte_size): 
-                    buffer = f.read(byte_size) 
-                    (l_value,)= struct.unpack(long_long_format, buffer)  
-                    hash += l_value 
+                for x in range(65536/byte_size):
+                    buffer = f.read(byte_size)
+                    (l_value,)= struct.unpack(long_long_format, buffer)
+                    hash += l_value
                     hash = hash & 0xFFFFFFFFFFFFFFFF
-                     
-                f.seek(max(0,file_size-65536),0) 
-                for x in range(65536/byte_size): 
-                        buffer = f.read(byte_size) 
-                        (l_value,)= struct.unpack(long_long_format, buffer)  
-                        hash += l_value 
-                        hash = hash & 0xFFFFFFFFFFFFFFFF 
 
-            returned_hash =  "%016x" % hash 
+                f.seek(max(0,file_size-65536),0)
+                for x in range(65536/byte_size):
+                        buffer = f.read(byte_size)
+                        (l_value,)= struct.unpack(long_long_format, buffer)
+                        hash += l_value
+                        hash = hash & 0xFFFFFFFFFFFFFFFF
+
+            returned_hash =  "%016x" % hash
             logger.debug("Hash value is: %s" % returned_hash)
             return (returned_hash, file_size)
         except Exception as eX:
@@ -178,8 +191,8 @@ class OpenSubtitlesProvider(IProvider):
         """
         Queries OpenSubtitles using the imdb_id. The ID should be in the format
         of IMDB, and not OpenSubtitles's one. i.e., 'tt<id>' and not '<id>'.
-        If succeeded, the function returns either SeriesTitle or MovieTitle 
-        depends on what was queried. On failures, None is returned. If the 
+        If succeeded, the function returns either SeriesTitle or MovieTitle
+        depends on what was queried. On failures, None is returned. If the
         imdb_id is malformed, exception is raised.
         """
         logger.debug("Getting title info with imdb id: %s" % imdb_id)
@@ -216,7 +229,7 @@ class OpenSubtitlesProvider(IProvider):
                     "Failed formatting the series imdb id: %s" % data)
                 return None
             title = SeriesTitle(
-                series_name, 
+                series_name,
                 int(data['season']),
                 int(data['episode']),
                 opensubtitles_id_format_for_imdb(data['id']),
@@ -231,16 +244,16 @@ class OpenSubtitlesProvider(IProvider):
 
     def get_release_name_by_hash(self, file_hash, file_size):
         """
-        Queries OpenSubtitles for release name information using the hash value 
-        of the file, and the size, in bytes of the same file. If no result is 
-        returned from the site, None is returned. Otherwise, the function 
-        extracts all the MovieReleaseName values from the response, lower() all 
+        Queries OpenSubtitles for release name information using the hash value
+        of the file, and the size, in bytes of the same file. If no result is
+        returned from the site, None is returned. Otherwise, the function
+        extracts all the MovieReleaseName values from the response, lower() all
         of them, and returns the one appearing most.
         """
         logger.debug("Getting title info with hash: %s" % file_hash)
 
         release_names = self._sum_search_results(
-            self._do_search_subtitles_with_hash(file_hash, file_size), 
+            self._do_search_subtitles_with_hash(file_hash, file_size),
             'MovieReleaseName',
             lambda v: v.strip().lower())
 
@@ -271,12 +284,12 @@ class OpenSubtitlesProvider(IProvider):
 
     def get_title_by_query(self, query):
         """
-         Then, it iterates over all the 
-        results, and looks for the imdb id in each one, and selects the id that 
+         Then, it iterates over all the
+        results, and looks for the imdb id in each one, and selects the id that
         appears the most, and sends it to the get_title_by_imdb_id method.
         """
         logger.debug("Getting title info with query: %s" % query)
-        
+
         # A dictionary of {IMDB_ID:Appearances}
         imdb_ids = self._sum_search_results(
             self._do_search_subtitles_with_query(query), 'IDMovieImdb')
@@ -301,9 +314,9 @@ class OpenSubtitlesProvider(IProvider):
     def _do_search_subtitles_with_query(self, query):
         """
         Replaces any dot in the query with space (in order to avoid OS's search
-        bug where they think that certain strings are extensions, for example, 
+        bug where they think that certain strings are extensions, for example,
         if a string contains 'something.movie.something', it will think that the
-        '.movie' is actually a '.mov' extension, and thus, remove it), and then 
+        '.movie' is actually a '.mov' extension, and thus, remove it), and then
         sends the query as-is to OpenSubtitles.
         """
         query = query.replace(".", " ")
@@ -327,7 +340,7 @@ class OpenSubtitlesProvider(IProvider):
 
         for result in results:
             if key not in result:
-                logger.debug("The key [%s] is missing from the results: %s" 
+                logger.debug("The key [%s] is missing from the results: %s"
                     % (key, result))
                 continue
             value = value_func(result[key])
@@ -388,8 +401,8 @@ def imdb_id_format_for_opensubtitles(imdb_id):
 
 def opensubtitles_id_format_for_imdb(opensubtitles_id):
     """
-    Coverts from OpenSubtitles's imdb id format to IMDB's. Adds leading 
-    zeroes in order to generate a 7 chars ids. Raises an exception if the 
+    Coverts from OpenSubtitles's imdb id format to IMDB's. Adds leading
+    zeroes in order to generate a 7 chars ids. Raises an exception if the
     id value is larger than 7 digits.
 
     >>> opensubtitles_id_format_for_imdb("2341621")
