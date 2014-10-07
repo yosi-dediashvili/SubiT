@@ -34,14 +34,7 @@ class OpenSubtitlesProvider(IProvider):
     ]
 
     def __init__(self, languages, requests_manager):
-        """
-        The OpenSubtitles provider does not really uses the requests manager,
-        so there is not real reason to store its reference.
-        """
-        self.langauges = languages
-        self._languages_in_use = list(
-            set(OpenSubtitlesProvider.supported_languages)
-            .intersection(set(languages)))
+        super(OpenSubtitlesProvider, self).__init__(languages, requests_manager)
         self.server = requests_manager
 
     def get_title_versions(self, title, version):
@@ -142,9 +135,6 @@ class OpenSubtitlesProvider(IProvider):
             logger.debug("Downloaded file name is: %s" % file_name)
 
         return (file_name, content)
-
-    def languages_in_use(self):
-        return self._languages_in_use
 
     def calculate_file_hash(self, file_path):
         """

@@ -7,7 +7,10 @@ class IProvider(object):
 
     @abstractmethod
     def __init__(self, languages, requests_manager):
-        pass
+        self.languages = languages
+        self._languages_in_use = list(
+            set(type(self).supported_languages).intersection((set(languages))))
+        self.requests_manager = requests_manager
 
     @abstractmethod
     def get_title_versions(self, title, version):
@@ -19,4 +22,4 @@ class IProvider(object):
 
     @abstractproperty
     def languages_in_use(self):
-        pass
+        return self._languages_in_use
