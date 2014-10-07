@@ -1,10 +1,10 @@
 class ProvidersNames(object):
     """
-    The class holds the names of all the subtitles providers that SubiT uses. 
+    The class holds the names of all the subtitles providers that SubiT uses.
     This is the only place in which the provider name is typed directly. In any
     other place, a reference to this class will be present.
 
-    Echo provider has its full name, which is usually its lower-cased fully 
+    Echo provider has its full name, which is usually its lower-cased fully
     qualified DNS name, i.e., "www.torec.net", and its short name, which usually
     is just the middle name of the domain name, in the previous example, it will
     be "torec".
@@ -16,7 +16,7 @@ class ProvidersNames(object):
 
         def __eq__(self, other):
             return (
-                self.full_name == other.full_name and 
+                self.full_name == other.full_name and
                 self.short_name == other.short_name)
 
         def __str__(self):
@@ -34,4 +34,5 @@ class ProvidersNames(object):
                 if isinstance(value, ProvidersNames.ProviderName):
                     yield value
 
-    OPEN_SUBTITLES = ProviderName("www.opensubtitles.org", "opensubtitles")
+    OPEN_SUBTITLES  = ProviderName("www.opensubtitles.org", "opensubtitles")
+    ADDIC7ED        = ProviderName("www.addic7ed.com", "addic7ed")
