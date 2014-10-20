@@ -19,9 +19,53 @@ class TestAddic7edProvider(unittest.TestCase):
         self.provider = Addic7edProvider(
             [Languages.ENGLISH], get_manager_instance("test_addic7ed_provider"))
 
-    def test_get_titles_versions_series(self):
-        """ Simple test to verify that we get version for series. """
-        raise NotImplementedError()
+    def test_get_titles_versions_series_exact(self):
+        """
+        Simple test to verify that we get version for series. We expect to see
+        single SeriesTitle in the result.
+        """
+        title = SeriesTitle(
+            "The Big Bang Theory", 7, 12, "tt3337728",
+            "The Hesitation Ramification", 2014, "tt0898266")
+
+        fake_version = Version(["identifier"], title)
+
+        titles_versions = self.provider.get_title_versions(title, fake_version)
+
+        # Only single title is expected
+        self.assertEqual(len(titles_versions), 1)
+        # Only single language
+        self.assertEqual(len(titles_versions[0][1]), 1)
+        # Four versions (At rank group 1)
+        versions = titles_versions[0][1][Languages.ENGLISH][1]
+        self.assertEqual(len(versions), 4)
+
+        self.assertEquals(versions[0].version_string, "DIMENSION")
+        self.assertEquals(versions[1].version_string, "WEB-DL")
+        self.assertEquals(versions[2].version_string, "DIMENSION")
+        self.assertEquals(versions[3].version_string, "WEB-DL")
+
+        self.assertEquals(
+            versions[0].addributes["movie_code"],
+            "serie/The%20Big%20Bang%20Theory/7/12/1")
+        self.assertEquals(
+            versions[1].addributes["movie_code"],
+            "serie/The%20Big%20Bang%20Theory/7/12/1")
+        self.assertEquals(
+            versions[2].addributes["movie_code"],
+            "serie/The%20Big%20Bang%20Theory/7/12/1")
+        self.assertEquals(
+            versions[3].addributes["movie_code"],
+            "serie/The%20Big%20Bang%20Theory/7/12/1")
+
+        self.assertEquals(
+            versions[0].addributes["version_code"], "/original/82674/0")
+        self.assertEquals(
+            versions[1].addributes["version_code"], "/original/82674/4")
+        self.assertEquals(
+            versions[2].addributes["version_code"], "/original/82674/1")
+        self.assertEquals(
+            versions[3].addributes["version_code"], "/original/82674/3")
 
     def test_get_titles_versions_movie_exact(self):
         """
@@ -47,8 +91,10 @@ class TestAddic7edProvider(unittest.TestCase):
         self.assertEquals(versions[0].addributes["movie_code"], "/movie/89128")
         self.assertEquals(versions[1].addributes["movie_code"], "/movie/89128")
 
-        self.assertEquals(versions[0].addributes["version_code"], "/original/89128/4")
-        self.assertEquals(versions[1].addributes["version_code"], "/original/89128/2")
+        self.assertEquals(
+            versions[0].addributes["version_code"], "/original/89128/4")
+        self.assertEquals(
+            versions[1].addributes["version_code"], "/original/89128/2")
 
     def test_get_subtitle_buffer(self):
         """
