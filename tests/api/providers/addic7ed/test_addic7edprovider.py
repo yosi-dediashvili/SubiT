@@ -101,7 +101,21 @@ class TestAddic7edProvider(unittest.TestCase):
         Test that given some ProviderVersion, we manage to get the buffer of
         the subtitle.
         """
-        raise NotImplementedError()
+        title = SeriesTitle("The Big Bang Theory", 7, 12)
+        version = ProviderVersion(
+            [],
+            title,
+            Languages.ENGLISH,
+            self.provider,
+            attributes = {
+                "DownloadURL" : "http://www.addic7ed.com/original/82674/0"})
+        file_name, subtitle_buffer = \
+            self.provider.download_subtitle_buffer(version)
+        self.assertEquals(
+            file_name,
+            "The Big Bang Theory - 07x12 - The Hesitation Ramification.DIMENSION.English.HI.C.orig.Addic7ed.com.srt")
+        self.assertGreater(len(subtitle_buffer), 31000)
+
 
 
 def run_tests():
