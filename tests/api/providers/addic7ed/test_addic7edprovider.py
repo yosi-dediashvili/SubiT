@@ -35,6 +35,17 @@ class TestAddic7edProvider(unittest.TestCase):
         self.assertEquals(len(serieses), 129)
         self.assertEquals(len(movies), 1)
 
+    def test_get_titles_versions_no_title(self):
+        """
+        Checks that we get an empty list when querying for some random letters.
+        """
+        title = MovieTitle("silhjkl;sdgsdg sdgfsg")
+        fake_version = Version(["identifier"], title)
+
+        titles_versions = self.provider.get_title_versions(title, fake_version)
+        self.assertEquals(len(title_versions), 0)
+
+
     def test_get_titles_versions_series_exact(self):
         """
         Simple test to verify that we get version for series. We expect to see
