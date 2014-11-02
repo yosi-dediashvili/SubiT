@@ -19,6 +19,22 @@ class TestAddic7edProvider(unittest.TestCase):
         self.provider = Addic7edProvider(
             [Languages.ENGLISH], get_manager_instance("test_addic7ed_provider"))
 
+    def test_get_titles_versions_no_match(self):
+        """
+        Checks that we get more than single result when the query returns more
+        than one title in the site.
+        """
+        title = MovieTitle("Star Wars")
+        fake_version = Version(["identifier"], title)
+
+        titles_versions = self.provider.get_title_versions(title, fake_version)
+        # We expect to see 129 Series titles, and 1 Movie title.
+        serieses = filter(lambda t: isinstance(t, SeriesTitle), titles_versions)
+        movies = filter(lambda t: isinstance(t, MovieTitle), titles_versions)
+
+        self.assertEquals(len(serieses), 129)
+        self.assertEquals(len(movies), 1)
+
     def test_get_titles_versions_series_exact(self):
         """
         Simple test to verify that we get version for series. We expect to see
