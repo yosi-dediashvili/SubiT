@@ -11,6 +11,7 @@ __all__ = ['Addic7edProvider']
 
 class Addic7edProvider(IProvider):
     provider_name = ProvidersNames.ADDIC7ED
+    # A mapping between the Language object and Addic7ed's own language code.
     language_to_addic7ed_code = {
         Languages.HEBREW    : 23,
         Languages.ENGLISH   : 1,
@@ -23,7 +24,8 @@ class Addic7edProvider(IProvider):
         Languages.RUSSIAN   : 19,
         Languages.NORWEGIAN : 29,
         Languages.SWEDISH   : 18,
-        Languages.FRENCH    : 8
+        Languages.FRENCH    : 8,
+        Languages.GREEK     : 27
     }
     supported_languages = language_to_addic7ed_code.keys()
 
