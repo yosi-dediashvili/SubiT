@@ -36,14 +36,36 @@ class ADDIC7ED_REGEX:
         '(?P<TitleUrl>\/serie\/[^\/]*\/\d*\/\d*\/[^\/]*?)'
         '(?=\" layout\=\"standard\")'
     )
-    # Catches a version specific information from the title page. In this
-    # context, a title means a specific episode or movie.
-    # Returns:(VersionString, LanguageCode, DownloadUrl)
-    RESULT_PAGE_PARSER = (
-        '(?<=Version )(?P<VersionString>.*?)(?:, .*?javascript\:saveFavorite\\'
-        '(\d+,)(?P<LanguageCode>\d+)(?:,\d+\).*?<a class=\"buttonDownload\"'
-        ' href=\")(?P<DownloadUrl>.*?)(?=\">)'
-    )
+
+
+    class TITLE_PAGE:
+        """
+        Pattern used for extracting parameters from a title page. An example for
+        a title page:
+        http://www.addic7ed.com/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification
+        """
+
+        # Extracts version string (Named VersionString) of some version, and
+        # with it, the associated HTML content that is required in order to
+        # extract the rest of the parameters for that version (Named
+        # VersionContent).
+        RESULT_PAGE_VERSION_SCOPE = (
+            '(?<=Version )(?P<VersionString>.*?)'
+            '(?P<VersionContent>, .*?javascript\:saveFavorite.*?)\<\/table\>'
+        )
+        # When fed with the VersionContent from the previous pattern, extracts
+        # the LanguageCode and the HTML content associated with it
+        # (LanguageContent).
+        VERSION_SCOPE_LANGUAGE_SCOPE = (
+            'saveFavorite\(\d+,(?P<LanguageCode>\d+),\d+\).*?'
+            '(?P<LanguageContent>\<a class\=\"buttonDownload\" .*?'
+            '\<\/a\>\<\/td\>)'
+        )
+        # When fed with the LanguageContent, extract the URL for the subtitle
+        # under DownloadUrl.
+        LANGUAGE_SCOPE_DOWNLOAD_URL = (
+            '\<a class\=\"buttonDownload\" href\=\"(?P<DownloadUrl>.*?)\"\>'
+        )
 
 
 class Addic7edProvider(IProvider):
@@ -134,5 +156,19 @@ def format_query_url(query):
     from urllib2 import quote as url_quote
     return ADDIC7ED_PAGES.SEARCH % url_quote(query)
 
-def extract_title_versions_from_title_page(page_content):
+def extract_versions_parameters_from_title_page(page_content):
+    """
+    Given so page content that is associated with some title page in the site,
+    extracts all the attributes of the version from it (using the re patterns
+    specified above). Assumes that any white spaces was removed (except for
+    single spaces).
+
+    >>> from urllib2 import urlopen
+    >>> content = urlopen(r"http://www.addic7ed.com/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification").read()
+    >>> stripped_content = content.replace("\\r", "")
+    >>> stripped_content = stripped_content.replace("\\t", "")
+    >>> stripped_content = stripped_content.replace("\\n", "")
+    >>> print sorted(extract_versions_parameters_from_title_page(stripped_content))
+
+    """
     pass
