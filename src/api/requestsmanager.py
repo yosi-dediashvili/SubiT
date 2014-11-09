@@ -23,8 +23,9 @@ class RequestsManager(object):
         A simple helper method. Executes perform_request, and than stripes away
         any white spaces (e.g., "\\r\\n\\t").
         """
+        from api.utils import strip_white_spaces
         response = self.perform_request(url, data, more_headers)
-        return response.replace("\r", "").replace("\n", "").repalce("\t", "")
+        return strip_white_spaces(response)
 
     def perform_request(
         self, url, data = '', more_headers = {}, response_headers = []):
