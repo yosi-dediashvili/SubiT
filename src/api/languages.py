@@ -74,3 +74,4 @@ class Languages(object):
 	NORWEGIAN 	= Language("Norwegian", "nor")
 	SWEDISH 	= Language("Swedish", 	"swe")
 	FRENCH 		= Language("French", 	"fre")
+	GREEK		= Language("Greek", 	"gre")
