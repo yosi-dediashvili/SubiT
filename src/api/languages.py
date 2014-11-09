@@ -20,6 +20,9 @@ class Languages(object):
 				self.full_name == other.full_name and
 				self.iso_name == other.iso_name)
 
+		def __hash__(self):
+			return hash(self.full_name) ^ hash(self.iso_name)
+
 		def __str__(self):
 			return repr(self)
 
