@@ -1,13 +1,27 @@
 import re
 
 
-__all__ = ['get_regex_results', 'take_first', 'get_regex_match']
+__all__ = [
+    'get_regex_results', 'take_first', 'get_regex_match', 'strip_white_spaces'
+]
 
+
+def strip_white_spaces(input_string):
+    """
+    Stripes away any whitespace that is not a single space from the input
+    string.
+
+    >>> print strip_white_spaces("Some String\tWith Tabs)
+    Some StringWith Tabs
+    >>> print strip_white_spaces("Some String With Only Single Spaces)
+    Some String With Only Single Spaces
+    """
+    pass
 
 def get_regex_match(input_string, patterns):
     """
-    Searches for the patterns in input_string, and return the first substring in 
-    the input that matches one of the patterns. Returns None when nothing 
+    Searches for the patterns in input_string, and return the first substring in
+    the input that matches one of the patterns. Returns None when nothing
     matches.
 
     >>> get_regex_match("12345", ["^\d\d", "\d\d$"])
@@ -22,8 +36,8 @@ def get_regex_match(input_string, patterns):
     return None
 
 def get_regex_results(pattern, content, with_groups = False):
-    """ 
-    Query the content and returns list of all result, in case of multi-group 
+    """
+    Query the content and returns list of all result, in case of multi-group
     pattern, will return a list of tuples (tuple for each group).
 
     >>> sorted(get_regex_results("\d", "1.2.3"))
@@ -37,12 +51,12 @@ def get_regex_results(pattern, content, with_groups = False):
     c_pattern = re.compile(pattern)
     if with_groups:
         return map(lambda i: i.groupdict(), c_pattern.finditer(content))
-    
+
     return c_pattern.findall(content)
 
 def take_first(items):
-    """ 
-    Function to return the first item in a list (will try to convert the 
+    """
+    Function to return the first item in a list (will try to convert the
     parameter to list if it's not. return None on failure.
 
     >>> take_first([1, 2, 3])
@@ -56,6 +70,6 @@ def take_first(items):
             items = list(items)
         if items:
             first_item = items[0]
-    except: 
+    except:
         pass
     return first_item
