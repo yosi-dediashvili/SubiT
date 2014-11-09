@@ -5,18 +5,22 @@ __all__ = [
     'get_regex_results', 'take_first', 'get_regex_match', 'strip_white_spaces'
 ]
 
+WHITE_SPACES_RE = re.compile("[\r\t\n]")
+
 
 def strip_white_spaces(input_string):
     """
     Stripes away any whitespace that is not a single space from the input
     string.
 
-    >>> print strip_white_spaces("Some String\tWith Tabs)
+    >>> print strip_white_spaces("Some String\\tWith Tabs")
     Some StringWith Tabs
-    >>> print strip_white_spaces("Some String With Only Single Spaces)
+    >>> print strip_white_spaces("Some String\\r\\nWith NewLines")
+    Some StringWith NewLines
+    >>> print strip_white_spaces("Some String With Only Single Spaces")
     Some String With Only Single Spaces
     """
-    pass
+    return WHITE_SPACES_RE.sub("", input_string)
 
 def get_regex_match(input_string, patterns):
     """
