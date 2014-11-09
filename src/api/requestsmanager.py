@@ -18,6 +18,14 @@ class RequestsManager(object):
     def __repr__(self):
         return '<%s>' % type(self).__name__
 
+    def perform_request_text(self, url, data = '', more_headers = {}):
+        """
+        A simple helper method. Executes perform_request, and than stripes away
+        any white spaces (e.g., "\\r\\n\\t").
+        """
+        response = self.perform_request(url, data, more_headers)
+        return response.replace("\r", "").replace("\n", "").repalce("\t", "")
+
     def perform_request(
         self, url, data = '', more_headers = {}, response_headers = []):
         """
@@ -42,14 +50,14 @@ class RequestsManager(object):
         self, url, data = '', more_headers = {}, response_headers = []):
         """
         Performs a simple http requests. We are using fake user-agents. If the
-        data arg is provided, a POST request will be sent instead of GET. Also, 
-        you can specify more headers by supplying a dict in the more_headers 
-        arg. 
+        data arg is provided, a POST request will be sent instead of GET. Also,
+        you can specify more headers by supplying a dict in the more_headers
+        arg.
 
         The data is returned as-is using the urllib2.
         """
         logger.debug(
-            "_perform_request got called with: '%s', '%s', %s" % 
+            "_perform_request got called with: '%s', '%s', %s" %
             (url, data, more_headers))
         from useragents import get_agent
         import urllib2
@@ -86,7 +94,7 @@ class RequestsManager(object):
                     for header in response_headers:
                         if header in response_info:
                             header_value = response_info[header]
-                            logger.debug("Adding response header: %s=%s" 
+                            logger.debug("Adding response header: %s=%s"
                                 % (header, header_value))
                             returned_headers[header] = header_value
                     # If we got the response, break the loop.
@@ -113,7 +121,7 @@ def get_manager_instance(provider_name):
     A RequestsManager factory that given the same provider name will return
     the same RequestsManager instance.
 
-    If OpenSubtitles's provider is given, OpenSubtitles's request manager 
+    If OpenSubtitles's provider is given, OpenSubtitles's request manager
     instances is returned, and not the default RequestManager.
 
     This currently isn't a thread safe factory, so in case where to
