@@ -146,11 +146,5 @@ class TestAddic7edProvider(unittest.TestCase):
 
 
 def run_tests():
-    test_runner = unittest.TextTestRunner(verbosity=0)
-    tests = doctest.DocTestSuite(
-        addic7edprovider,
-        optionflags=doctest.NORMALIZE_WHITESPACE)
-    tests.addTests(
-        unittest.defaultTestLoader.loadTestsFromTestCase(
-            TestAddic7edProvider))
-    test_runner.run(tests)
+    unittest.TextTestRunner(verbosity=0).run(
+        unittest.defaultTestLoader.loadTestsFromTestCase(TestAddic7edProvider))
