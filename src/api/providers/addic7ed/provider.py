@@ -1,3 +1,4 @@
+import re
 import logging
 logger = logging.getLogger("subit.api.providers.addic7ed.provider")
 
@@ -19,7 +20,7 @@ class ADDIC7ED_PAGES:
 class ADDIC7ED_REGEX:
     # Catches the results of the search result from the main page. For each
     # result, it returns: (TitleUrl, TitleName)
-    SEARCH_RESULTS_PARSER = (
+    SEARCH_RESULTS_PARSER = re.compile(
         '(?<=<td><a href=\")(?P<TitleUrl>.*?)(?:\" debug'
         '=\"\d+\">)(?P<TitleName>.*?)(?=</a>)'
     )
@@ -27,7 +28,7 @@ class ADDIC7ED_REGEX:
     # a specific Title result (specific series episode, etc.). It seems that
     # this behavior (the redirection) only occur for episode, and not for movie
     # titles. The pattern returns: (TitleName, TitleUrl)
-    REDIRECT_PAGE_PARSER = (
+    REDIRECT_PAGE_PARSER = re.compile(
         '(?<=\<span class\=\"titulo\"\>)'
         '(?P<TitleName>.*?)(?: \<small\>Subtitle\<\/small\>.*?)'
         # Catches http://www.addic7ed.com
@@ -49,21 +50,21 @@ class ADDIC7ED_REGEX:
         # with it, the associated HTML content that is required in order to
         # extract the rest of the parameters for that version (Named
         # VersionContent).
-        RESULT_PAGE_VERSION_SCOPE = (
+        RESULT_PAGE_VERSION_SCOPE = re.compile(
             '(?<=Version )(?P<VersionString>.*?)'
             '(?P<VersionContent>, .*?javascript\:saveFavorite.*?)\<\/table\>'
         )
         # When fed with the VersionContent from the previous pattern, extracts
         # the LanguageCode and the HTML content associated with it
         # (LanguageContent).
-        VERSION_SCOPE_LANGUAGE_SCOPE = (
+        VERSION_SCOPE_LANGUAGE_SCOPE = re.compile(
             'saveFavorite\(\d+,(?P<LanguageCode>\d+),\d+\).*?'
             '(?P<LanguageContent>\<a class\=\"buttonDownload\" .*?'
             '\<\/a\>\<\/td\>)'
         )
         # When fed with the LanguageContent, extract the URL for the subtitle
         # under DownloadUrl.
-        LANGUAGE_SCOPE_DOWNLOAD_URL = (
+        LANGUAGE_SCOPE_DOWNLOAD_URL = re.compile(
             '\<a class\=\"buttonDownload\" href\=\"(?P<DownloadUrl>.*?)\"\>'
         )
 
@@ -114,6 +115,9 @@ class Addic7edProvider(IProvider):
         else:
             pass
 
+    def download_subtitle_buffer(self, provider_version):
+        pass
+
 def get_query_string(title):
     """
     Returns the query string for Addic7ed's. For movies it returns simply the
@@ -158,17 +162,60 @@ def format_query_url(query):
 
 def extract_versions_parameters_from_title_page(page_content):
     """
-    Given so page content that is associated with some title page in the site,
+    Given page content that is associated with some title page in the site,
     extracts all the attributes of the version from it (using the re patterns
     specified above). Assumes that any white spaces was removed (except for
-    single spaces).
+    single spaces). Each item in the list is a tuple in the format of:
+    (VersionString, LanguageCode, DownloadUrl)
 
     >>> from urllib2 import urlopen
-    >>> content = urlopen(r"http://www.addic7ed.com/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification").read()
+    >>> content = urlopen(\
+        r"http://www.addic7ed.com/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification").read()
     >>> stripped_content = content.replace("\\r", "")
     >>> stripped_content = stripped_content.replace("\\t", "")
     >>> stripped_content = stripped_content.replace("\\n", "")
-    >>> print sorted(extract_versions_parameters_from_title_page(stripped_content))
-
+    >>> versions = extract_versions_parameters_from_title_page(stripped_content)
+    >>> len(versions)
+    23
+    >>> for v in sorted(versions): print v
+    ('720p Web-DL', '10', '/original/82674/11')
+    ('BDRip.x264.DEMAND', '1', '/original/82674/16')
+    ('DIMENSION', '1', '/original/82674/0')
+    ('DIMENSION', '1', '/original/82674/1')
+    ('DIMENSION', '1', '/updated/1/82674/0')
+    ('DIMENSION', '10', '/updated/10/82674/1')
+    ('DIMENSION', '35', '/updated/35/82674/0')
+    ('DIMENSION', '8', '/updated/8/82674/1')
+    ('Dimension', '17', '/original/82674/5')
+    ('Dimension', '17', '/updated/17/82674/5')
+    ('LOL', '10', '/original/82674/2')
+    ('LOL', '11', '/original/82674/9')
+    ('LOL', '17', '/original/82674/10')
+    ('LOL', '19', '/original/82674/14')
+    ('LOL', '19', '/original/82674/15')
+    ('LOL', '7', '/original/82674/7')
+    ('ROVERS', '17', '/original/82674/13')
+    ('WEB-DL', '1', '/original/82674/3')
+    ('WEB-DL', '1', '/original/82674/4')
+    ('WEB-DL', '10', '/original/82674/6')
+    ('WEB-DL', '17', '/original/82674/8')
+    ('WEB-DL', '17', '/updated/17/82674/8')
+    ('WEB-DL', '7', '/original/82674/12')
     """
-    pass
+    versions = []
+
+    regex_class = ADDIC7ED_REGEX.TITLE_PAGE
+
+    # For each version.
+    for version_string, content in get_regex_results(
+        regex_class.RESULT_PAGE_VERSION_SCOPE, page_content):
+        # For each language.
+        for language_code, content in get_regex_results(
+            regex_class.VERSION_SCOPE_LANGUAGE_SCOPE, content):
+            # For each download url.
+            for download_url in get_regex_results(
+                regex_class.LANGUAGE_SCOPE_DOWNLOAD_URL, content):
+
+                versions.append((version_string, language_code, download_url))
+
+    return versions
