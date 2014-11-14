@@ -20,6 +20,5 @@ class IProvider(object):
     def download_subtitle_buffer(self, provider_version):
         pass
 
-    @abstractproperty
     def languages_in_use(self):
         return self._languages_in_use
