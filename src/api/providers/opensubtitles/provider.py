@@ -46,7 +46,7 @@ class OpenSubtitlesProvider(IProvider):
             query_params["imdbid"] = \
                 imdb_id_format_for_opensubtitles(title.imdb_id)
         query_params["sublanguageid"] = \
-            ','.join([l.iso_name for l in self.langauges])
+            ','.join([l.iso_name for l in self.languages])
 
         if isinstance(title, SeriesTitle):
             if title.season_number and title.episode_number:
