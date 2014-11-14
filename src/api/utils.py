@@ -42,7 +42,8 @@ def get_regex_match(input_string, patterns):
 def get_regex_results(pattern, content, with_groups = False):
     """
     Query the content and returns list of all result, in case of multi-group
-    pattern, will return a list of tuples (tuple for each group).
+    pattern, will return a list of tuples (tuple for each group). pattern may
+    be either a string or a compiled pattern.
 
     >>> sorted(get_regex_results("\d", "1.2.3"))
     ['1', '2', '3']
@@ -51,6 +52,10 @@ def get_regex_results(pattern, content, with_groups = False):
     >>> result = get_regex_results("(?P<first>\d)\.(?P<second>\d)", "1.2", True)
     >>> [{'first' : '1', 'second' : '2'}] == result
     True
+    >>> import re
+    >>> pattern = re.compile("\d")
+    >>> sorted(get_regex_results(pattern, "1.2.3"))
+    ['1', '2', '3']
     """
     c_pattern = re.compile(pattern)
     if with_groups:
