@@ -274,9 +274,10 @@ class OpenSubtitlesProvider(IProvider):
 
     def get_title_by_query(self, query):
         """
-         Then, it iterates over all the
-        results, and looks for the imdb id in each one, and selects the id that
-        appears the most, and sends it to the get_title_by_imdb_id method.
+        Sends a query to the API via the SearchSubtitles method, then, it
+        iterates over all the results, and looks for the imdb id in each one,
+        and selects the id that appears the most, and sends it to the
+        get_title_by_imdb_id method.
         """
         logger.debug("Getting title info with query: %s" % query)
 
