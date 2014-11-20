@@ -206,3 +206,14 @@ def normalize_name_4th_step(name):
     name = re.sub("_%s_" % ordinals_re, _replace_group, name)
     logger.debug("4th normalization step returns: %s" % name)
     return name
+
+def compare_names_normalized(a, b):
+    """
+    Normalizes a and b, and checks whether they share at least a single element.
+    
+    >>> print compare_names_normalized("The Matrix", "the  matrix")
+    True
+    >>> print compare_names_normalized("The Matrix Rev", "The Matrix")
+    False
+    """
+    return bool(set(normalize_name(a)).intersection(set(normalize_name(b))))
