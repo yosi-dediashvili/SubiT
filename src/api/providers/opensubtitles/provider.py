@@ -37,16 +37,64 @@ class OpenSubtitlesProvider(IProvider):
         super(OpenSubtitlesProvider, self).__init__(languages, requests_manager)
         self.server = requests_manager
 
+    def _construct_title_from_search_subtitle_result(self, result):
+        imdb_id = result["IDMovieImdb"]
+        imdb_id = opensubtitles_id_format_for_imdb(imdb_id)
+        name = result["MovieName"]
+        year = int(result["MovieYear"])
+
+        title = None
+
+        if result["MovieKind"] == "movie":
+            title = MovieTitle(name, year, imdb_id)
+        elif result["MovieKind"] == "episode":
+            season_number = int(result["SeriesSeason"])
+            episode_number = int(result["SeriesEpisode"])
+            episode_imdb_id = imdb_id
+            imdb_id = result["SeriesIMDBParent"]
+            imdb_id = \
+                opensubtitles_id_format_for_imdb(imdb_id)
+            name, episode_name = \
+                format_opensubtitles_episode_title_name(name)
+            title = SeriesTitle(
+                name, season_number, episode_number, episode_imdb_id,
+                episode_name, year, imdb_id)
+        else:
+            logger.debug("Got strange 'kind' value: %s"
+                % result["kind"])
+
+        return title
+
+    def _construct_provider_version_from_subtitle_result(self, result, title):
+        from api.identifiersextractor import extract_identifiers
+        version_string = result["MovieReleaseName"]
+        identifiers = extract_identifiers(title, [version_string])
+        num_of_cds = int(result["SubActualCD"])
+        attributes = {
+            "ZipDownloadLink" : result["ZipDownloadLink"]
+        }
+        language_string = result["SubLanguageID"]
+        language = Languages.locate_language(language_string)
+        if not language:
+            logger.debug("Received an unsupported language: %s"
+                % language_string)
+            return None
+
+        return ProviderVersion(
+            identifiers, title, language, self, version_string,
+            attributes, num_of_cds=num_of_cds)
+
+
     def get_title_versions(self, title, version):
         titles_versions = TitlesVersions()
         # First, format the dictionary that will be sent to the server.
-        query_params = {}
-        query_params["query"]         = title.name
+        query_params = {
+            "query" : title.name,
+            "sublanguageid" : ','.join([l.iso_name for l in self.languages])}
+
         if title.imdb_id:
             query_params["imdbid"] = \
                 imdb_id_format_for_opensubtitles(title.imdb_id)
-        query_params["sublanguageid"] = \
-            ','.join([l.iso_name for l in self.languages])
 
         if isinstance(title, SeriesTitle):
             if title.season_number and title.episode_number:
@@ -63,49 +111,14 @@ class OpenSubtitlesProvider(IProvider):
         subtitle_results = subtitle_results['data']
 
         # For each result, construct a ProviderVersion instance.
-        for subtitle_result in subtitle_results:
-            imdb_id = subtitle_result["IDMovieImdb"]
-            imdb_id = opensubtitles_id_format_for_imdb(imdb_id)
-            name = subtitle_result["MovieName"]
-            year = int(subtitle_result["MovieYear"])
-
-            if subtitle_result["MovieKind"] == "movie":
-                title = MovieTitle(name, year, imdb_id)
-            elif subtitle_result["MovieKind"] == "episode":
-                season_number = int(subtitle_result["SeriesSeason"])
-                episode_number = int(subtitle_result["SeriesEpisode"])
-                episode_imdb_id = imdb_id
-                imdb_id = subtitle_result["SeriesIMDBParent"]
-                imdb_id = \
-                    opensubtitles_id_format_for_imdb(imdb_id)
-                name, episode_name = \
-                    format_opensubtitles_episode_title_name(name)
-                title = SeriesTitle(
-                    name, season_number, episode_number, episode_imdb_id,
-                    episode_name, year, imdb_id)
-            else:
-                logger.debug("Got strange 'kind' value: %s"
-                    % subtitle_result["kind"])
-                continue
-
-            from api.identifiersextractor import extract_identifiers
-            version_string = subtitle_result["MovieReleaseName"]
-            identifiers = extract_identifiers(title, [version_string])
-            num_of_cds = int(subtitle_result["SubActualCD"])
-            attributes = {
-                "ZipDownloadLink" : subtitle_result["ZipDownloadLink"]
-            }
-            language_string = subtitle_result["SubLanguageID"]
-            language = Languages.locate_language(language_string)
-            if not language:
-                logger.debug("Received an unsupported language: %s"
-                    % language_string)
-                continue
-
-            provider_version = ProviderVersion(
-                identifiers, title, language, self, version_string,
-                attributes, num_of_cds=num_of_cds)
-            titles_versions.add_version(provider_version)
+        for result in subtitle_results:
+            title = self._construct_title_from_search_subtitle_result(result)
+            if title:
+                provider_version = \
+                    self._construct_provider_version_from_subtitle_result(
+                        result, title)
+                if provider_version:
+                    titles_versions.add_version(provider_version)
 
         return titles_versions
 
