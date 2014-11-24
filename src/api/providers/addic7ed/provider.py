@@ -15,7 +15,8 @@ __all__ = ['Addic7edProvider']
 
 class ADDIC7ED_PAGES:
     DOMAIN = 'www.addic7ed.com'
-    SEARCH = 'http://%s/search.php?search=%s' % (DOMAIN, "%s")
+    SEARCH = 'http://%s/search.php?search=%%s' % DOMAIN
+    EPISODE_PAGE = 'http://%s/serie/%%s/%%s/%%s/%%s' % DOMAIN
 
 class ADDIC7ED_REGEX:
     # Catches the results of the search result from the main page. For each
@@ -94,8 +95,6 @@ class Addic7edProvider(IProvider):
     def __init__(self, languages, requests_manager):
         super(Addic7edProvider, self).__init__(languages, requests_manager)
 
-
-
     def get_title_versions(self, title, version):
         logger.debug("Received call to get_title_version with %s,%s" %
             title, version)
@@ -104,14 +103,18 @@ class Addic7edProvider(IProvider):
         search_url = format_query_url(query_string)
 
         search_content = self.requests_manager.perform_request(search_url)
-        regex_results = get_regex_results(
+        search_results = get_regex_results(
             ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, search_content, True)
 
+        from api.titlesversions import TitlesVersions
+        titles_versions = TitlesVersions()
+
         # It means no redirection occurred.
-        if regex_results:
+        if search_results:
             logger.debug(
                 "The regex for the search page matched. "
                 "No redirection occurred.")
+        # We need to parse the versions.
         else:
             pass
 
@@ -159,6 +162,41 @@ def format_query_url(query):
     """
     from urllib2 import quote as url_quote
     return ADDIC7ED_PAGES.SEARCH % url_quote(query)
+
+def get_episode_url(title):
+    """
+    Constructs the url for the episode given in the title instance. If the title
+    is missing the episode name, `zzz` will be used instead. If either the 
+    episode or the season number is missing, exception will be raised.
+
+    >>> from api.title import SeriesTitle
+    >>> t = SeriesTitle("The 4400", 2, 5, episode_name="As Fate Would Have It")
+    >>> print get_episode_url(t)
+    http://www.addic7ed.com/serie/the%204400/2/5/as%20fate%20would%20have%20it
+    >>> t = SeriesTitle("The 4400", 2, 5)
+    >>> print get_episode_url(t)
+    http://www.addic7ed.com/serie/the%204400/2/5/zzz
+    >>> t = SeriesTitle("The 4400", episode_name="As Fate Would Have It")
+    >>> print get_episode_url(t)
+    Traceback (most recent call last):
+        ...
+    InvalidTitleValue: The episode title must contain numbering.
+    """
+    logger.debug("Constructing URL for title: %s" % title)
+    if not title.episode_number or not title.season_number:
+        from api.exceptions import InvalidTitleValue
+        raise InvalidTitleValue("The episode title must contain numbering.")
+
+    from urllib2 import quote as url_quote
+    return ADDIC7ED_PAGES.EPISODE_PAGE % (
+        url_quote(title.name.lower()), 
+        title.season_number, 
+        title.episode_number,
+        url_quote(title.episode_name.lower()) or "zzz")
+
+def extract_title_parameters_from_search_page(page_content):
+
+    pass
 
 def extract_versions_parameters_from_title_page(page_content):
     """
