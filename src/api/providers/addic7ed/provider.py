@@ -195,7 +195,31 @@ def get_episode_url(title):
         url_quote(title.episode_name.lower()) or "zzz")
 
 def extract_title_parameters_from_search_page(page_content):
+    """ 
+    Extracts parameters from the search result. Each item in the list is in the 
+    format of: (title_url, title_name)
 
+    >>> from urllib2 import urlopen
+    >>> content = urlopen(\
+        r"http://www.addic7ed.com/search.php?search=Godzilla").read()
+    >>> stripped_content = content.replace("\\r", "")
+    >>> stripped_content = stripped_content.replace("\\t", "")
+    >>> stripped_content = stripped_content.replace("\\n", "")
+    >>> print extract_title_parameters_from_search_page(stripped_content)
+    [('movie/89128', 'Godzilla (2014)')]
+
+    >>> content = urlopen(\
+        r"http://www.addic7ed.com/search.php?search=lost+s04e12").read()
+    >>> stripped_content = content.replace("\\r", "")
+    >>> stripped_content = stripped_content.replace("\\t", "")
+    >>> stripped_content = stripped_content.replace("\\n", "")
+    >>> titles = extract_title_parameters_from_search_page(stripped_content)
+    >>> titles = sorted(titles)
+    >>> print titles[0]
+    ('serie/Lost/4/12/There%%C2%%B4s_no_place_like_home_%%28I%%29', 'Lost - 04x12 - Theres no place like home (I)')
+    >>> print titles[1]
+    ('serie/Lost_Girl/4/12/It_Begins', 'Lost Girl - 04x12 - It Begins')
+    """
     pass
 
 def extract_versions_parameters_from_title_page(page_content):
