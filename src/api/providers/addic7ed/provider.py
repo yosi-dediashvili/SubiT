@@ -197,30 +197,31 @@ def get_episode_url(title):
 def extract_title_parameters_from_search_page(page_content):
     """ 
     Extracts parameters from the search result. Each item in the list is in the 
-    format of: (title_url, title_name)
+    format of: (title_url, title_name). 
 
-    >>> from urllib2 import urlopen
-    >>> content = urlopen(\
-        r"http://www.addic7ed.com/search.php?search=Godzilla").read()
+    >>> import requests
+    >>> content = requests.get(\
+        r"http://www.addic7ed.com/search.php?search=Godzilla").content
     >>> stripped_content = content.replace("\\r", "")
     >>> stripped_content = stripped_content.replace("\\t", "")
     >>> stripped_content = stripped_content.replace("\\n", "")
     >>> print extract_title_parameters_from_search_page(stripped_content)
     [('movie/89128', 'Godzilla (2014)')]
 
-    >>> content = urlopen(\
-        r"http://www.addic7ed.com/search.php?search=lost+s04e12").read()
+    >>> content = requests.get(\
+        r"http://www.addic7ed.com/search.php?search=lost+s04e12").content
     >>> stripped_content = content.replace("\\r", "")
     >>> stripped_content = stripped_content.replace("\\t", "")
     >>> stripped_content = stripped_content.replace("\\n", "")
     >>> titles = extract_title_parameters_from_search_page(stripped_content)
     >>> titles = sorted(titles)
     >>> print titles[0]
-    ('serie/Lost/4/12/There%%C2%%B4s_no_place_like_home_%%28I%%29', 'Lost - 04x12 - Theres no place like home (I)')
+    ('serie/Lost/4/12/There%C2%B4s_no_place_like_home_%28I%29', 'Lost - 04x12 - There\\xc2\\xb4s no place like home (I)')
     >>> print titles[1]
     ('serie/Lost_Girl/4/12/It_Begins', 'Lost Girl - 04x12 - It Begins')
     """
-    pass
+    return get_regex_results(ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, page_content)
+
 
 def extract_versions_parameters_from_title_page(page_content):
     """
@@ -230,9 +231,10 @@ def extract_versions_parameters_from_title_page(page_content):
     single spaces). Each item in the list is a tuple in the format of:
     (VersionString, LanguageCode, DownloadUrl)
 
-    >>> from urllib2 import urlopen
-    >>> content = urlopen(\
-        r"http://www.addic7ed.com/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification").read()
+    >>> import requests
+    >>> r = requests.get(\
+        r"http://www.addic7ed.com/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification")
+    >>> content = r.content
     >>> stripped_content = content.replace("\\r", "")
     >>> stripped_content = stripped_content.replace("\\t", "")
     >>> stripped_content = stripped_content.replace("\\n", "")
