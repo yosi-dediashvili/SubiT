@@ -1,10 +1,10 @@
-__all__ = ['RequestsManager', 'get_manager_instance']
-
-
 import logging
 logger = logging.getLogger("subit.api.requestsmanager")
 
 from exceptions import InvalidProviderName
+
+
+__all__ = ['RequestsManager', 'get_manager_instance']
 
 
 class RequestsManager(object):
@@ -53,48 +53,45 @@ class RequestsManager(object):
         Performs a simple http requests. We are using fake user-agents. If the
         data arg is provided, a POST request will be sent instead of GET. Also,
         you can specify more headers by supplying a dict in the more_headers
-        arg.
+        arg. 
 
-        The data is returned as-is using the urllib2.
+        The data is returned as-is using the requests module.
         """
         logger.debug(
             "_perform_request got called with: '%s', '%s', %s" %
             (url, data, more_headers))
         from useragents import get_agent
-        import urllib2
+        import requests
 
         try:
-            request = urllib2.Request(url)
-            request.add_header("User-Agent", get_agent())
-            request.add_header('Connection'      , r'keep-alive')
-            request.add_header('X-Requested-With', r'XMLHttpRequest')
-            request.add_header('Content-Type'    , r'application/x-www-form-urlencoded')
-            request.add_header('Accept-Charset'  , r'utf-8;q=0.7,*;q=0.3')
-            request.add_header('Accept-Language' , r'en-US,en;q=0.8')
-            request.add_header('Cache-Control'   , r'max-age=0')
+            headers = {'User-Agent': get_agent()}
+            # In case of specifying more headers, we add them
+            headers.update(more_headers)
 
-            # In case of specifiyng more headers, we add them
-            for name, value in more_headers.iteritems():
-                request.add_header(name, value)
+            logger.debug("Request headers: %s" % headers)
 
-            logger.debug("Request headers: %s" % request.headers)
-
-            if data:
-                request.add_data(data)
-
-            response = ''
+            response_content = ''
             returned_headers = {}
             # Try 3 times.
             for error_count in range(1, 4):
                 try:
                     logger.debug(
                         "Sending request for the %d time." % error_count)
-                    response_obj = urllib2.urlopen(request, timeout=10)
-                    response = response_obj.read()
-                    response_info = response_obj.info()
+                    if data:
+                        response = requests.post(url, data=data, timeout=10)
+                    else:
+                        response = requests.get(url, timeout=10)
+
+                    assert response.ok
+                    response_content = response.content
+
+                    # Iterate over the requested headers. This way, if no header
+                    # was specified, we perform nothing, instead of first 
+                    # iterating over the returned headers and checking whether
+                    # they're in the response_header.
                     for header in response_headers:
-                        if header in response_info:
-                            header_value = response_info[header]
+                        if header in response.headers:
+                            header_value = response.headers[header]
                             logger.debug("Adding response header: %s=%s"
                                 % (header, header_value))
                             returned_headers[header] = header_value
@@ -109,12 +106,12 @@ class RequestsManager(object):
         except Exception as eX:
             logger.error("Request flow failed: %s" % eX)
 
-        logger.debug("Response length is: %d" % len(response))
+        logger.debug("Response length is: %d" % len(response_content))
 
         if not response_headers:
-            return response
+            return response_content
         else:
-            return (response, returned_headers)
+            return (response_content, returned_headers)
 
 _instances = {}
 def get_manager_instance(provider_name):

@@ -118,8 +118,8 @@ def run_tests():
     tests = doctest.DocTestSuite(
         requestsmanager, 
         optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS)
-    tests.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(
-        TestRequestsManagerAsyncOp))
+    # tests.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(
+    #     TestRequestsManagerAsyncOp))
     tests.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(
         TestPerformRequestContent))
     test_runner.run(tests)

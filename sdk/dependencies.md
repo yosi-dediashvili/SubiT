@@ -4,6 +4,7 @@ Python 2.7.x:   http://www.python.org/download/releases/
 EasyConfig:     https://github.com/yosi-dediashvili/EasyConfig  
 PyInside:       http://qt-project.org/wiki/PySideDownloads  
 inflect:        http://pypi.python.org/pypi/inflect  
+Requests:       http://docs.python-requests.org/en/latest/user/install
 
 ## In order to build the binaries & setup:
 
