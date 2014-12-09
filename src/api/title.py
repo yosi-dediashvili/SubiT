@@ -142,6 +142,19 @@ class SeriesTitle(Title):
         logger.debug("Created SeriesTitle instance: %s" % self)
 
     @property
+    def got_numbering(self):
+        """
+        Checks whether both the season and episode numbering is set.
+
+        >>> SeriesTitle("The 4400", 2, 5).got_numbering
+        True
+        >>> SeriesTitle(\
+            "The 4400", episode_name="As fate would have it").got_numbering
+        False
+        """
+        return bool(self.season_number) and bool(self.episode_number)
+
+    @property
     def episode_normalized_names_set(self):
         return self._episode_normalized_names_set
 
