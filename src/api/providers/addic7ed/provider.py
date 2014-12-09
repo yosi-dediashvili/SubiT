@@ -4,6 +4,7 @@ logger = logging.getLogger("subit.api.providers.addic7ed.provider")
 
 from api.providers.iprovider import IProvider
 from api.providers.providersnames import ProvidersNames
+from api.titlesversions import TitlesVersions
 from api.languages import Languages
 from api.utils import get_regex_results
 from api.title import SeriesTitle
@@ -68,45 +69,95 @@ class ADDIC7ED_REGEX:
         LANGUAGE_SCOPE_DOWNLOAD_URL = re.compile(
             '\<a class\=\"buttonDownload\" href\=\"(?P<DownloadUrl>.*?)\"\>'
         )
-
+        # Splits the string that is defined as the version string in the page.
+        # i.e., from "720p Web-DL" to ['720p', 'Web', 'DL'].
+        VERSION_STRING_SPLITTER = re.compile('[\.,-_ ]')
 
 class Addic7edProvider(IProvider):
     """ The provider implementation for www.Addic7ed.com. """
 
     provider_name = ProvidersNames.ADDIC7ED
     # A mapping between the Language object and Addic7ed's own language code.
-    language_to_addic7ed_code = {
-        Languages.HEBREW    : 23,
-        Languages.ENGLISH   : 1,
-        Languages.SPANISH   : 4,
-        Languages.ARABIC    : 38,
-        Languages.BULGARIAN : 35,
-        Languages.SLOVAK    : 25,
-        Languages.TURKISH   : 16,
-        Languages.CZECH     : 14,
-        Languages.RUSSIAN   : 19,
-        Languages.NORWEGIAN : 29,
-        Languages.SWEDISH   : 18,
-        Languages.FRENCH    : 8,
-        Languages.GREEK     : 27
+    addic7ed_code_to_language = {
+        '23' : Languages.HEBREW,
+        '1'  : Languages.ENGLISH,
+        '4'  : Languages.SPANISH,
+        '38' : Languages.ARABIC,
+        '35' : Languages.BULGARIAN,
+        '25' : Languages.SLOVAK,
+        '16' : Languages.TURKISH,
+        '14' : Languages.CZECH,
+        '19' : Languages.RUSSIAN,
+        '29' : Languages.NORWEGIAN,
+        '18' : Languages.SWEDISH,
+        '8'  : Languages.FRENCH,
+        '2'  : Languages.GREEK
     }
-    supported_languages = language_to_addic7ed_code.keys()
+    supported_languages = addic7ed_code_to_language.values()
 
     def __init__(self, languages, requests_manager):
         super(Addic7edProvider, self).__init__(languages, requests_manager)
 
+    def _get_provider_versions(self, title, page_content):
+        provider_versions = []
+        for version, language, url in \
+            extract_versions_parameters_from_title_page(page_content):
+
+            lang_obj = Addic7edProvider.addic7ed_code_to_language[language]
+            idetifiers = ADDIC7ED_REGEX.TITLE_PAGE\
+                .VERSION_STRING_SPLITTER.split(version)
+
+            provider_version = ProviderVersion(
+                identifiers, title, lang_obj, self, version, {'url' : url})
+            logger.debug("Constructed ProviderVersion: %s" % provider_version)
+            provider_versions.append(provider_version)
+        return provider_versions
+
+    def _get_titles_versions(self, page_content):
+        titles_versions = TitlesVersions()
+        for title_url, title_name in \
+            extract_title_parameters_from_search_page(page_content):
+
+
+
+
     def get_title_versions(self, title, version):
+        """
+        If the title is series, will try to access the episode's page directly,
+        and if succeeded, will return the version in that page. If the series 
+        is missing numbering, and contains only the episode name, it will use 
+        it in the query.
+
+        If the title is movie, 
+        """
         logger.debug("Received call to get_title_version with %s,%s" %
             title, version)
-        query_string = get_query_string(title)
-        logger.debug("Using the query: %s" % query_string)
-        search_url = format_query_url(query_string)
 
-        search_content = self.requests_manager.perform_request(search_url)
+        
+
+        # It's a series, lets try accessing the page directly.
+        if isinstance(title, SeriesTitle) and title.got_numbering:
+            url = get_episode_url()
+            logger.debug("Trying to access the episode's page directly: " url)
+            title_page_content = self.requests_manager.perform_request_text(url)
+            provider_versions = \
+                self._get_provider_versions(title, title_page_content)
+            logger.debug("Got %d versions." % len(provider_versions))
+            # Only stop and return if we got results, otherwise, we'll proceed
+            # to the regular query.
+            if provider_versions:
+                return TitlesVersions(provider_versions)
+
+        query = get_query_string(title)
+        query_url = format_query_url(query)
+        query_page_content = \
+            self.requests_manager.perform_request_text(query_url)
+
+
+
         search_results = get_regex_results(
             ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, search_content, True)
 
-        from api.titlesversions import TitlesVersions
         titles_versions = TitlesVersions()
 
         # It means no redirection occurred.
@@ -183,7 +234,7 @@ def get_episode_url(title):
     InvalidTitleValue: The episode title must contain numbering.
     """
     logger.debug("Constructing URL for title: %s" % title)
-    if not title.episode_number or not title.season_number:
+    if not title.got_numbering:
         from api.exceptions import InvalidTitleValue
         raise InvalidTitleValue("The episode title must contain numbering.")
 
@@ -221,7 +272,6 @@ def extract_title_parameters_from_search_page(page_content):
     ('serie/Lost_Girl/4/12/It_Begins', 'Lost Girl - 04x12 - It Begins')
     """
     return get_regex_results(ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, page_content)
-
 
 def extract_versions_parameters_from_title_page(page_content):
     """
@@ -283,3 +333,15 @@ def extract_versions_parameters_from_title_page(page_content):
                 versions.append((version_string, language_code, download_url))
 
     return versions
+
+def construct_title_from search_result(title_url, title_name):
+    """
+    Given a single result from the search page (parsed), returns either a 
+    MovieTitle or SeriesTitle with the appropriate attributes.
+
+    >>> construct_title_from('movie/89128', 'Godzilla (2014)')
+    <MovieTitle name='Godzilla', year=2014, imdb_id=''>
+    >>> construct_title_from('serie/Lost_Girl/4/12/It_Begins', 'Lost Girl - 04x12 - It Begins')
+    <SeriesTitle name='Lost Girl', season_number=4, episode_number=12, episode_name='It Begins' ...>
+    """
+    pass
