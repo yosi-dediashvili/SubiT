@@ -43,7 +43,7 @@ class TestAddic7edProvider(unittest.TestCase):
         fake_version = Version(["identifier"], title)
 
         titles_versions = self.provider.get_title_versions(title, fake_version)
-        self.assertEquals(len(title_versions), 0)
+        self.assertEquals(len(titles_versions), 0)
 
 
     def test_get_titles_versions_series_exact(self):
@@ -149,7 +149,7 @@ def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)
     tests = doctest.DocTestSuite(
         addic7edprovider,
-        optionflags=doctest.NORMALIZE_WHITESPACE)
+        optionflags=(doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS))
     tests.addTests(
         unittest.defaultTestLoader.loadTestsFromTestCase(
             TestAddic7edProvider))

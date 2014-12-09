@@ -4,6 +4,7 @@ logger = logging.getLogger("subit.api.providers.addic7ed.provider")
 
 from api.providers.iprovider import IProvider
 from api.providers.providersnames import ProvidersNames
+from api.version import ProviderVersion
 from api.titlesversions import TitlesVersions
 from api.languages import Languages
 from api.utils import get_regex_results
@@ -39,7 +40,18 @@ class ADDIC7ED_REGEX:
         '(?P<TitleUrl>\/serie\/[^\/]*\/\d*\/\d*\/[^\/]*?)'
         '(?=\" layout\=\"standard\")'
     )
-
+    # Extracts the name and the year of the title from the string in the result
+    # page. It's assumed to be in the format of "<TitleName> (<TitleYear>)".
+    MOVIE_TITLE_NAME_EXTRACTION = \
+        re.compile('(?P<TitleName>.*?) \((?P<TItleYear>\d{4})\)')
+    # Extract the parameters for an episode search result, it's assumed to be 
+    # in the format of:
+    # "<EpisodeName> - <SeasonNUmber>x<EpisodeNumber> - <EpisodeName>"
+    SERIES_TITLE_NAME_EXCRATION = \
+        re.compile(
+            '(?P<TitleName>.*?) \- '
+            '(?P<SeasonNumber>\d+)x(?P<EpisodeNumber>\d+) \- '
+            '(?P<EpisodeName>.*)')
 
     class TITLE_PAGE:
         """
@@ -103,8 +115,12 @@ class Addic7edProvider(IProvider):
         for version, language, url in \
             extract_versions_parameters_from_title_page(page_content):
 
-            lang_obj = Addic7edProvider.addic7ed_code_to_language[language]
-            idetifiers = ADDIC7ED_REGEX.TITLE_PAGE\
+            lang_obj = Addic7edProvider.addic7ed_code_to_language.get(language)
+            if not lang_obj:
+                logger.debug("Unsupported language code: %s" % language)
+                continue
+                
+            identifiers = ADDIC7ED_REGEX.TITLE_PAGE\
                 .VERSION_STRING_SPLITTER.split(version)
 
             provider_version = ProviderVersion(
@@ -117,9 +133,17 @@ class Addic7edProvider(IProvider):
         titles_versions = TitlesVersions()
         for title_url, title_name in \
             extract_title_parameters_from_search_page(page_content):
-
-
-
+            try:
+                title = construct_title_from_search_result(
+                    title_url, title_name)
+                url = "http://%s/%s" % (ADDIC7ED_PAGES.DOMAIN, title_url)
+                title_content = self.requestsmanager.perform_request_text(url)
+                provider_versions = _get_provider_versions(title, title_content)
+                titles_versions.add(provider_versions)
+            except Exception as ex:
+                # Log and continue.
+                logger.debug("Failed constructing title: %s" % ex)
+        return titles_versions
 
     def get_title_versions(self, title, version):
         """
@@ -131,14 +155,13 @@ class Addic7edProvider(IProvider):
         If the title is movie, 
         """
         logger.debug("Received call to get_title_version with %s,%s" %
-            title, version)
-
-        
+            (title, version))
 
         # It's a series, lets try accessing the page directly.
         if isinstance(title, SeriesTitle) and title.got_numbering:
-            url = get_episode_url()
-            logger.debug("Trying to access the episode's page directly: " url)
+            url = get_episode_url(title)
+            logger.debug(
+                "Trying to access the episode's page directly: %s" % url)
             title_page_content = self.requests_manager.perform_request_text(url)
             provider_versions = \
                 self._get_provider_versions(title, title_page_content)
@@ -152,22 +175,10 @@ class Addic7edProvider(IProvider):
         query_url = format_query_url(query)
         query_page_content = \
             self.requests_manager.perform_request_text(query_url)
+        titles_versions = self._get_titles_versions(query_page_content)
 
-
-
-        search_results = get_regex_results(
-            ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, search_content, True)
-
-        titles_versions = TitlesVersions()
-
-        # It means no redirection occurred.
-        if search_results:
-            logger.debug(
-                "The regex for the search page matched. "
-                "No redirection occurred.")
-        # We need to parse the versions.
-        else:
-            pass
+        logger.debug("Got total of %d titles." % len(titles_versions))
+        return titles_versions
 
     def download_subtitle_buffer(self, provider_version):
         pass
@@ -334,14 +345,41 @@ def extract_versions_parameters_from_title_page(page_content):
 
     return versions
 
-def construct_title_from search_result(title_url, title_name):
+def construct_title_from_search_result(title_url, title_name):
     """
     Given a single result from the search page (parsed), returns either a 
-    MovieTitle or SeriesTitle with the appropriate attributes.
+    MovieTitle or SeriesTitle with the appropriate attributes. If we fail to 
+    recognize the title type, exception is raised.
 
-    >>> construct_title_from('movie/89128', 'Godzilla (2014)')
+    >>> construct_title_from_search_result('movie/89128', 'Godzilla (2014)')
     <MovieTitle name='Godzilla', year=2014, imdb_id=''>
-    >>> construct_title_from('serie/Lost_Girl/4/12/It_Begins', 'Lost Girl - 04x12 - It Begins')
-    <SeriesTitle name='Lost Girl', season_number=4, episode_number=12, episode_name='It Begins' ...>
+    >>> construct_title_from_search_result('serie/Lost_Girl/4/12/It_Begins', 'Lost Girl - 04x12 - It Begins')
+    <SeriesTitle name='Lost Girl', ..., season_number=4, episode_number=12, episode_name='It Begins', ...>
     """
-    pass
+    title = None
+    if title_url.startswith('movie'):
+        results = get_regex_results(
+            ADDIC7ED_REGEX.MOVIE_TITLE_NAME_EXTRACTION, title_name)
+        if results:
+            movie_name, year = results[0]
+            title = MovieTitle(movie_name, int(year))
+
+    elif title_url.startswith('serie'):
+        results = get_regex_results(
+            ADDIC7ED_REGEX.SERIES_TITLE_NAME_EXCRATION, title_name)
+        if results:
+            series_name, season_number, episode_number, episode_name = \
+                results[0]
+
+            title = SeriesTitle(
+                series_name, 
+                int(season_number), 
+                int(episode_number), 
+                episode_name=episode_name)
+
+    if not title:
+        from api.exception import InvalidTitleValue
+        raise InvalidTitleValue(
+            "Can't figure out the title: %s %s" % (title_url, title_name))
+    else:
+        return title
