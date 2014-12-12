@@ -83,7 +83,7 @@ class ADDIC7ED_REGEX:
         )
         # Splits the string that is defined as the version string in the page.
         # i.e., from "720p Web-DL" to ['720p', 'Web', 'DL'].
-        VERSION_STRING_SPLITTER = re.compile('[\.,-_ ]')
+        VERSION_STRING_SPLITTER = re.compile('[\.,\-_ ]')
 
 class Addic7edProvider(IProvider):
     """ The provider implementation for www.Addic7ed.com. """
@@ -114,19 +114,20 @@ class Addic7edProvider(IProvider):
         provider_versions = []
         for version, language, url in \
             extract_versions_parameters_from_title_page(page_content):
-
             lang_obj = Addic7edProvider.addic7ed_code_to_language.get(language)
             if not lang_obj:
                 logger.debug("Unsupported language code: %s" % language)
                 continue
-                
+
             identifiers = ADDIC7ED_REGEX.TITLE_PAGE\
                 .VERSION_STRING_SPLITTER.split(version)
 
             provider_version = ProviderVersion(
-                identifiers, title, lang_obj, self, version, {'url' : url})
+                identifiers, title, lang_obj, self, version, 
+                {'movie_code' : url})
             logger.debug("Constructed ProviderVersion: %s" % provider_version)
             provider_versions.append(provider_version)
+
         return provider_versions
 
     def _get_titles_versions(self, page_content):
@@ -137,8 +138,10 @@ class Addic7edProvider(IProvider):
                 title = construct_title_from_search_result(
                     title_url, title_name)
                 url = "http://%s/%s" % (ADDIC7ED_PAGES.DOMAIN, title_url)
-                title_content = self.requestsmanager.perform_request_text(url)
-                provider_versions = _get_provider_versions(title, title_content)
+                title_content = self.requests_manager.perform_request_text(url)
+                import pdb; pdb.set_trace()
+                provider_versions = \
+                    self._get_provider_versions(title, title_content)
                 titles_versions.add(provider_versions)
             except Exception as ex:
                 # Log and continue.
@@ -151,8 +154,6 @@ class Addic7edProvider(IProvider):
         and if succeeded, will return the version in that page. If the series 
         is missing numbering, and contains only the episode name, it will use 
         it in the query.
-
-        If the title is movie, 
         """
         logger.debug("Received call to get_title_version with %s,%s" %
             (title, version))
