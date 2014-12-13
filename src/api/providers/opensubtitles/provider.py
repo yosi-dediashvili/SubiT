@@ -89,8 +89,9 @@ class OpenSubtitlesProvider(IProvider):
         titles_versions = TitlesVersions()
         # First, format the dictionary that will be sent to the server.
         query_params = {
-            "query" : title.name,
-            "sublanguageid" : ','.join([l.iso_name for l in self.languages])}
+            "query" : title.name, 
+            "sublanguageid" : ','.join(
+                [l.iso_name for l in self.languages_in_use])}
 
         if title.imdb_id:
             query_params["imdbid"] = \
