@@ -29,10 +29,12 @@ class TestAddic7edProvider(unittest.TestCase):
 
         titles_versions = self.provider.get_title_versions(title, fake_version)
         # We expect to see 129 Series titles, and 1 Movie title.
-        serieses = filter(lambda t: isinstance(t, SeriesTitle), titles_versions)
-        movies = filter(lambda t: isinstance(t, MovieTitle), titles_versions)
+        serieses = filter(
+            lambda t: isinstance(t, SeriesTitle), titles_versions.titles)
+        movies = filter(
+            lambda t: isinstance(t, MovieTitle), titles_versions.titles)
 
-        self.assertEquals(len(serieses), 129)
+        self.assertEquals(len(serieses), 134)
         self.assertEquals(len(movies), 1)
 
     def test_get_titles_versions_no_title(self):
@@ -65,34 +67,37 @@ class TestAddic7edProvider(unittest.TestCase):
         self.assertEqual(len(titles_versions[0][1]), 1)
         # Four versions (At rank group 1)
         versions = titles_versions[0][1][Languages.ENGLISH][1]
-        self.assertEqual(len(versions), 4)
+        self.assertEqual(len(versions), 6)
 
-        self.assertEquals(versions[0].version_string, "DIMENSION")
-        self.assertEquals(versions[1].version_string, "WEB-DL")
-        self.assertEquals(versions[2].version_string, "DIMENSION")
-        self.assertEquals(versions[3].version_string, "WEB-DL")
+        versions_strings = map(lambda ver: ver[1].version_string, versions)
+        # Remove duplications.
+        versions_strings = list(set(versions_strings))
+        self.assertEquals(
+            sorted(versions_strings), 
+            ['BDRip.x264.DEMAND', 'DIMENSION', 'WEB-DL'])
+
+        movies_codes = \
+            map(lambda ver: ver[1].attributes['movie_code'], versions)
+        movies_codes = list(set(movies_codes))
+        self.assertEquals(len(movies_codes), 1)
+        self.assertEquals(
+            movies_codes[0],
+            "/serie/the%20big%20bang%20theory/7/12/the%20hesitation%20ramification")
+            
+        versions_codes = \
+            map(lambda ver: ver[1].attributes['version_code'], versions)
+        versions_codes = list(set(versions_codes))
 
         self.assertEquals(
-            versions[0].addributes["movie_code"],
-            "serie/The%20Big%20Bang%20Theory/7/12/1")
-        self.assertEquals(
-            versions[1].addributes["movie_code"],
-            "serie/The%20Big%20Bang%20Theory/7/12/1")
-        self.assertEquals(
-            versions[2].addributes["movie_code"],
-            "serie/The%20Big%20Bang%20Theory/7/12/1")
-        self.assertEquals(
-            versions[3].addributes["movie_code"],
-            "serie/The%20Big%20Bang%20Theory/7/12/1")
-
-        self.assertEquals(
-            versions[0].addributes["version_code"], "/original/82674/0")
-        self.assertEquals(
-            versions[1].addributes["version_code"], "/original/82674/4")
-        self.assertEquals(
-            versions[2].addributes["version_code"], "/original/82674/1")
-        self.assertEquals(
-            versions[3].addributes["version_code"], "/original/82674/3")
+            sorted(versions_codes), 
+            [
+                "/original/82674/0",
+                "/original/82674/1",
+                "/original/82674/16",
+                "/original/82674/3",
+                "/original/82674/4",
+                "/updated/1/82674/0"
+            ])
 
     def test_get_titles_versions_movie_exact(self):
         """
@@ -112,16 +117,18 @@ class TestAddic7edProvider(unittest.TestCase):
         versions = titles_versions[0][1][Languages.ENGLISH][1]
         self.assertEqual(len(versions), 2)
 
-        self.assertEquals(versions[0].version_string, "BluRay_BRrip_BDrip")
-        self.assertEquals(versions[1].version_string, "WEBRiP-VAiN")
-
-        self.assertEquals(versions[0].addributes["movie_code"], "/movie/89128")
-        self.assertEquals(versions[1].addributes["movie_code"], "/movie/89128")
+        self.assertEquals(versions[0][1].version_string, "BluRay_BRrip_BDrip")
+        self.assertEquals(versions[1][1].version_string, "WEBRiP-VAiN")
 
         self.assertEquals(
-            versions[0].addributes["version_code"], "/original/89128/4")
+            versions[0][1].attributes["movie_code"], "/movie/89128")
         self.assertEquals(
-            versions[1].addributes["version_code"], "/original/89128/2")
+            versions[1][1].attributes["movie_code"], "/movie/89128")
+
+        self.assertEquals(
+            versions[0][1].attributes["version_code"], "/original/89128/4")
+        self.assertEquals(
+            versions[1][1].attributes["version_code"], "/original/89128/2")
 
     def test_get_subtitle_buffer(self):
         """

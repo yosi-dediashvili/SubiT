@@ -84,6 +84,11 @@ class ADDIC7ED_REGEX:
         # Splits the string that is defined as the version string in the page.
         # i.e., from "720p Web-DL" to ['720p', 'Web', 'DL'].
         VERSION_STRING_SPLITTER = re.compile('[\.,\-_ ]')
+        # Extract the title code from the page
+        TITLE_CODE = re.compile(
+            '(?<=\<fb\:like href\=\"http://www.addic7ed.com)'
+            '(?P<TitleCode>/.*?)'
+            '(?=\" layout=\"standard\")')
 
 class Addic7edProvider(IProvider):
     """ The provider implementation for www.Addic7ed.com. """
@@ -111,12 +116,26 @@ class Addic7edProvider(IProvider):
         super(Addic7edProvider, self).__init__(languages, requests_manager)
 
     def _get_provider_versions(self, title, page_content):
+        try:
+            title_code = get_regex_results(
+                ADDIC7ED_REGEX.TITLE_PAGE.TITLE_CODE,
+                page_content)[0]
+            assert title_code
+        except Exception as ex:
+            logger.debug("Failed extracting the title code from the page.")
+            return None
+
         provider_versions = []
         for version, language, url in \
             extract_versions_parameters_from_title_page(page_content):
+
             lang_obj = Addic7edProvider.addic7ed_code_to_language.get(language)
             if not lang_obj:
                 logger.debug("Unsupported language code: %s" % language)
+                continue
+            if lang_obj not in self.languages_in_use:
+                logger.debug("The language should not be used by the"
+                    " provider instance: %s" % language)
                 continue
 
             identifiers = ADDIC7ED_REGEX.TITLE_PAGE\
@@ -124,7 +143,7 @@ class Addic7edProvider(IProvider):
 
             provider_version = ProviderVersion(
                 identifiers, title, lang_obj, self, version, 
-                {'movie_code' : url})
+                {'version_code' : url, 'movie_code' : title_code})
             logger.debug("Constructed ProviderVersion: %s" % provider_version)
             provider_versions.append(provider_version)
 
@@ -139,14 +158,17 @@ class Addic7edProvider(IProvider):
                     title_url, title_name)
                 url = "http://%s/%s" % (ADDIC7ED_PAGES.DOMAIN, title_url)
                 title_content = self.requests_manager.perform_request_text(url)
-                import pdb; pdb.set_trace()
-                provider_versions = \
-                    self._get_provider_versions(title, title_content)
-                titles_versions.add(provider_versions)
+                versions = self._get_provider_versions(title, title_content)
+                for version in versions:
+                    titles_versions.add_version(version)
             except Exception as ex:
                 # Log and continue.
                 logger.debug("Failed constructing title: %s" % ex)
         return titles_versions
+
+    def _is_versions_page(self, page_content):
+        return get_regex_results(
+            ADDIC7ED_REGEX.REDIRECT_PAGE_PARSER, page_content)
 
     def get_title_versions(self, title, version):
         """
@@ -176,7 +198,14 @@ class Addic7edProvider(IProvider):
         query_url = format_query_url(query)
         query_page_content = \
             self.requests_manager.perform_request_text(query_url)
-        titles_versions = self._get_titles_versions(query_page_content)
+
+        # Addic7ed might redirect us if it can a single episode from our query.
+        if self._is_versions_page(query_page_content):
+            logger.debug("Query resulted in redirection to versions page.")
+            titles_versions = TitlesVersions(
+                self._get_provider_versions(title, query_page_content))
+        else:
+            titles_versions = self._get_titles_versions(query_page_content)
 
         logger.debug("Got total of %d titles." % len(titles_versions))
         return titles_versions
