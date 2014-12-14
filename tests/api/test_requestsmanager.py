@@ -113,6 +113,17 @@ class TestPerformRequestContent(unittest.TestCase):
         self.assertEquals(len(response_headers), 1)
         self.assertEquals(response_headers[real_header_name], "73")
 
+    def test_donwload_file(self):
+        file_name, buff = self.manager.download_file(
+            "http://download.microsoft.com/download/3/A/2/"
+            "3A2B7E95-24EF-44F6-A092-C9CF4D1878D0/IE11-Windows6.1.exe")
+        self.assertEquals(file_name, 'IE11-Windows6.1.exe')
+        from hashlib import sha1
+        self.assertEquals(
+            sha1(buff).digest(), 
+            "694eedfb35fa572da0cb4f2c2abd61d873d76735".decode("hex"))
+
+
 def run_tests():
     test_runner = unittest.TextTestRunner(verbosity=0)
     tests = doctest.DocTestSuite(

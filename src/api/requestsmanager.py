@@ -1,4 +1,5 @@
 import logging
+import utils
 logger = logging.getLogger("subit.api.requestsmanager")
 
 from exceptions import InvalidProviderName
@@ -112,6 +113,44 @@ class RequestsManager(object):
             return response_content
         else:
             return (response_content, returned_headers)
+
+    def download_file(self, url, data = '', more_headers = {}):
+        """
+        Downloads the file from the given URL. Returns the name for the 
+        downloaded file, and the file buffer itself.
+
+        Tries to extract the file name from the Content-Disposition header, 
+        otherwise, the last portion of the URL is returned.
+        """
+        content, headers = self.perform_request_next(
+            url,
+            data,
+            more_headers,
+            response_headers = ["Content-Disposition"])
+
+        if not content:
+            from api.exceptions import FailedDownloadingSubtitleBuffer
+            raise FailedDownloadingSubtitleBuffer(
+                "Failed downloading: %s" % url)
+
+        # Extract the file name from the headers.
+        file_name = ""
+        if not "Content-Disposition" in headers or \
+            'filename' not in headers["Content-Disposition"]:
+            
+            logger.debug("Failed getting the file name for the download.")
+            splitted_url = url.rsplit('/', 1)
+            if len(splitted_url) == 2:
+                file_name = splitted_url[1]
+        else:
+            file_name = utils.take_first(utils.get_regex_results(
+                "(?<=filename\=\").*(?=\")",
+                headers["Content-Disposition"]))
+
+        logger.debug("Downloaded file name is: %s" % file_name)
+
+        return (file_name, content)
+
 
 _instances = {}
 def get_manager_instance(provider_name):
