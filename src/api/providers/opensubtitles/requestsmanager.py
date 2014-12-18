@@ -40,14 +40,14 @@ class OpenSubtitlesRequestsManager(RequestsManager):
         methods to the caller, we wrap the method with out function, and return
         it to the user. Once he calls the function, our wrapper gets called.
         """
-        import socket
-        if name not in [
-            'server', 'token', 'perform_request', 'perform_request_next', 
-            '_perform_request', '_requests_mutex']:
+        try:
+            return object.__getattribute__(self, name)
+        except AttributeError:
             logger.debug("Returning a wrapper for: %s" % name)
             def func_wrapper(func):
                 def func_exec(*args, **kwargs):
                     logger.debug("Calling %s" % name)
+                    import socket
                     socket.setdefaulttimeout(10)
                     max_retries = 3
                     try:
@@ -63,7 +63,8 @@ class OpenSubtitlesRequestsManager(RequestsManager):
                                 else:
                                     raise eX
                         if val and val['status'] != OK_STATUS:
-                            raise Exception("OpenSubtitles returned error: %s" 
+                            raise Exception(
+                                "OpenSubtitles returned error: %s" 
                                 % val['status'])
                     except Exception as eX:
                         logger.error("Failed calling %s: %s" % (name, eX))
@@ -71,7 +72,7 @@ class OpenSubtitlesRequestsManager(RequestsManager):
                     logger.debug("Succeeded calling %s." % name)
                     return val
                 return func_exec
+
+            # Get the name from the server's instance.
             attr = getattr(object.__getattribute__(self, 'server'), name)
             return func_wrapper(attr)
-        else:
-            return object.__getattribute__(self, name)

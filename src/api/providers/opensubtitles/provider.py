@@ -126,29 +126,7 @@ class OpenSubtitlesProvider(IProvider):
     def download_subtitle_buffer(self, provider_version):
         logger.debug("Trying to download version: %s" % provider_version)
         download_url = provider_version.attributes["ZipDownloadLink"]
-
-        content, headers = self.server.perform_request_next(
-            download_url,
-            response_headers = ["Content-Disposition"])
-
-        # Either we receive None for the content, or OpenSubtitles's error
-        # message.
-        if not content or content == "Incorrect download parameters detected":
-            from api.exceptions import FailedDownloadingSubtitleBuffer
-            raise FailedDownloadingSubtitleBuffer(
-                "Failed downloading: %s" % download_url)
-
-        # Extract the file name from the headers.
-        file_name = ""
-        if not "Content-Disposition" in headers:
-            logger.debug("Failed getting the file name for the zip.")
-        else:
-            file_name = utils.take_first(utils.get_regex_results(
-                "(?<=filename\=\").*(?=\")",
-                headers["Content-Disposition"]))
-            logger.debug("Downloaded file name is: %s" % file_name)
-
-        return (file_name, content)
+        return self.server.download_file(download_url)
 
     def calculate_file_hash(self, file_path):
         """
