@@ -79,9 +79,9 @@ class RequestsManager(object):
                     logger.debug(
                         "Sending request for the %d time." % error_count)
                     if data:
-                        response = requests.post(url, data=data, timeout=10)
+                        response = requests.post(url, headers=headers, data=data, timeout=10)
                     else:
-                        response = requests.get(url, timeout=10)
+                        response = requests.get(url, headers=headers, timeout=10)
 
                     assert response.ok
                     response_content = response.content

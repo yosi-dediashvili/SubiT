@@ -1,6 +1,7 @@
 import re
 import logging
 logger = logging.getLogger("subit.api.providers.addic7ed.provider")
+from bs4 import BeautifulSoup
 
 from api.providers.iprovider import IProvider
 from api.providers.providersnames import ProvidersNames
@@ -19,14 +20,9 @@ class ADDIC7ED_PAGES:
     DOMAIN = 'www.addic7ed.com'
     SEARCH = 'http://%s/search.php?search=%%s' % DOMAIN
     EPISODE_PAGE = 'http://%s/serie/%%s/%%s/%%s/%%s' % DOMAIN
+    DOWNLOAD_URL = 'http://%s%%s' % DOMAIN
 
 class ADDIC7ED_REGEX:
-    # Catches the results of the search result from the main page. For each
-    # result, it returns: (TitleUrl, TitleName)
-    SEARCH_RESULTS_PARSER = re.compile(
-        '(?<=<td><a href=\")(?P<TitleUrl>.*?)(?:\" debug'
-        '=\"\d+\">)(?P<TitleName>.*?)(?=</a>)'
-    )
     # Catches the results when we query for something, and we're redirected to
     # a specific Title result (specific series episode, etc.). It seems that
     # this behavior (the redirection) only occur for episode, and not for movie
@@ -47,7 +43,7 @@ class ADDIC7ED_REGEX:
     # Extract the parameters for an episode search result, it's assumed to be 
     # in the format of:
     # "<EpisodeName> - <SeasonNUmber>x<EpisodeNumber> - <EpisodeName>"
-    SERIES_TITLE_NAME_EXCRATION = \
+    SERIES_TITLE_NAME_EXCTRACTION = \
         re.compile(
             '(?P<TitleName>.*?) \- '
             '(?P<SeasonNumber>\d+)x(?P<EpisodeNumber>\d+) \- '
@@ -60,30 +56,17 @@ class ADDIC7ED_REGEX:
         http://www.addic7ed.com/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification
         """
 
-        # Extracts version string (Named VersionString) of some version, and
-        # with it, the associated HTML content that is required in order to
-        # extract the rest of the parameters for that version (Named
-        # VersionContent).
-        RESULT_PAGE_VERSION_SCOPE = re.compile(
-            '(?<=Version )(?P<VersionString>.*?)'
-            '(?P<VersionContent>, .*?javascript\:saveFavorite.*?)\<\/table\>'
-        )
-        # When fed with the VersionContent from the previous pattern, extracts
-        # the LanguageCode and the HTML content associated with it
-        # (LanguageContent).
-        VERSION_SCOPE_LANGUAGE_SCOPE = re.compile(
-            'saveFavorite\(\d+,(?P<LanguageCode>\d+),\d+\).*?'
-            '(?P<LanguageContent>\<a class\=\"buttonDownload\" .*?'
-            '\<\/a\>\<\/td\>)'
-        )
-        # When fed with the LanguageContent, extract the URL for the subtitle
-        # under DownloadUrl.
-        LANGUAGE_SCOPE_DOWNLOAD_URL = re.compile(
-            '\<a class\=\"buttonDownload\" href\=\"(?P<DownloadUrl>.*?)\"\>'
-        )
         # Splits the string that is defined as the version string in the page.
         # i.e., from "720p Web-DL" to ['720p', 'Web', 'DL'].
         VERSION_STRING_SPLITTER = re.compile('[\.,\-_ ]')
+        # Extract the version string from the version's label, that comes in the
+        # format of "Version <version_string>, <version_size> MB".
+        VERSION_STRING_EXTRACTOR = re.compile(
+            '(?<=Version )(?P<VersionString>.*?)(?=, \d+\.\d+ MBs)'
+        )
+        LANGUAGE_CODE_EXTRACTOR = re.compile(
+            '(?<=javascript:saveFavorite\(\d{5},)(?P<LanguageCode>\d+)(?=,\d+\))'
+        )
         # Extract the title code from the page
         TITLE_CODE = re.compile(
             '(?<=\<fb\:like href\=\"http://www.addic7ed.com)'
@@ -211,7 +194,15 @@ class Addic7edProvider(IProvider):
         return titles_versions
 
     def download_subtitle_buffer(self, provider_version):
-        pass
+        logger.debug("Trying to download subtitle file: %s" % provider_version)
+        url = (
+            ADDIC7ED_PAGES.DOWNLOAD_URL % 
+            provider_version.attributes['version_code'])
+        referer = (
+            ADDIC7ED_PAGES.DOWNLOAD_URL % 
+            "/" + provider_version.attributes["movie_code"])
+        return self.requests_manager.download_file(
+            url, more_headers = {"referer" : referer})
 
 def get_query_string(title):
     """
@@ -312,7 +303,11 @@ def extract_title_parameters_from_search_page(page_content):
     >>> print titles[1]
     ('serie/Lost_Girl/4/12/It_Begins', 'Lost Girl - 04x12 - It Begins')
     """
-    return get_regex_results(ADDIC7ED_REGEX.SEARCH_RESULTS_PARSER, page_content)
+    soup = BeautifulSoup(page_content)
+    results_table = soup.find("table", class_="tabel", align="center")
+    return [
+        (str(a['href']), a.text.encode("utf-8", errors='ignore')) 
+        for a in results_table.find_all("a")]
 
 def extract_versions_parameters_from_title_page(page_content):
     """
@@ -357,22 +352,30 @@ def extract_versions_parameters_from_title_page(page_content):
     ('WEB-DL', '17', '/updated/17/82674/8')
     ('WEB-DL', '7', '/original/82674/12')
     """
+    soup = BeautifulSoup(page_content)
     versions = []
-
     regex_class = ADDIC7ED_REGEX.TITLE_PAGE
+    for table in soup.find_all(class_="tabel95", align="center"):
+        version_str = table.find_next(class_="NewsTitle").text
+        version_str = \
+            regex_class.VERSION_STRING_EXTRACTOR.search(version_str).group()
 
-    # For each version.
-    for version_string, content in get_regex_results(
-        regex_class.RESULT_PAGE_VERSION_SCOPE, page_content):
-        # For each language.
-        for language_code, content in get_regex_results(
-            regex_class.VERSION_SCOPE_LANGUAGE_SCOPE, content):
-            # For each download url.
-            for download_url in get_regex_results(
-                regex_class.LANGUAGE_SCOPE_DOWNLOAD_URL, content):
+        for row in table.find_all("tr", recursive=False):
+            language_data = row.select("td[class=language] > a")
+            # If the row is missing a language TD, skip it.
+            if not language_data:
+                continue
 
-                versions.append((version_string, language_code, download_url))
-
+            for data in language_data:
+                language_code = regex_class\
+                    .LANGUAGE_CODE_EXTRACTOR.search(data['href']).group()
+                
+                for url in data.parent.parent\
+                    .find_all("a", class_="buttonDownload"):
+                    versions.append((
+                        str(version_str), 
+                        str(language_code), 
+                        str(url['href'])))
     return versions
 
 def construct_title_from_search_result(title_url, title_name):
@@ -396,7 +399,7 @@ def construct_title_from_search_result(title_url, title_name):
 
     elif title_url.startswith('serie'):
         results = get_regex_results(
-            ADDIC7ED_REGEX.SERIES_TITLE_NAME_EXCRATION, title_name)
+            ADDIC7ED_REGEX.SERIES_TITLE_NAME_EXCTRACTION, title_name)
         if results:
             series_name, season_number, episode_number, episode_name = \
                 results[0]
