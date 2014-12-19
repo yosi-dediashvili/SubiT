@@ -5,6 +5,7 @@ EasyConfig:     https://github.com/yosi-dediashvili/EasyConfig
 PyInside:       http://qt-project.org/wiki/PySideDownloads  
 inflect:        http://pypi.python.org/pypi/inflect  
 Requests:       http://docs.python-requests.org/en/latest/user/install
+BeautifulSoup4: http://www.crummy.com/software/BeautifulSoup/
 
 ## In order to build the binaries & setup:
 
