@@ -79,4 +79,4 @@ class Languages(object):
 	FRENCH 		= Language("French", 	 "fre")
 	GREEK		= Language("Greek", 	 "gre")
     PORTUGUESE  = Language("Portuguese", "por")
-    
+    CROATIAN    = Language("Croatian",   "hrv")

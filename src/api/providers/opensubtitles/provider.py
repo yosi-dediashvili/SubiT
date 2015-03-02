@@ -32,7 +32,8 @@ class OpenSubtitlesProvider(IProvider):
         Languages.SWEDISH,
         Languages.FRENCH,
         Languages.GREEK,
-        Languages.PORTUGUESE
+        Languages.PORTUGUESE,
+        Languages.CROATIAN,
     ]
 
     def __init__(self, languages, requests_manager):
