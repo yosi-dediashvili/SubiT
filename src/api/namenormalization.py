@@ -120,36 +120,11 @@ def normalize_name_3rd_step(name):
     l_first_dates
     """
     logger.debug("3rd normalization step received: %s" % name)
-    def _arabic_to_latin(arabic_number):
-        LATIN_MAPPING = [('cd', 4 * 'c'),
-                         ('xl', 4 * 'x'),
-                         ('iv', 4 * 'i'),
-                         ('d', 5 * 'c'),
-                         ('l', 5 * 'x'),
-                         ('v', 5 * 'i'),
-                         ('cm', 9 * 'c'),
-                         ('xc', 9 * 'x'),
-                         ('ix', 9 * 'i')]
-
-        LATIN_BIG_NUMS = [('m', 1000), 
-                          ('c', 100), 
-                          ('x', 10), 
-                          ('i', 1)]
-        latin_number = ''
-
-        for (character, word) in LATIN_BIG_NUMS:
-            latin_number += (arabic_number / word) * character
-            arabic_number %= word
-
-        for (short_ver, long_ver) in reversed(LATIN_MAPPING):
-            latin_number = latin_number.replace(long_ver,short_ver)
-
-        return latin_number
-
     def _replace_group(match):
         the_string = match.group(0)
         the_number = re.findall("\d+", the_string)[0]
-        return re.sub("\d+", _arabic_to_latin(int(the_number)), the_string)
+        import rome
+        return re.sub("\d+", str(rome.Roman(the_number)).lower(), the_string)
     import re
     # Replace standalone number
     name = re.sub("^(\d+)$", _replace_group, name)

@@ -6,6 +6,7 @@ PyInside:       http://qt-project.org/wiki/PySideDownloads
 inflect:        http://pypi.python.org/pypi/inflect  
 Requests:       http://docs.python-requests.org/en/latest/user/install
 BeautifulSoup4: http://www.crummy.com/software/BeautifulSoup/
+rome            https://github.com/keleshev/rome
 
 ## In order to build the binaries & setup:
 
