@@ -91,7 +91,8 @@ class Addic7edProvider(IProvider):
         '29' : Languages.NORWEGIAN,
         '18' : Languages.SWEDISH,
         '8'  : Languages.FRENCH,
-        '2'  : Languages.GREEK
+        '2'  : Languages.GREEK,
+        '9'  : Languages.PORTUGUESE
     }
     supported_languages = addic7ed_code_to_language.values()
 
