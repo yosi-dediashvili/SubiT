@@ -12,8 +12,7 @@ __all__ = ['TorecProvider']
 class TorecProvider(IProvider):
     provider_name = ProvidersNames.TOREC
     supported_languages = [
-        Languages.HEBREW,
-        Languages.ENGLISH
+        Languages.HEBREW
     ]
 
     def __init__(self, languages, requests_manager):
