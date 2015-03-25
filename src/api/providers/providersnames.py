@@ -36,3 +36,4 @@ class ProvidersNames(object):
 
     OPEN_SUBTITLES  = ProviderName("www.opensubtitles.org", "opensubtitles")
     ADDIC7ED        = ProviderName("www.addic7ed.com", "addic7ed")
+    TOREC           = ProviderName("www.torec.net", "torec")
