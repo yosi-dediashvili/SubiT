@@ -18,3 +18,9 @@ class TorecProvider(IProvider):
 
     def __init__(self, languages, requests_manager):
         super(TorecProvider, self).__init__(languages, requests_manager)
+
+    def get_title_versions(self, title, version):
+        pass
+
+    def download_subtitle_buffer(self, provider_version):
+        pass
