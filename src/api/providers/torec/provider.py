@@ -9,6 +9,13 @@ from api.languages import Languages
 __all__ = ['TorecProvider']
 
 
+class TOREC_PAGES:
+    DOMAIN   = r'www.torec.net'
+    TICKET   = r'http://{}/ajax/sub/guest_time.asp'.format(DOMAIN)
+    DOWNLOAD = r'http://{}/ajax/sub/downloadun.asp'.format(DOMAIN)
+    SEARCH   = r'http://{}/ssearch.asp'.format(DOMAIN)
+    SUBTITLE = r'http://{}/sub.asp'.format(DOMAIN)
+
 class TorecProvider(IProvider):
     provider_name = ProvidersNames.TOREC
     supported_languages = [
