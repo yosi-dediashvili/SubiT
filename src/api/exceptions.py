@@ -21,3 +21,6 @@ class FilePathDoesNotExists(Exception): pass
 class InvalidQueriesValue(Exception): pass
 
 class FailedDownloadingSubtitleBuffer(Exception): pass
+
+class HTMLParsingError(Exception): pass
+
