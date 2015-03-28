@@ -10,30 +10,63 @@ import time
 __all__ = ['TorecHashCodesHamster']
 
 
-TIME_BETWEEN_POSTS = 3 # Time between each post to the server.
-MAX_TICKET_SECS    = 12 # Time it takes for us to invalidate a ticket.
-QUEUE_SIZE         = 5
+# Time it takes for us to invalidate a ticket. The value is taken from the JS
+# in torec handling the waiting time.
+MAX_TICKET_SECS = 12 
+RUNNER_MAIN_LOOP_SLEEP_SECS = 1
 
-TorecTicket = namedtuple('TorecTicket', 'time_got, guest_code')
+
+class TorecTicket(object):
+    def __init__(self, sub_id, time_got, guest_code):
+        self.sub_id     = sub_id
+        self.time_got   = time_got
+        self.guest_code = guest_code
+        logger.debug("Constructed a ticket: {}".format(self))
+
+    @property
+    def time_past(self):
+        return int(time.time()) - self.time_got
+    
+    @property
+    def time_to_wait(self):
+        return MAX_TICKET_SECS - self.time_past
+
+    @property
+    def is_still_valid(self):
+        return self.time_to_wait >= 0
+
+    def wait_required_time(self):
+        ttw = self.time_to_wait
+        if ttw:
+            logger.debug("Ticket requires sleeping for {} secs".format(ttw))
+            time.sleep(ttw)
+
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return ("<TorecTicket sub_id={0.sub_id} "
+            "time_got={0.time_got} guest_code={0.guest_code}>".format(self))
+
+
 
 class TorecHashCodesHamster(object):
     """
-    The hamster is a class that given a movie code from Torec, starts to collect
-    hash codes (i.e., download tickets).
+    The hamster is responsible for obtaining download tickets from Torec's 
+    servers for all the sub_ids that was passed to it.
 
-    An hamster is being assigned to every ProviderVersion.
+    The hamster iterates over all its sub_ids, and makes sure that they have
+    valid ticket (MAX_TICKET_SECS was not passed since the time the ticket was
+    obtained).
+
+    The hamster keeps requesting ticket for a given sub_id until the user marks
+    that sub_id for deletion.
     """
-
-    def __init__(self, movie_code, requests_manager):
-        self.sub_id = movie_code
-        # sub_id is the movie code, s is the width resolution of the screen
-        # (or at least supposed to be).
-        self._post_content = {"sub_id" : self.sub_id, "s" : 1600}
-        logger.debug("Constructed post_content: {}".format(self._post_content))
+    def __init__(self, requests_manager):
         self._requests_manager = requests_manager
 
         self._should_stop = False
-        self._hashes_queue = deque(maxlen=QUEUE_SIZE)
+        self._tickets = {}
         # Start at his own thread.
         hamsterRunner = Thread(target=self._runner)
         hamsterRunner.daemon = True
@@ -53,38 +86,76 @@ class TorecHashCodesHamster(object):
         request, hash code). After 10 items, the queue is blocked.
         """
         logger.debug("_runner started.")
+
         while not self._should_stop:
-            time_got = int(time.time())
-            logger.debug(
-                "_runner getting ticket with: {}".format(self._post_content))
-            guest_code = self._requests_manager.perform_request(
-                TOREC_PAGES.TICKET,
-                data = self._post_content
-                )
-            ticket = TorecTicket(time_got, guest_code)
-            logger.debug("_runner got ticket: {}".format(ticket))
-            self._hashes_queue.append(ticket)
-            time.sleep(TIME_BETWEEN_POSTS)
+            for sub_id, (post_content, ticket) in self._tickets.iteritems():
+                if ticket and ticket.is_still_valid:
+                    continue
+                elif ticket:
+                    # We don't want users from other thread to receive this 
+                    # invalid ticket.
+                    self._tickets[sub_id] = (post_content, None)
+
+                time_got = int(time.time())
+                logger.debug(
+                    "_runner getting ticket with: {}".format(post_content))
+                guest_code = self._requests_manager.perform_request(
+                    TOREC_PAGES.TICKET,
+                    data = post_content
+                    )
+                if guest_code == 'error':
+                    logger.error(
+                        "Failed getting ticket for sub_id: {}".format(sub_id))
+                    continue
+
+                ticket = TorecTicket(sub_id, time_got, guest_code)
+                logger.debug("_runner got ticket: {}".format(ticket))
+                self._tickets[sub_id] = (post_content, ticket)
+
+            time.sleep(RUNNER_MAIN_LOOP_SLEEP_SECS)
+        
         logger.debug("_runner ending.")
 
     def stop(self):
-        """ Signal the working thread to stop. """
+        """ Signals the working thread to stop. """
         self._should_stop = True
 
-    def get_hash_code(self):
+    def add_sub_id(self, sub_id):
         """ 
-        This function pops one code from the queue, and wait the time left (if 
-        there is such).
+        Adds sub_id to the dict. Does not check whether or not that sub_id is
+        in the dict already. This means that if a ticket was already obtained, 
+        it will be removed for that sub_id.
         """
-        ticket = self.hashes_queue.pop()
-        time_past = int(time.time()) - ticket.time_got
-        logger.debug("Popped a ticket: {}".format(ticket))
-        time_to_wait = MAX_TICKET_SECS - time_past
-        if time_to_wait:
-            logger.debug(
-                "Ticket requires sleeping for {} secs".format(time_to_wait))
-            time.sleep(time_to_wait)
-            time_past = MAX_TICKET_SECS
+        # s according to Torec's JS is the screen width.
+        post_content = {"sub_id" : sub_id, "s" : 1600}
+        logger.debug("Constructed post_content: {}".format(post_content))
+        self._tickets[sub_id] = (post_content, None)
+
+    def remove_sub_id(self, sub_id):
+        del self._tickets[sub_id]
+
+    def get_ticket(self, sub_id):
+        """ 
+        Retrieve the ticket associated with the provided sub_id. If the sub_id 
+        is not in the dict, this methods adds it. 
+
+        The method waits until the appropriate time is passed for that ticket.
+        """
+        if not sub_id in self._tickets:
+            self.add_sub_id(sub_id)
+
+        post_content, ticket = self._tickets[sub_id]
+        while not ticket:
+            time.sleep(0.5)
+            post_content, ticket = self._tickets[sub_id]
+
+        logger.debug("Got a ticket: {}".format(ticket))
+        if not ticket.is_still_valid:
+            # Remove the ticket, and re-call ourself.
+            self.add_sub_id(sub_id)
+            ticket = self.get_ticket(sub_id)
+        else:
+            ticket.wait_required_time()
             
-        return (MAX_TICKET_SECS, ticket.guest_code)
+        return ticket
         
