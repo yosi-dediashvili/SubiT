@@ -82,7 +82,7 @@ class TestAddic7edProvider(unittest.TestCase):
         self.assertEquals(len(movies_codes), 1)
         self.assertEquals(
             movies_codes[0],
-            "/serie/the%20big%20bang%20theory/7/12/the%20hesitation%20ramification")
+            "/serie/The_Big_Bang_Theory/7/12/The_Hesitation_Ramification")
             
         versions_codes = \
             map(lambda ver: ver[1].attributes['version_code'], versions)

@@ -44,7 +44,7 @@ def get_series_numbering(query):
     for regex in SERIES_REGEXES:
         # We might end up with result being None because takefirst returns None
         # if there are no items in an iterable.
-        result = take_first(get_regex_results(regex, query, False))
+        result = take_first(get_regex_results(query, regex, False))
         
         if result:
             # We convert result to list in order to change the items inside it

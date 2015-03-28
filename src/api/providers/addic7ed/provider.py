@@ -103,8 +103,8 @@ class Addic7edProvider(IProvider):
     def _get_provider_versions(self, title, page_content):
         try:
             title_code = get_regex_results(
-                ADDIC7ED_REGEX.TITLE_PAGE.TITLE_CODE,
-                page_content)[0]
+                page_content,
+                ADDIC7ED_REGEX.TITLE_PAGE.TITLE_CODE)[0]
             assert title_code
         except Exception as ex:
             logger.debug("Failed extracting the title code from the page.")
@@ -153,7 +153,7 @@ class Addic7edProvider(IProvider):
 
     def _is_versions_page(self, page_content):
         return get_regex_results(
-            ADDIC7ED_REGEX.REDIRECT_PAGE_PARSER, page_content)
+            page_content, ADDIC7ED_REGEX.REDIRECT_PAGE_PARSER)
 
     def get_title_versions(self, title, version):
         """
@@ -394,14 +394,14 @@ def construct_title_from_search_result(title_url, title_name):
     title = None
     if title_url.startswith('movie'):
         results = get_regex_results(
-            ADDIC7ED_REGEX.MOVIE_TITLE_NAME_EXTRACTION, title_name)
+            title_name, ADDIC7ED_REGEX.MOVIE_TITLE_NAME_EXTRACTION)
         if results:
             movie_name, year = results[0]
             title = MovieTitle(movie_name, int(year))
 
     elif title_url.startswith('serie'):
         results = get_regex_results(
-            ADDIC7ED_REGEX.SERIES_TITLE_NAME_EXCTRACTION, title_name)
+            title_name, ADDIC7ED_REGEX.SERIES_TITLE_NAME_EXCTRACTION)
         if results:
             series_name, season_number, episode_number, episode_name = \
                 results[0]

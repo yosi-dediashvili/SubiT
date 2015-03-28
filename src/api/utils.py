@@ -32,29 +32,32 @@ def get_regex_match(input_string, patterns):
     '12'
     >>> print get_regex_match("12345", ["[^\d]", "^\d{4}$"])
     None
+    >>> get_regex_match("12345", "^\d{3}")
+    '123'
     """
+    patterns = [patterns] if isinstance(patterns, str) else patterns
     for pattern in patterns:
         results = re.findall(pattern, input_string)
         if results:
             return results[0]
     return None
 
-def get_regex_results(pattern, content, with_groups = False):
+def get_regex_results(content, pattern, with_groups = False):
     """
     Query the content and returns list of all result, in case of multi-group
     pattern, will return a list of tuples (tuple for each group). pattern may
     be either a string or a compiled pattern.
 
-    >>> sorted(get_regex_results("\d", "1.2.3"))
+    >>> sorted(get_regex_results("1.2.3", "\d"))
     ['1', '2', '3']
-    >>> sorted(get_regex_results("(\d)\.(\d)", "1.2.3.4"))
+    >>> sorted(get_regex_results("1.2.3.4", "(\d)\.(\d)"))
     [('1', '2'), ('3', '4')]
-    >>> result = get_regex_results("(?P<first>\d)\.(?P<second>\d)", "1.2", True)
+    >>> result = get_regex_results("1.2", "(?P<first>\d)\.(?P<second>\d)", True)
     >>> [{'first' : '1', 'second' : '2'}] == result
     True
     >>> import re
     >>> pattern = re.compile("\d")
-    >>> sorted(get_regex_results(pattern, "1.2.3"))
+    >>> sorted(get_regex_results("1.2.3", pattern))
     ['1', '2', '3']
     """
     c_pattern = re.compile(pattern)

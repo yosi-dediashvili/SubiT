@@ -144,8 +144,8 @@ class RequestsManager(object):
                 file_name = splitted_url[1]
         else:
             file_name = utils.take_first(utils.get_regex_results(
-                "(?<=filename\=\").*(?=\")",
-                headers["Content-Disposition"]))
+                headers["Content-Disposition"],
+                "(?<=filename\=\").*(?=\")"))
 
         logger.debug("Downloaded file name is: %s" % file_name)
 
