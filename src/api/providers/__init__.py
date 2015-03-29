@@ -7,13 +7,15 @@ from api.requestsmanager import get_manager_instance
 from api.providers.providersnames import ProvidersNames
 
 from api.providers.opensubtitles import OpenSubtitlesProvider
+from api.providers.addic7ed import Addic7edProvider
+from api.providers.torec import TorecProvider
 
 
 __all__ = ['get_titles_versions', 'ProvidersNames']
 
 # The list will contain the classes (not instances) of all the providers that
 # SubiT knows of.
-PROVIDERS = [OpenSubtitlesProvider]
+PROVIDERS = [OpenSubtitlesProvider, Addic7edProvider, TorecProvider]
 
 
 def get_provider_instance(provider_name, languages, 
