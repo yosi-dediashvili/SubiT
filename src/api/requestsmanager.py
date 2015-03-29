@@ -145,7 +145,8 @@ class RequestsManager(object):
         else:
             file_name = utils.take_first(utils.get_regex_results(
                 headers["Content-Disposition"],
-                "(?<=filename\=\").*(?=\")"))
+                "(?<=filename\=).*(?=$)"))
+            file_name = file_name.strip('"\'')
 
         logger.debug("Downloaded file name is: %s" % file_name)
 

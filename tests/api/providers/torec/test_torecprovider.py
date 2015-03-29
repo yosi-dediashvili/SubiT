@@ -87,15 +87,21 @@ class TestTorecProvider(unittest.TestCase):
 
     def test_download_subtitle_buffer(self):
         """ Make sure we download a file correctly (and the fake one). """
-        title = MovieTitle("Gone Girl", 2014, "tt2267998")
-        fake_version = Version(["identifier"], title)
 
-        titles_versions = self.provider.get_title_versions(title, fake_version)
-        provider_versions = titles_versions[0][1][Languages.HEBREW][1]
-        provider_version = filter(
-            lambda v: v.version_string == \
-                "Gone.Girl.2014.1080p.BluRay.x264-SPARKS",
-            provider_versions)
+        title = MovieTitle("Gone Girl", 2014, "tt2267998")
+        sub_id = 39964
+        provider_version = ProviderVersion(
+            ['1080p', 'BluRay', 'x264', 'SPARKS'],
+            title,
+            Languages.HEBREW,
+            self.provider, 
+            attributes = {
+                'sub_id' : sub_id, 
+                'version_code' : 
+                    # Code for: 1080p BluRay x264-SPARKS
+                    '8FA89EA49FD184A6DBECC0CDE881DC96A5AB9BBFBFA2B6AFC2'
+            })
+        self.provider._hamster.add_sub_id(sub_id)
 
         name, buffer = self.provider.download_subtitle_buffer(provider_version)
         self.assertEquals(name, "Gone.Girl.2014.1080p.BluRay.x264-SPARKS.zip")
