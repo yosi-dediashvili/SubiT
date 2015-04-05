@@ -85,6 +85,17 @@ class TestTorecProvider(unittest.TestCase):
         self.assertGreater(\
             len(titles_versions[0][1][Languages.HEBREW][1]), 4)
 
+    def test_get_title_versions_series_with_builtin_sub_row(self):
+        title = SeriesTitle("True Blood", 3, 1)
+        fake_version = Version(["identifier"], title)
+
+        titles_versions = self.provider.get_title_versions(title, fake_version)
+
+        self.assertEquals(len(titles_versions), 1)
+        self.assertEquals(len(titles_versions[0][1]), 1)
+        self.assertEquals(
+            len(titles_versions[0][1][Languages.HEBREW][1]), 2)
+
     def test_download_subtitle_buffer(self):
         """ Make sure we download a file correctly (and the fake one). """
 
