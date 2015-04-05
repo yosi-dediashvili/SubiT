@@ -68,18 +68,22 @@ class TorecProvider(IProvider):
     def get_title_versions(self, title, version):
         content = self.requests_manager.perform_request(
             TOREC_PAGES.SEARCH, {'search' : _get_query_string(title)})
-        soup = BeautifulSoup(content)
+        logger.debug("Got content for request: {}".format(len(content)))
 
+        soup = BeautifulSoup(content)
         tables_headers = soup.find_all(
             lambda tag: tag.name == "td" and 
                         "newd_table_titleLeft_BG" in tag.get("class",[]) and 
                         tag.find("a"))
 
         sub_ids = _get_subids_from_tables_headers(tables_headers)
+        logger.debug("Found sub_ids: {}".format(sub_ids))
+
         titles_versions = TitlesVersions()
         for sub_id in sub_ids:
             self._hamster.add_sub_id(sub_id)
             versions = self._get_provider_versions_for_subid(sub_id)
+            logger.debug("Got versions: {}".format(len(versions)))
             for version in versions:
                 titles_versions.add_version(version)
 
