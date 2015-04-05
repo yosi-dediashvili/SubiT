@@ -35,5 +35,6 @@ class ProvidersNames(object):
                     yield value
 
     OPEN_SUBTITLES  = ProviderName("www.opensubtitles.org", "opensubtitles")
-    ADDIC7ED        = ProviderName("www.addic7ed.com", "addic7ed")
-    TOREC           = ProviderName("www.torec.net", "torec")
+    ADDIC7ED        = ProviderName("www.addic7ed.com",      "addic7ed")
+    TOREC           = ProviderName("www.torec.net",         "torec")
+    SUBSCENTER      = ProviderName("www.subscenter.org",    "subscenter")
