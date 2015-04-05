@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger("subit.api.providers.torec.hamster")
 from threading import Thread
-from collections import deque
+from collections import deque, namedtuple
 import time
 
 from api.providers.torec.provider import TOREC_PAGES
@@ -14,6 +14,29 @@ __all__ = ['TorecHashCodesHamster']
 MAX_TICKET_SECS = 10
 TICKETS_QUEUE_SIZE = 5
 RUNNER_MAIN_LOOP_SLEEP_SECS = 1
+# The time each sub id will live inside the hamster. After this long, the sub
+# id will be removed from the list.
+MAX_TIME_FOR_SUB_ID_SECS = 120
+
+
+class SubIDRecord(object):
+    def __init__(self, 
+        time_added, post_content, tickets = deque(maxlen=TICKETS_QUEUE_SIZE)):
+
+        self.time_added     = time_added
+        self.post_content   = post_content
+        self.tickets        = tickets
+
+    @property
+    def should_remove(self):
+        return (int(time.time()) - self.time_added) > MAX_TIME_FOR_SUB_ID_SECS
+
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return ("<SubIDRecord time_added={0.time_added} "
+            "post_content={0.post_content} tickets={0.tickets}>".format(self))
 
 
 class TorecTicket(object):
@@ -65,7 +88,7 @@ class TorecHashCodesHamster(object):
         self._requests_manager = requests_manager
 
         self._should_stop = False
-        self._tickets = {}
+        self._records = {}
         # Start at his own thread.
         hamsterRunner = Thread(target=self._runner)
         hamsterRunner.daemon = True
@@ -79,16 +102,15 @@ class TorecHashCodesHamster(object):
         self.stop()
 
     def _ensure_has_ticket(self, sub_id):
-        post_content, tickets = self._tickets[sub_id]
+        record = self._records[sub_id]
 
         guest_code = None
         while not guest_code:
             logger.debug(
-                "Getting ticket with: {}".format(post_content))
+                "Getting ticket with: {}".format(record.post_content))
             guest_code = self._requests_manager.perform_request_next(
                 TOREC_PAGES.TICKET,
-                data = post_content
-                )
+                data = record.post_content)
             if guest_code == 'error':
                 logger.error(
                     "Failed getting ticket for sub_id: {}".format(sub_id))
@@ -96,7 +118,7 @@ class TorecHashCodesHamster(object):
         time_got = int(time.time())
         ticket = TorecTicket(sub_id, time_got, guest_code)
         logger.debug("Got ticket: {}".format(ticket))
-        tickets.append(ticket)
+        record.tickets.append(ticket)
 
     def _runner(self):
         """ 
@@ -109,8 +131,14 @@ class TorecHashCodesHamster(object):
         while not self._should_stop:
             # Because the dict might change during iteration, we can't use the 
             # iterX methods.
-            for sub_id in self._tickets.keys():
-                self._ensure_has_ticket(sub_id)
+            for sub_id in self._records.keys():
+                record = self._records[sub_id]
+                if record.should_remove:
+                    logger.debug(
+                        "_runner Removing record for sub_id: {}".format(sub_id))
+                    del self._records[sub_id]
+                else:
+                    self._ensure_has_ticket(sub_id)
 
             time.sleep(RUNNER_MAIN_LOOP_SLEEP_SECS)
         
@@ -129,16 +157,17 @@ class TorecHashCodesHamster(object):
         # s according to Torec's JS is the screen width.
         post_content = {"sub_id" : sub_id, "s" : 1600}
         logger.debug("Constructed post_content: {}".format(post_content))
-        self._tickets[sub_id] = (post_content, deque(maxlen=TICKETS_QUEUE_SIZE))
+        record = SubIDRecord(int(time.time()), post_content)
+        self._records[sub_id] = record
 
     def remove_sub_id(self, sub_id):
-        del self._tickets[sub_id]
+        del self._records[sub_id]
 
     def _get_valid_ticket(self, sub_id):
-        post_content, tickets = self._tickets[sub_id]
+        record = self._records[sub_id]
+        tickets = record.tickets
         while not tickets:
             time.sleep(0.5)
-            post_content, tickets = self._tickets[sub_id]
 
         ticket = tickets.popleft()
         while not ticket.is_still_valid and tickets:
@@ -157,7 +186,7 @@ class TorecHashCodesHamster(object):
 
         The method waits until the appropriate time is passed for that ticket.
         """
-        if sub_id not in self._tickets:
+        if sub_id not in self._records:
             self.add_sub_id(sub_id)
 
         ticket = self._get_valid_ticket(sub_id)
