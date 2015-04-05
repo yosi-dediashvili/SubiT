@@ -149,7 +149,8 @@ def _get_versions_strings_and_versions_ids_from_sub_page(sub_page_soup):
         return (tag.name == "option" and 
                 tag.parent.get("id") == "download_version")
     def _is_version_string_tag(tag):
-        return (tag.name == "span" and 
+        return (tag.name == "span" and  
+                not tag.get("style") and
                 tag.parent.name == "p" and 
                 tag.parent.get("id") == "version_list")
 
