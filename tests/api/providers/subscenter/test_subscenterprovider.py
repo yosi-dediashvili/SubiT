@@ -69,8 +69,8 @@ class TestSubscenterProvider(unittest.TestCase):
             self.provider, 
             "Gone.Girl.2014.1080p.BluRay.x264-SPARKS",
             attributes = {
-                'id' : '272642', 
-                'key' : '578eba9f382d67da4bbcf150fde53642'})
+                'version_id' : '272642', 
+                'version_key' : '578eba9f382d67da4bbcf150fde53642'})
 
         name, buffer = self.provider.download_subtitle_buffer(provider_version)
         self.assertEquals(

@@ -8,8 +8,11 @@ from api.providers.providersnames import ProvidersNames
 from api.providers.iprovider import IProvider
 from api.languages import Languages
 from api.titlesversions import TitlesVersions
+from api.version import ProviderVersion
 from api.utils import get_regex_match
 from api.title import MovieTitle, SeriesTitle
+from api.identifiersextractor import extract_identifiers
+
 
 __all__ = ['SubscenterProvider']
 
@@ -39,10 +42,38 @@ class SubscenterProvider(IProvider):
         content = self.requests_manager.perform_request(url)
         return json.loads(content)
 
+    def _get_provider_version_from_json_version(self, json, title):
+        version_string = json['subtitle_version']
+        version_key = json['key']
+        version_id = json['id']
+        identifiers = extract_identifiers(title, [version_string])
+        return ProviderVersion(
+            identifiers, 
+            title, 
+            Languages.HEBREW,
+            self,
+            version_string,
+            attributes = {
+                'version_key' : version_key, 'version_id' : version_id}
+            )
+
+    def _get_provider_versions_from_json(self, json, title):
+        provider_versions = []
+        heb_section = json['he']
+        for group in heb_section.itervalues():
+            for quality in group.itervalues():
+                for version in quality.itervalues():
+                    provider_versions.append(
+                        self._get_provider_version_from_json_version(
+                            version, title))
+        return provider_versions
+
     def _get_provider_versions_from_title_page(self, content, queried_title):
         soup = BeautifulSoup(content)
         title = _get_title_from_title_page(soup, queried_title)
         json_url = _get_json_url_from_title_page(soup, title)
+        return self._get_provider_versions_from_json(
+            self._request_json(json_url), title)
 
     def get_title_versions(self, title, version):
         query_url = SUBSCENTER_PAGES.SEARCH.format(query=title.name)
@@ -66,7 +97,12 @@ class SubscenterProvider(IProvider):
         return titles_versions
 
     def download_subtitle_buffer(self, provider_version):
-        pass
+        download_url = SUBSCENTER_PAGES.DOWNLOAD.format(
+            id=provider_version.attributes['version_id'],
+            version_string=provider_version.version_string,
+            key=provider_version.attributes['version_key'])
+        return self.requests_manager.download_file(download_url)
+
 
 def _is_title_page(content):
     return "http://www.imdb.com" in content
