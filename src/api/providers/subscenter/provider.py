@@ -76,17 +76,22 @@ class SubscenterProvider(IProvider):
             self._request_json(json_url), title)
 
     def get_title_versions(self, title, version):
+        logger.debug("Querying for: {}".format(title))
         query_url = SUBSCENTER_PAGES.SEARCH.format(query=title.name)
         content = self.requests_manager.perform_request(query_url)
 
         if _is_title_page(content):
+            logger.debug("Got redirected to title page")
             provider_versions = \
                 self._get_provider_versions_from_title_page(content, title)
             titles_versions = TitlesVersions(provider_versions)
         else:
             titles_urls = _get_titles_urls_from_search_results(content)
+            logger.debug(
+                "Got one or more search results: {}".format(len(titles_urls)))
             titles_versions = TitlesVersions()
             for url in titles_urls:
+                logger.debug("Fetching title with url: {}".format(url))
                 title_content = self.requests_manager.perform_request(url)
                 provider_versions = \
                     self._get_provider_versions_from_title_page(
@@ -97,10 +102,14 @@ class SubscenterProvider(IProvider):
         return titles_versions
 
     def download_subtitle_buffer(self, provider_version):
+        logger.debug("Trying to download version: {}".format(provider_version))
+
         download_url = SUBSCENTER_PAGES.DOWNLOAD.format(
             id=provider_version.attributes['version_id'],
             version_string=provider_version.version_string,
             key=provider_version.attributes['version_key'])
+        logger.debug("Constructed url for downloading: {}".format(download_url))
+
         return self.requests_manager.download_file(download_url)
 
 
@@ -140,9 +149,11 @@ def _get_series_title_from_title_page(soup, queried_title):
         for episode in season.itervalues():
             if (int(episode['season_id']) == queried_title.season_number and 
                 int(episode['episode_id']) == queried_title.episode_number):
-                
+                logger.debug("Found correct episode: {}".format(episode))
                 return SeriesTitle(name, 
                     queried_title.season_number, queried_title.episode_number)
+    logger.debug(
+        "Failed getting the correct episode for the title: {}".format(title))
     return None
 
 def _get_title_from_title_page(soup, queried_title):
