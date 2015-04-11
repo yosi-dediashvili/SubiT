@@ -35,9 +35,12 @@ def get_regex_match(input_string, patterns):
     >>> get_regex_match("12345", "^\d{3}")
     '123'
     """
-    patterns = [patterns] if isinstance(patterns, str) else patterns
+    patterns = ([patterns] 
+        if isinstance(patterns, (str, re._pattern_type)) else patterns)
     for pattern in patterns:
-        results = re.findall(pattern, input_string)
+        if isinstance(pattern, str):
+            pattern = re.compile(pattern)
+        results = pattern.findall(input_string)
         if results:
             return results[0]
     return None
