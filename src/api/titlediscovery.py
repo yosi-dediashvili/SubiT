@@ -10,9 +10,6 @@ from api.languages import Languages
 
 __all__ = ['discover_title']
 
-opensubtitles_provider = \
-    get_provider_instance(ProvidersNames.OPEN_SUBTITLES, [Languages.ENGLISH])
-
 
 def discover_title(query):
     """
@@ -60,9 +57,14 @@ def discover_title(query):
         logger.debug("The query seems just a query")
         return discover_title_from_query(query)
 
+def _get_os_provider():
+    return get_provider_instance(
+        ProvidersNames.OPEN_SUBTITLES, [Languages.ENGLISH])
+
 def discover_title_from_file_path(file_path):
-    file_hash, file_size = opensubtitles_provider.calculate_file_hash(file_path)
-    title = opensubtitles_provider.get_title_by_hash(file_hash)
+    os_provider = _get_os_provider()
+    file_hash, file_size = os_provider.calculate_file_hash(file_path)
+    title = os_provider.get_title_by_hash(file_hash)
     logger.debug("Title by hash is: %s" % title)
     if title:
         return title
@@ -79,6 +81,7 @@ def discover_title_from_file_path(file_path):
     return title
 
 def discover_title_from_query(query):
-    title = opensubtitles_provider.get_title_by_query(query)
+    os_provider = _get_os_provider()
+    title = os_provider.get_title_by_query(query)
     logger.debug("Title by query is: %s" % title)
     return title

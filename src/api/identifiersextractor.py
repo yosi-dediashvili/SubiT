@@ -12,10 +12,7 @@ from api.languages import Languages
 
 
 __all__ = ['extract_identifiers']
-
-opensubtitles_provider = \
-    get_provider_instance(ProvidersNames.OPEN_SUBTITLES, [Languages.ENGLISH])
-
+    
 
 def extract_identifiers(title, queries):
     """
@@ -176,12 +173,16 @@ def _yield_queries(queries):
         logger.debug("yielding queries: %s" % queries)
         yield queries
 
+def _get_os_provider():
+    return get_provider_instance(
+        ProvidersNames.OPEN_SUBTITLES, [Languages.ENGLISH])
+
 def _get_release_name_using_opensubtitles_hash(files_paths):
     try:
+        os_provider = _get_os_provider()
         for file_path in files_paths:
-            file_hash, file_size  = \
-                opensubtitles_provider.calculate_file_hash(file_path)
-            release_name = opensubtitles_provider.get_release_name_by_hash(
+            file_hash, file_size  = os_provider.calculate_file_hash(file_path)
+            release_name = os_provider.get_release_name_by_hash(
                 file_hash, file_size)
             if release_name:
                 return release_name

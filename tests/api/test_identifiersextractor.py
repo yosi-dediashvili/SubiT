@@ -35,8 +35,8 @@ class TestIdentifiersExtractor(unittest.TestCase):
         self._title = MovieTitle("The Matrix", 1999)
 
     def test_single_file_hash(self):
-        identifiersextractor.opensubtitles_provider = \
-            MockedOpenSubtitlesProvider(
+        identifiersextractor._get_os_provider = \
+            lambda: MockedOpenSubtitlesProvider(
                 "345878fce3115", "the.matrix.1999.720p.dts")
 
         identifiers = identifiersextractor.extract_identifiers(
@@ -44,8 +44,8 @@ class TestIdentifiersExtractor(unittest.TestCase):
         self.assertItemsEqual(identifiers, ['720p', 'dts'])
 
     def test_single_file_hash_no_other_query(self):
-        identifiersextractor.opensubtitles_provider = \
-            MockedOpenSubtitlesProvider(
+        identifiersextractor._get_os_provider = \
+            lambda: MockedOpenSubtitlesProvider(
                 "345878fce3115", "the.matrix.1999.dvdrip.ac3")
 
         identifiers = identifiersextractor.extract_identifiers(
@@ -53,8 +53,8 @@ class TestIdentifiersExtractor(unittest.TestCase):
         self.assertItemsEqual(identifiers, ['ac3', 'dvdrip'])
 
     def test_multiple_file_hash_cd_in_file_name(self):
-        identifiersextractor.opensubtitles_provider = \
-            MockedOpenSubtitlesProvider(
+        identifiersextractor._get_os_provider = \
+            lambda: MockedOpenSubtitlesProvider(
                 "345878fce3115", "the.matrix.1999.dvdrip.ac3")
 
         identifiers = identifiersextractor.extract_identifiers(
@@ -64,8 +64,8 @@ class TestIdentifiersExtractor(unittest.TestCase):
         self.assertItemsEqual(identifiers, ['ac3', 'dvdrip'])
 
     def test_multiple_file_hash_cd_in_directory_name(self):
-        identifiersextractor.opensubtitles_provider = \
-            MockedOpenSubtitlesProvider(
+        identifiersextractor._get_os_provider = \
+            lambda: MockedOpenSubtitlesProvider(
                 "345878fce3115", "the.matrix.1999.dvdrip.ac3")
 
         identifiers = identifiersextractor.extract_identifiers(

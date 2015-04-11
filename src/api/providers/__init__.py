@@ -6,27 +6,26 @@ from api.exceptions import InvalidProviderName
 from api.requestsmanager import get_manager_instance
 from api.providers.providersnames import ProvidersNames
 
-from api.providers.opensubtitles import OpenSubtitlesProvider
-from api.providers.addic7ed import Addic7edProvider
-from api.providers.torec import TorecProvider
-from api.providers.subscenter import SubscenterProvider
-
 
 __all__ = ['get_titles_versions', 'ProvidersNames']
 
 # The list will contain the classes (not instances) of all the providers that
 # SubiT knows of.
-PROVIDERS = [
-    OpenSubtitlesProvider, 
-    Addic7edProvider, 
-    TorecProvider, 
-    SubscenterProvider
-]
-
+def _get_all_providers():
+    from api.providers.opensubtitles import OpenSubtitlesProvider
+    from api.providers.addic7ed import Addic7edProvider
+    from api.providers.torec import TorecProvider
+    from api.providers.subscenter import SubscenterProvider
+    return [
+        OpenSubtitlesProvider, 
+        Addic7edProvider, 
+        TorecProvider, 
+        SubscenterProvider
+    ]
 
 def get_provider_instance(provider_name, languages, 
     requests_manager_factory = get_manager_instance, 
-    providers = PROVIDERS):
+    providers = None):
     """
     Factory method for creating Provider instances. The provider_name value 
     should be a valid ProviderName instance. If none of the providers specified
@@ -45,6 +44,7 @@ def get_provider_instance(provider_name, languages,
     logger.debug("get_provider_instance called with: %s, %s" 
         % (provider_name, languages))
 
+    providers = providers or _get_all_providers()
     available_providers = {p.provider_name: p for p in providers}
     if provider_name not in available_providers:
         logger.error("Only available provider names are: %s" 
