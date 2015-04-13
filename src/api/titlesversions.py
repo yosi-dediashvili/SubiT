@@ -57,6 +57,65 @@ class TitlesVersions(object):
         rank_group_versions.sort(key=lambda t: t[0])
         logger.debug("The rank_group versions are: %s" % rank_group_versions)
 
+    def iter_versions(self):
+        """ 
+        Iterates over all the ProviderVersions instances contained within this 
+        instance.
+
+        The iteration guarantees that versions under the same title will be
+        returned sequentially.
+
+        So, this should work:
+
+        for version in titles_versions.iter_versions():
+            print(version.version_string)
+
+        And also, this:
+
+        for title, versions in groupby(
+            titles_versions.iter_versions(), key=lambda ver: ver.title):
+            print(title.version)
+            for version in versions:
+                print(version.version_string)
+
+        """
+        for title, versions in self.iter_title_versions():
+            for version in versions:
+                yield version
+
+    def iter_titles(self):
+        """
+        Iterates over all the Title instances contained within this instance.
+
+        So, this should work:
+
+        for title in titles_versions.iter_titles():
+            print(title.imdb_id)
+
+        """
+        return self.titles.iterkeys()
+
+    def iter_title_versions(self):
+        """
+        For each Title contained within it, returns a flat list of all the 
+        ProviderVersions instances stored under it.
+
+        So, this should work:
+
+        for title, provider_versions in titles_versions.iter_title_versions():
+            print(title.imdb_id)
+            for version in provider_versions:
+                print(version.version_string)
+
+        """
+        for title, values in self:
+            all_versions = []
+            for groups in values.itervalues():
+                for versions in groups.itervalues():
+                    for rank, version in versions:
+                        all_versions.append(version)
+            yield (title, all_versions)
+
     def __iter__(self):
         return self.titles.iteritems()
 

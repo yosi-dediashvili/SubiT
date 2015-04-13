@@ -1,3 +1,6 @@
+from itertools import groupby
+import unittest
+
 from api.titlesversions import TitlesVersions
 from api.version import ProviderVersion
 from api.title import MovieTitle
@@ -5,7 +8,6 @@ from api.languages import Languages
 
 from helpers import MockedProvider
 
-import unittest
 
 class TestTitleVersions(unittest.TestCase):
     def setUp(self):
@@ -219,10 +221,8 @@ class TestTitleVersions(unittest.TestCase):
         for title, versions in titles_versions:
             self.assertIn(title, titles)
 
-    def test_iterversions(self):
+    def test_iter_versions(self):
         versions_list = []
-        versions_list.append(ProviderVersion(
-            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
         versions_list.append(ProviderVersion(
             [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
         versions_list.append(ProviderVersion(
@@ -231,9 +231,23 @@ class TestTitleVersions(unittest.TestCase):
             [], MovieTitle("Titanic"), Languages.ENGLISH, MockedProvider()))
         versions_list.append(ProviderVersion(
             [], MovieTitle("Gladiator"), Languages.ENGLISH, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
         titles_versions = TitlesVersions(versions_list)
 
-        self.assertEquals(len(list(titles_versions.iter_versions())), 5)
+        versions = list(titles_versions.iter_versions())
+        self.assertEquals(len(versions), 5)
+
+        # groupby requires results with the same to be returned as a sequence,
+        # so, this should work only if we manage to do so.
+        for title, versions_grouper in groupby(
+            versions, key=lambda ver: ver.title):
+
+            group_versions = list(versions_grouper)
+            if title.name == "The Matrix":
+                self.assertEquals(len(group_versions), 3)
+            else:
+                self.assertEquals(len(group_versions), 1)
 
     def test_iter_titles(self):
         versions_list = []
@@ -251,7 +265,7 @@ class TestTitleVersions(unittest.TestCase):
 
         self.assertEquals(len(list(titles_versions.iter_titles())), 3)
 
-    def test_iter_versions(self):
+    def test_iter_title_versions(self):
         versions_list = []
         versions_list.append(ProviderVersion(
             [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
