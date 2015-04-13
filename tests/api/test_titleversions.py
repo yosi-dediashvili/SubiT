@@ -219,6 +219,38 @@ class TestTitleVersions(unittest.TestCase):
         for title, versions in titles_versions:
             self.assertIn(title, titles)
 
+    def test_iterversions(self):
+        versions_list = []
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("Titanic"), Languages.ENGLISH, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("Gladiator"), Languages.ENGLISH, MockedProvider()))
+        titles_versions = TitlesVersions(versions_list)
+
+        self.assertEquals(len(list(titles_versions.iterversions())), 5)
+
+    def test_itertitles(self):
+        versions_list = []
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("Titanic"), Languages.ENGLISH, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("Gladiator"), Languages.ENGLISH, MockedProvider()))
+        titles_versions = TitlesVersions(versions_list)
+
+        self.assertEquals(len(list(titles_versions.itertitles())), 3)
+
 def run_tests():
     unittest.TextTestRunner(verbosity=0).run(
         unittest.defaultTestLoader.loadTestsFromTestCase(TestTitleVersions))
