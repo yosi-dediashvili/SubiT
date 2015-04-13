@@ -233,9 +233,9 @@ class TestTitleVersions(unittest.TestCase):
             [], MovieTitle("Gladiator"), Languages.ENGLISH, MockedProvider()))
         titles_versions = TitlesVersions(versions_list)
 
-        self.assertEquals(len(list(titles_versions.iterversions())), 5)
+        self.assertEquals(len(list(titles_versions.iter_versions())), 5)
 
-    def test_itertitles(self):
+    def test_iter_titles(self):
         versions_list = []
         versions_list.append(ProviderVersion(
             [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
@@ -249,7 +249,27 @@ class TestTitleVersions(unittest.TestCase):
             [], MovieTitle("Gladiator"), Languages.ENGLISH, MockedProvider()))
         titles_versions = TitlesVersions(versions_list)
 
-        self.assertEquals(len(list(titles_versions.itertitles())), 3)
+        self.assertEquals(len(list(titles_versions.iter_titles())), 3)
+
+    def test_iter_versions(self):
+        versions_list = []
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("The Matrix"), Languages.HEBREW, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("Titanic"), Languages.ENGLISH, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("Titanic"), Languages.ENGLISH, MockedProvider()))
+        versions_list.append(ProviderVersion(
+            [], MovieTitle("Gladiator"), Languages.ENGLISH, MockedProvider()))
+        titles_versions = TitlesVersions(versions_list)
+
+        name_to_len = {"The Matrix" : 3, "Titanic" : 2, "Gladiator" : 1}
+        for title, versions in titles_versions.iter_title_versions():
+            self.assertEquals(len(versions), name_to_len[title.name])
 
 def run_tests():
     unittest.TextTestRunner(verbosity=0).run(
