@@ -38,3 +38,4 @@ class ProvidersNames(object):
     ADDIC7ED        = ProviderName("www.addic7ed.com",      "addic7ed")
     TOREC           = ProviderName("www.torec.net",         "torec")
     SUBSCENTER      = ProviderName("www.subscenter.org",    "subscenter")
+    KTUVIT          = ProviderName("www.ktuvit.com",        "ktuvit")

@@ -16,11 +16,13 @@ def _get_all_providers():
     from api.providers.addic7ed import Addic7edProvider
     from api.providers.torec import TorecProvider
     from api.providers.subscenter import SubscenterProvider
+    from api.providers.ktuvit import KtuvitProvider
     return [
         OpenSubtitlesProvider, 
         Addic7edProvider, 
         TorecProvider, 
-        SubscenterProvider
+        SubscenterProvider,
+        KtuvitProvider
     ]
 
 def get_provider_instance(provider_name, languages, 
