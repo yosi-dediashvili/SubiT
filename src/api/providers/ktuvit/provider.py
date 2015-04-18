@@ -9,7 +9,7 @@ __all__ = ['KtuvitProvider']
 
 
 class KtuvitProvider(IProvider):
-    provider_name = ProviderNames.KTUVIT
+    provider_name = ProvidersNames.KTUVIT
     supported_languages = [Languages.HEBREW]
 
     def __init__(self, languages, requests_manager):
