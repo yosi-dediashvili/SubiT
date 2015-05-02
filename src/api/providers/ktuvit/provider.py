@@ -71,19 +71,35 @@ class KtuvitProvider(IProvider):
     def _get_providers_versions_from_content(self, extracted_title, content):
         pass
 
-    def _extract_movie_title(self, soup):
-        td = soup.find("td", 
-            style="direction:ltr;text-align:right;padding-right:8px;"
-                "padding-bottom:1px;padding-top:1px;")
-        name = td.stripped_strings[1]
-        year_link = soup.find(
+    def _extract_series_title(self, queried_title, series_soup, episode_soup):
+        """ We assume the episode numbering to be the same as the query. """
+        series_name, series_first_year, series_imdb_id = \
+            extract_title_params(series_soup)
+
+        episode_year_link = episode_soup.find(
             lambda tag: tag.name == "a" and "uy=" in tag.get("href"))
-        year = int(year_link.get_text())
-        imdb_link = soup.find(
-            lambda tag: tag.name == "a" and "imdb" in tag.get("href"))\
-            .get("href")
-        imdb_id = imdb_link.split("/")[-1]
-        return MovieTitle(name, year, imdb_id)
+        episode_year = int(episode_year_link.get_text())
+
+        episode_name_tag = episode_soup.find(
+            "span", class_="smtext", style="direction:ltr;text-align:right;")
+        episode_name = episode_name_tag.get_text() if episode_name_tag else ""
+
+        epiosde_imdb_link = episode_soup.find(
+            lambda tag: tag.name == "a" and "imdb" in a.get("href", ""))
+        episode_imdb_url = epiosde_imdb_link.get("href", "") \
+            if epiosde_imdb_link else ""
+        episode_imdb_id = episode_imdb_url.split("/")[-1]
+
+        return SeriesTitle(series_name, 
+            queried_title.season_number, 
+            queried_title.episode_number, 
+            episode_imdb_id, 
+            episode_name, 
+            episode_year, 
+            series_imdb_id)
+
+    def _extract_movie_title(self, soup):
+        return MovieTitle(*extract_title_params(soup))
 
     def _get_provider_version_for_episode(self, series_soup, episode_soup):
 
@@ -104,7 +120,7 @@ class KtuvitProvider(IProvider):
                 logger.debug("Failed getting episode_id from title_id: {}, {}"
                     .format(title_id, ex))
                 continue
-                
+
             episode_page = self.requests_manager.perform_request(
                 KTUVIT_PAGES.EPISODE_PAGE.format(episode_id))
             episode_soup = BeautifulSoup(episode_page)
@@ -138,6 +154,22 @@ class KtuvitProvider(IProvider):
 
     def download_subtitle_buffer(self, provider_version):
         pass
+
+
+def extract_title_params(soup):
+    """ Returns a tuple of the title's name, year and imdb_id. """
+    td = soup.find("td", 
+        style="direction:ltr;text-align:right;padding-right:8px;"
+            "padding-bottom:1px;padding-top:1px;")
+    name = td.stripped_strings[1]
+    year_link = soup.find(
+        lambda tag: tag.name == "a" and "uy=" in tag.get("href"))
+    year = int(year_link.get_text())
+    imdb_link = soup.find(
+        lambda tag: tag.name == "a" and "imdb" in tag.get("href"))\
+        .get("href")
+    imdb_id = imdb_link.split("/")[-1]
+    return (name, year, imdb_id)
 
 def get_query_string(title):
     """
