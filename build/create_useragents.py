@@ -3,7 +3,7 @@ from urllib2 import Request, urlopen
 import re
 import os
 
-py_file_path = os.path.join("..", "src", "UserAgents.py")
+py_file_path = os.path.join("..", "src", "api", "useragents.py")
 py_file_template = \
 """
 #===============================================================================
@@ -13,9 +13,9 @@ py_file_template = \
 # most popular user-agents out there - IE, FireFox, Chrome.
 #===============================================================================
 
-from random import random
+import random
 
-Agents = [
+AGENTS = [
     # ======================================================================== #
     # Internet Explorer                                                        #
     # ======================================================================== #
@@ -30,16 +30,12 @@ Agents = [
 {2}
 ]
 
-def getAgent():
+def get_agent():
     \"\"\"
     Retreives a random user agents. The User-Agnets are one from either Chrome,
     I.E. or Firefox.
     \"\"\"
-    try:
-        return Agents[int( random() * len(Agents) -1 )]
-    #Just in case...
-    except:
-        return Agents[60]
+    return random.choice(AGENTS)
 """
 
 def get_useragents(url):
