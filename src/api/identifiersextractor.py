@@ -1,6 +1,5 @@
 import logging
 logger = logging.getLogger("subit.api.identifiersextractor")
-import os
 
 from exceptions import InvalidQueriesValue
 from title import SeriesTitle
@@ -143,23 +142,37 @@ def _normalize_queries(queries):
         return []
     return list(normalized_queries)
 
+def _get_path_module(queries):
+    """ Returns either ntpath or posixpath module based on the queries. """
+    import ntpath
+    import posixpath
+    import os
+
+    for query in queries:
+        if ntpath.isabs(query):
+            return ntpath
+        elif posixpath.isabs(query):
+            return posixpath
+    return os.path
+
 def _yield_queries(queries):
     # Make sure that they all either full paths or just names.
-    full_paths = filter(lambda q: os.path.isabs(q), queries)
+    path_module = _get_path_module(queries)
+    full_paths = filter(lambda q: path_module.isabs(q), queries)
     if full_paths and full_paths != queries:
         raise InvalidQueriesValue(
             "All the queries must be either full paths or simple.")
 
     if full_paths:
         # First, yield the file names.
-        files_names = \
-            map(lambda p: os.path.splitext(os.path.basename(p))[0], full_paths)
+        files_names = [path_module.splitext(path_module.basename(path))[0]
+            for path in full_paths]
         logger.debug("yielding files_names: %s" % files_names)
         yield files_names
 
         # Then, yield the directories.
-        directories_names = \
-            map(lambda p: os.path.basename(os.path.dirname(p)), queries)
+        directories_names = [path_module.basename(path_module.dirname(path))
+            for path in queries]
         logger.debug("yielding directories_names: %s" % directories_names)
         yield directories_names
 
