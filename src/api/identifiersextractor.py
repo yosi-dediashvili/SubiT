@@ -8,6 +8,7 @@ from namenormalization import normalize_name
 from api.providers import get_provider_instance
 from api.providers import ProvidersNames
 from api.languages import Languages
+from api.utils import get_path_module
 
 
 __all__ = ['extract_identifiers']
@@ -142,22 +143,9 @@ def _normalize_queries(queries):
         return []
     return list(normalized_queries)
 
-def _get_path_module(queries):
-    """ Returns either ntpath or posixpath module based on the queries. """
-    import ntpath
-    import posixpath
-    import os
-
-    for query in queries:
-        if ntpath.isabs(query):
-            return ntpath
-        elif posixpath.isabs(query):
-            return posixpath
-    return os.path
-
 def _yield_queries(queries):
     # Make sure that they all either full paths or just names.
-    path_module = _get_path_module(queries)
+    path_module = get_path_module(queries)
     full_paths = filter(lambda q: path_module.isabs(q), queries)
     if full_paths and full_paths != queries:
         raise InvalidQueriesValue(

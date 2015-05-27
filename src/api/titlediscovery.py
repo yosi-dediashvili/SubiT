@@ -6,7 +6,7 @@ from api.exceptions import FilePathDoesNotExists
 from api.providers import get_provider_instance
 from api.providers import ProvidersNames
 from api.languages import Languages
-
+from api.utils import get_path_module
 
 __all__ = ['discover_title']
 
@@ -47,8 +47,9 @@ def discover_title(query):
     """
     logger.debug("Discovering title for: %s" % query)
 
-    if os.path.isabs(query):
-        if os.path.exists(query):
+    path_module = get_path_module(query)
+    if path_module.isabs(query):
+        if path_module.exists(query):
             logger.debug("The query seems to be a file path")
             return discover_title_from_file_path(query)
         else:
@@ -62,6 +63,7 @@ def _get_os_provider():
         ProvidersNames.OPEN_SUBTITLES, [Languages.ENGLISH])
 
 def discover_title_from_file_path(file_path):
+    path_module = get_path_module(file_path)
     os_provider = _get_os_provider()
     file_hash, file_size = os_provider.calculate_file_hash(file_path)
     title = os_provider.get_title_by_hash(file_hash)
@@ -69,13 +71,13 @@ def discover_title_from_file_path(file_path):
     if title:
         return title
 
-    file_name = os.path.splitext(os.path.basename(file_path))[0]
+    file_name = path_module.splitext(path_module.basename(file_path))[0]
     title = discover_title_from_query(file_name)
     logger.debug("Title by file name is: %s" % title)
     if title:
         return title
 
-    directory_name = os.path.basename(os.path.dirname(file_path))
+    directory_name = path_module.basename(path_module.dirname(file_path))
     title = discover_title_from_query(directory_name)
     logger.debug("Title by directory name is: %s" % title)
     return title

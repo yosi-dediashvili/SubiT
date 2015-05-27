@@ -88,3 +88,31 @@ def take_first(items):
     except:
         pass
     return first_item
+
+def get_path_module(path):
+    """ 
+    Returns the path module (posixpath or ntpath) that looks suited for the 
+    provided path or paths. 
+
+    If several paths was provided, returns the first matching module on the 
+    first matching path.
+
+    >>> get_path_module("C:\\Some\\Windows\\Path\\file.txt")
+    <module 'ntpath' ...>
+    >>> get_path_module("/Some/Posix/Path/file.txt")
+    <module 'posixpath' ...>
+    >>> get_path_module(\
+        ["/Some/Posix/Path/file.txt", "C:\\Some\\Windows\\Path\\file.txt"])
+    <module 'posixpath' ...>
+    """
+    import ntpath
+    import posixpath
+    import os
+    from collections import Iterable
+    paths = path if isinstance(path, Iterable) else [path]
+    for p in path:
+        if posixpath.isabs(p):
+            return posixpath
+        elif ntpath.isabs(p):
+            return ntpath
+    return os.path
