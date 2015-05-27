@@ -10,6 +10,7 @@ from api.title import MovieTitle, SeriesTitle
 from api.languages import Languages
 from api.utils import get_regex_match
 from api.titlesversions import TitlesVersions
+from api.identifiersextractor import extract_identifiers
 
 
 __all__ = ['KtuvitProvider']
@@ -46,7 +47,7 @@ class KtuvitProvider(IProvider):
 
         my_tag = soup.find(is_my_id)
         if my_tag:
-            return my_tag.split("_")[-1]
+            return my_tag.get("id").split("_")[-1]
         else:
             return None
 
@@ -68,8 +69,30 @@ class KtuvitProvider(IProvider):
         logger.debug("Got episode_id: {}".format(episode_id))
         return episode_id
 
-    def _get_providers_versions_from_content(self, extracted_title, content):
-        pass
+    def _get_providers_versions_from_episode_page(
+        self, extracted_title, episode_soup):
+
+        tds = episode_soup.find_all("td", class_="subtitle_tab")
+        providers_versions = []
+        for td in tds:
+            # The <a> right after it is the version id.
+            version_id = td.find("a").get("name")
+            lang_div = td.find("div", class_="subt_lang")
+            # The hebrew lang.
+            if lang_div.find("img").get("src") != 'images/Flags/1.png':
+                continue
+            version = td.find("div", class_="subtitle_title").get("title")
+            identifiers = extract_identifiers(extracted_title, version)
+            provider_version = ProviderVersion(
+                identifiers, 
+                extracted_title, 
+                Languages.HEBREW,
+                self,
+                version,
+                attributes={"version_id" : version_id})
+            providers_versions.append(provider_version)
+
+        return providers_versions
 
     def _extract_series_title(self, queried_title, series_soup, episode_soup):
         """ We assume the episode numbering to be the same as the query. """
@@ -85,7 +108,7 @@ class KtuvitProvider(IProvider):
         episode_name = episode_name_tag.get_text() if episode_name_tag else ""
 
         epiosde_imdb_link = episode_soup.find(
-            lambda tag: tag.name == "a" and "imdb" in a.get("href", ""))
+            lambda tag: tag.name == "a" and "imdb" in tag.get("href", ""))
         episode_imdb_url = epiosde_imdb_link.get("href", "") \
             if epiosde_imdb_link else ""
         episode_imdb_id = episode_imdb_url.split("/")[-1]
@@ -100,10 +123,6 @@ class KtuvitProvider(IProvider):
 
     def _extract_movie_title(self, soup):
         return MovieTitle(*extract_title_params(soup))
-
-    def _get_provider_version_for_episode(self, series_soup, episode_soup):
-
-
 
     def _get_titles_versions_for_episode(self, title, titles_ids):        
         titles_versions = TitlesVersions()
@@ -124,11 +143,19 @@ class KtuvitProvider(IProvider):
             episode_page = self.requests_manager.perform_request(
                 KTUVIT_PAGES.EPISODE_PAGE.format(episode_id))
             episode_soup = BeautifulSoup(episode_page)
+            series_title = self._extract_series_title(
+                title, series_soup, episode_soup)
+            import ipdb; ipdb.set_trace()
+            if not series_title:
+                logger.debug("Failed getting series title for title_id: {}"
+                    .format(title_id))
+                continue
 
-            provider_version = self._get_providers_versions_from_content(
-                series_soup, episode_soup)
-            if provider_version:
-                titles_versions.add_version(provider_version)
+            providers_versions = self._get_providers_versions_from_episode_page(
+                series_title, episode_soup)
+            if providers_versions:
+                for provider_version in providers_versions:
+                    titles_versions.add_version(provider_version)
         return titles_versions
 
     def _get_titles_versions_for_movie(self, title, titles_ids):
@@ -147,10 +174,10 @@ class KtuvitProvider(IProvider):
         logger.debug("Got titles_ids: {}".format(titles_ids))
         if isinstance(title, SeriesTitle):
             return self._get_titles_versions_for_episode(title, 
-                filter(lambda is_series, title_id: is_series, titles_ids))
+                filter(lambda title_id: title_id[0], titles_ids))
         else:
             return self._get_titles_versions_for_movie(title, 
-                filter(lambda is_series, title_id: not is_series, titles_ids))
+                filter(lambda title_id: not title_id[0], titles_ids))
 
     def download_subtitle_buffer(self, provider_version):
         pass
@@ -158,13 +185,20 @@ class KtuvitProvider(IProvider):
 
 def extract_title_params(soup):
     """ Returns a tuple of the title's name, year and imdb_id. """
-    td = soup.find("td", 
-        style="direction:ltr;text-align:right;padding-right:8px;"
-            "padding-bottom:1px;padding-top:1px;")
-    name = td.stripped_strings[1]
-    year_link = soup.find(
+
+    def is_title_div(tag):
+        return (
+            tag.name == "div" and 
+            tag.get("class", "missing")[0] == "g-res-title-prop-rtl" and 
+            tag.next.name == "span" and 
+            tag.next.get("class", "missing")[0] == "Gray")
+    div = soup.find(is_title_div)
+
+    name = list(div.stripped_strings)[1]
+    year_links = soup.find_all(
         lambda tag: tag.name == "a" and "uy=" in tag.get("href"))
-    year = int(year_link.get_text())
+    # The third link contains the year for the title.
+    year = int(year_links[2].get_text())
     imdb_link = soup.find(
         lambda tag: tag.name == "a" and "imdb" in tag.get("href"))\
         .get("href")
