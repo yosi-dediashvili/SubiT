@@ -6,6 +6,7 @@ import re
 
 from api.providers.iprovider import IProvider
 from api.providers.providersnames import ProvidersNames
+from api.version import ProviderVersion
 from api.title import MovieTitle, SeriesTitle
 from api.languages import Languages
 from api.utils import get_regex_match
@@ -23,20 +24,34 @@ class MissingEpisodeException(KtuvitException): pass
 class KTUVIT_PAGES:
     DOMAIN = "www.ktuvit.com"
     QUERY = "http://{}/browse.php?q={{}}".format(DOMAIN)
+    MOVIE_PAGE = "http://{}/view.php?id={{}}".format(DOMAIN)
+    MOVIE_VERSIONS_PAGE = "http://{}/getajax.php?moviedetailssubtitles={{}}".format(DOMAIN)
     SERIES_PAGE = "http://{}/viewseries.php?id={{}}".format(DOMAIN)
     SEASON_PAGE = "http://{}/getajax.php?seasonid={{}}".format(DOMAIN)
-    EPISODE_PAGE = "http://{}/getajax.php?episodedetails={{}}".format(DOMAIN)
-
+    EPISODE_VERSIONS_PAGE = "http://{}/getajax.php?episodedetails={{}}".format(DOMAIN)
+    DOWNLOAD = "http://{}/downloadsubtitle.php?id={{}}".format(DOMAIN)
 
 class KTUVIT_REGEX:
     URI_TO_TITILE_ID = re.compile("(?<=id\=)\d+")
+    NUM_OF_CDS = re.compile("(?<=cds/cd)\d+(?=\.gif)")
 
 class KtuvitProvider(IProvider):
     provider_name = ProvidersNames.KTUVIT
     supported_languages = [Languages.HEBREW]
 
+    KTUVIT_AUTH = {
+        'slcoo_user_id' : 563392,
+        'slcoo_user_pass' : 'CC4F66xx0DFB69xx15C150xxAC1391xxFDCE87xxE6'}
+
     def __init__(self, languages, requests_manager):
         super(KtuvitProvider, self).__init__(languages, requests_manager)
+        self._auth_headers = {
+            'Cookie' : ';'.join('{}={}'.format(k, v) 
+                for k, v in self.KTUVIT_AUTH.iteritems())}
+
+    def _perform_auth_request(self, url, data=None):
+        return self.requests_manager.perform_request(
+            url, data, more_headers=self._auth_headers)
 
     def _get_id(self, soup, link_id, my_expected_id):
         def is_my_id(tag):
@@ -69,30 +84,31 @@ class KtuvitProvider(IProvider):
         logger.debug("Got episode_id: {}".format(episode_id))
         return episode_id
 
-    def _get_providers_versions_from_episode_page(
-        self, extracted_title, episode_soup):
+    def _yield_providers_versions_from_versions_page(
+        self, extracted_title, versions_soup):
 
-        tds = episode_soup.find_all("td", class_="subtitle_tab")
-        providers_versions = []
-        for td in tds:
+        for td in versions_soup.find_all("td", class_="subtitle_tab"):
             # The <a> right after it is the version id.
             version_id = td.find("a").get("name")
             lang_div = td.find("div", class_="subt_lang")
             # The hebrew lang.
             if lang_div.find("img").get("src") != 'images/Flags/1.png':
                 continue
+
+            cds_url = td.find("div", class_="subt_discs").find("img").get("src")
+            num_of_cds = get_regex_match(cds_url, KTUVIT_REGEX.NUM_OF_CDS)
             version = td.find("div", class_="subtitle_title").get("title")
-            identifiers = extract_identifiers(extracted_title, version)
+
+            identifiers = extract_identifiers(extracted_title, [version])
             provider_version = ProviderVersion(
                 identifiers, 
                 extracted_title, 
                 Languages.HEBREW,
                 self,
                 version,
-                attributes={"version_id" : version_id})
-            providers_versions.append(provider_version)
-
-        return providers_versions
+                attributes={"version_id" : version_id},
+                num_of_cds = int(num_of_cds))
+            yield provider_version
 
     def _extract_series_title(self, queried_title, series_soup, episode_soup):
         """ We assume the episode numbering to be the same as the query. """
@@ -140,27 +156,46 @@ class KtuvitProvider(IProvider):
                     .format(title_id, ex))
                 continue
 
-            episode_page = self.requests_manager.perform_request(
-                KTUVIT_PAGES.EPISODE_PAGE.format(episode_id))
-            episode_soup = BeautifulSoup(episode_page)
+            episode_url = KTUVIT_PAGES.EPISODE_VERSIONS_PAGE.format(episode_id)
+            episode_VERSIONS_page = self._perform_auth_request(episode_url)
+            episode_soup = BeautifulSoup(episode_VERSIONS_page)
+            
             series_title = self._extract_series_title(
                 title, series_soup, episode_soup)
-            import ipdb; ipdb.set_trace()
+
             if not series_title:
                 logger.debug("Failed getting series title for title_id: {}"
                     .format(title_id))
                 continue
 
-            providers_versions = self._get_providers_versions_from_episode_page(
-                series_title, episode_soup)
-            if providers_versions:
-                for provider_version in providers_versions:
-                    titles_versions.add_version(provider_version)
+            for provider_version in \
+                self._yield_providers_versions_from_versions_page(
+                    series_title, episode_soup):
+                titles_versions.add_version(provider_version)
+
         return titles_versions
 
     def _get_titles_versions_for_movie(self, title, titles_ids):
-        pass
+        titles_versions = TitlesVersions()
+        for is_series, title_id in titles_ids:
+            movie_url = KTUVIT_PAGES.MOVIE_PAGE.format(title_id)
+            movie_page = self.requests_manager.perform_request(movie_url)
+            movie_soup = BeautifulSoup(movie_page)
 
+            movie_title = self._extract_movie_title(movie_soup)
+            movie_id = get_regex_match(
+                movie_page, KTUVIT_REGEX.URI_TO_TITILE_ID)
+
+            versions_url = KTUVIT_PAGES.MOVIE_VERSIONS_PAGE.format(movie_id)
+            versions_page = self._perform_auth_request(versions_url)
+            versions_soup = BeautifulSoup(versions_page)
+
+            for provider_version in \
+                self._yield_providers_versions_from_versions_page(
+                    movie_title, versions_soup):
+                titles_versions.add_version(provider_version)
+
+        return titles_versions
 
     def get_title_versions(self, title, version):
         logger.debug("get_title_versions got called with: {}, {}"
@@ -180,7 +215,10 @@ class KtuvitProvider(IProvider):
                 filter(lambda title_id: not title_id[0], titles_ids))
 
     def download_subtitle_buffer(self, provider_version):
-        pass
+        download_url = KTUVIT_PAGES.DOWNLOAD.format(
+            provider_version.attributes['version_id'])
+        return self.requests_manager.download_file(
+            download_url, more_headers=self._auth_headers)
 
 
 def extract_title_params(soup):
@@ -192,13 +230,15 @@ def extract_title_params(soup):
             tag.get("class", "missing")[0] == "g-res-title-prop-rtl" and 
             tag.next.name == "span" and 
             tag.next.get("class", "missing")[0] == "Gray")
-    div = soup.find(is_title_div)
 
+    div = soup.find(is_title_div)
     name = list(div.stripped_strings)[1]
-    year_links = soup.find_all(
-        lambda tag: tag.name == "a" and "uy=" in tag.get("href"))
+    year = get_regex_match(
+        soup.find("span", class_="yearpronobold").get_text(),
+        '\d+')
+
     # The third link contains the year for the title.
-    year = int(year_links[2].get_text())
+    year = int(year) if year else 0
     imdb_link = soup.find(
         lambda tag: tag.name == "a" and "imdb" in tag.get("href"))\
         .get("href")
