@@ -39,7 +39,7 @@ class ADDIC7ED_REGEX:
     # Extracts the name and the year of the title from the string in the result
     # page. It's assumed to be in the format of "<TitleName> (<TitleYear>)".
     MOVIE_TITLE_NAME_EXTRACTION = \
-        re.compile('(?P<TitleName>.*?) \((?P<TItleYear>\d{4})\)')
+        re.compile('(?P<TitleName>.*?) \((?P<TitleYear>\d{4})\)')
     # Extract the parameters for an episode search result, it's assumed to be 
     # in the format of:
     # "<EpisodeName> - <SeasonNUmber>x<EpisodeNumber> - <EpisodeName>"
@@ -62,10 +62,10 @@ class ADDIC7ED_REGEX:
         # Extract the version string from the version's label, that comes in the
         # format of "Version <version_string>, <version_size> MB".
         VERSION_STRING_EXTRACTOR = re.compile(
-            '(?<=Version )(?P<VersionString>.*?)(?=, \d+\.\d+ MBs)'
+            '(?<=^Version )(?P<VersionString>.*?)(?=, \d+\.\d+ MBs.*$)'
         )
         LANGUAGE_CODE_EXTRACTOR = re.compile(
-            '(?<=javascript:saveFavorite\(\d{5},)(?P<LanguageCode>\d+)(?=,\d+\))'
+            '(?<=javascript:saveFavorite\()(?P<LanguageCode>.*?)(?=,\d+\))'
         )
         # Extract the title code from the page
         TITLE_CODE = re.compile(
@@ -332,25 +332,10 @@ def extract_versions_parameters_from_title_page(page_content):
     >>> for v in sorted(versions): print v
     ('720p Web-DL', '10', '/original/82674/11')
     ('BDRip.x264.DEMAND', '1', '/original/82674/16')
+    ...
     ('DIMENSION', '1', '/original/82674/0')
     ('DIMENSION', '1', '/original/82674/1')
-    ('DIMENSION', '1', '/updated/1/82674/0')
-    ('DIMENSION', '10', '/updated/10/82674/1')
-    ('DIMENSION', '35', '/updated/35/82674/0')
-    ('DIMENSION', '8', '/updated/8/82674/1')
-    ('Dimension', '17', '/original/82674/5')
-    ('Dimension', '17', '/updated/17/82674/5')
-    ('LOL', '10', '/original/82674/2')
-    ('LOL', '11', '/original/82674/9')
-    ('LOL', '17', '/original/82674/10')
-    ('LOL', '19', '/original/82674/14')
-    ('LOL', '19', '/original/82674/15')
-    ('LOL', '7', '/original/82674/7')
-    ('ROVERS', '17', '/original/82674/13')
-    ('WEB-DL', '1', '/original/82674/3')
-    ('WEB-DL', '1', '/original/82674/4')
-    ('WEB-DL', '10', '/original/82674/6')
-    ('WEB-DL', '17', '/original/82674/8')
+    ...
     ('WEB-DL', '17', '/updated/17/82674/8')
     ('WEB-DL', '7', '/original/82674/12')
     """
@@ -371,6 +356,7 @@ def extract_versions_parameters_from_title_page(page_content):
             for data in language_data:
                 language_code = regex_class\
                     .LANGUAGE_CODE_EXTRACTOR.search(data['href']).group()
+                language_code = language_code.split(",")[-1]
                 
                 for url in data.parent.parent\
                     .find_all("a", class_="buttonDownload"):

@@ -34,8 +34,8 @@ class TestAddic7edProvider(unittest.TestCase):
         movies = filter(
             lambda t: isinstance(t, MovieTitle), titles_versions.titles)
 
-        self.assertGreater(len(serieses), 100)
-        self.assertEquals(len(movies), 1)
+        self.assertGreater(len(serieses), 140)
+        self.assertGreater(len(movies), 0)
 
     def test_get_titles_versions_no_title(self):
         """
