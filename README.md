@@ -1,3 +1,7 @@
+# Notice
+The development of SubiT has currently stopped by my side. Feel free to contribute to the project.
+With that said, i'll try to respond to emails and such.
+
 #Our site: http://subit-app.sf.net
 
 SubiT is an automated program for downloading subtitles.
